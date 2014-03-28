@@ -69,6 +69,11 @@
 			</tr>
 			<tr>
 				<td colspan="2">
+					<input type="checkbox" name="settings[css_inliner]" value="1" <?php print $c['css_inliner'] ? 'checked="checked" ': ''; ?>id="smtp-css_inliner" /><label for="smtp-css_inliner">Convert CSS to Inline Styles (for Outlook Online, Yahoo Mail, Google Mail, Hotmail)</label>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
 					<input type="checkbox" name="settings[alt_body]" value="1" <?php print $c['alt_body'] ? 'checked="checked" ': ''; ?>id="smtp-alt_body" /><label for="smtp-alt_body">Derive plain-text alternative? (Will derive text-ish body from html body as AltBody)</label>
 				</td>
 			</tr>

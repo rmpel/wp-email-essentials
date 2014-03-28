@@ -120,6 +120,11 @@ class WP_Email_Essentials
 
 		if ( $config['is_html'] ) {
 			$mailer->Body = WP_Email_Essentials::maybe_convert_to_html( $mailer->Body, $mailer->Subject );
+			if ($config['css_inliner']) {
+				require_once dirname(__FILE__) .'/lib/cssInliner.class';
+				$cssInliner = new cssInliner( $mailer->Body );
+				$mailer->Body = $cssInliner->convert();
+			}
 			$mailer->isHTML( true );
 		}
 
@@ -220,6 +225,7 @@ class WP_Email_Essentials
 			'from_name' => self::get_hostname_by_blogurl(),
 			'is_html' => false,
 			'alt_body' => false,
+			'css_inliner' => false,
 		);
 
 		$settings = get_option( 'wp-email-essentials', $defaults );
