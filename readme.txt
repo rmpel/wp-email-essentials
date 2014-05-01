@@ -4,7 +4,7 @@ Donate link: http://clearsite.nl/wordpress-development/
 Tags: email
 Requires at least: 3.6.1
 Tested up to: 3.8.1
-Stable tag: 1.0.1
+Stable tag: 1.0.2
 License: GPL2
 
 WP Email Essentials helps you send better emails from your WordPress blog.
@@ -51,6 +51,8 @@ You can help me develop this plugin further by emailing me a diff-file. You can 
 At this time the PayPal donation link is missing from our website, we're working on it.
 
 == Changelog ==
+
+1.0.2 Now also correct the Envelop-From header - if your server accepts it.
 
 1.0.0 Initial upload
 

@@ -5,7 +5,7 @@
 	Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 	Author: Remon Pel
 	Author URI: http://remonpel.nl
-	Version: 1.0.1
+	Version: 1.0.2
 	License: GPL2
 	Text Domain: Text Domain
 	Domain Path: Domain Path
@@ -117,6 +117,8 @@ class WP_Email_Essentials
 			$mailer->Username = $config['smtp']['username'];
 			$mailer->Password = $config['smtp']['password'];
 		}
+
+		$mailer->Sender = self::wp_mail_from();
 
 		if ( $config['is_html'] ) {
 			$mailer->Body = WP_Email_Essentials::maybe_convert_to_html( $mailer->Body, $mailer->Subject );
