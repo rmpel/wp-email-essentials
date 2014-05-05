@@ -5,7 +5,7 @@
 	Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 	Author: Remon Pel
 	Author URI: http://remonpel.nl
-	Version: 1.0.2
+	Version: 1.0.3
 	License: GPL2
 	Text Domain: Text Domain
 	Domain Path: Domain Path
@@ -123,7 +123,7 @@ class WP_Email_Essentials
 		if ( $config['is_html'] ) {
 			$mailer->Body = WP_Email_Essentials::maybe_convert_to_html( $mailer->Body, $mailer->Subject );
 			if ($config['css_inliner']) {
-				require_once dirname(__FILE__) .'/lib/cssInliner.class';
+				require_once dirname(__FILE__) .'/lib/cssInliner.class.php';
 				$cssInliner = new cssInliner( $mailer->Body );
 				$mailer->Body = $cssInliner->convert();
 			}
