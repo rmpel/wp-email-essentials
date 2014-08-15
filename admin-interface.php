@@ -91,3 +91,26 @@
 			</tr>
 	</form>
 </div>
+<table>
+	<tr>
+		<td>If HTML enabled: You can use WordPress filters to augment the HEAD and BODY sections of the HTML e-mail. To add information to the HEAD (or change the title) hook to filter wpes_head. For the body, hook to wpes_body</td>
+	</tr>
+	<tr>
+		<th>Example HEAD - with your filters applied</th>
+	</tr>
+	<tr>
+		<td><?php $subject = 'The Email Subject'; print htmlspecialchars('<head>'. apply_filters( 'wpes_head', '<title>'. $subject .'</title>' ) . '</head>'); ?></td>
+	</tr>
+	<tr>
+		<th>Example BODY (raw HTML) - with your filters applied</th>
+	</tr>
+	<tr>
+		<td><?php $body = 'The Email Body'; print htmlspecialchars('<body>'. apply_filters( 'wpes_body', $body ) .'</body>'); ?></td>
+	</tr>
+	<tr>
+		<th>Example Email (actual HTML) - with your filters applied</th>
+	</tr>
+	<tr>
+		<td><frameset><frame><html><head><?php print apply_filters( 'wpes_head', '<title>'. $subject .'</title>' ); ?></head><body><?php print apply_filters( 'wpes_body', $body ); ?></body></html></frame></frameset></td>
+	</tr>
+</table>

@@ -121,7 +121,7 @@ class WP_Email_Essentials
 		$mailer->Sender = self::wp_mail_from();
 
 		if ( $config['is_html'] ) {
-			$mailer->Body = WP_Email_Essentials::maybe_convert_to_html( $mailer->Body, $mailer->Subject );
+			$mailer->Body = WP_Email_Essentials::maybe_convert_to_html( $mailer->Body, $mailer->Subject, $mailer );
 			if ($config['css_inliner']) {
 				require_once dirname(__FILE__) .'/lib/cssInliner.class.php';
 				$cssInliner = new cssInliner( $mailer->Body );
@@ -165,7 +165,7 @@ class WP_Email_Essentials
 		}
 	}
 
-	function maybe_convert_to_html( $might_be_text, $subject ) {
+	function maybe_convert_to_html( $might_be_text, $subject, $mailer ) {
 		$html_preg = '<( br|a|p|body|table|div|span|body|html )';
 		if ( preg_match( "/$html_preg/", $might_be_text ) ) {
 			// probably html
@@ -182,7 +182,7 @@ class WP_Email_Essentials
 
 		// now check for HTML evelope
 		if ( false === strpos( $should_be_html, '<html' ) ) {
-			$should_be_html = '<html><head>'. apply_filters( 'wpes_head', '<title>'. $subject .'</title>' ) . '</head><body>'. apply_filters( 'wpes_body', $should_be_html ) .'</body></html>';
+			$should_be_html = '<html><head>'. apply_filters( 'wpes_head', '<title>'. $subject .'</title>', $mailer ) . '</head><body>'. apply_filters( 'wpes_body', $should_be_html, $mailer ) .'</body></html>';
 		}
 
 		return $should_be_html;
