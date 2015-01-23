@@ -5,7 +5,7 @@
 	Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 	Author: Remon Pel
 	Author URI: http://remonpel.nl
-	Version: 1.0.3
+	Version: 1.0.4
 	License: GPL2
 	Text Domain: Text Domain
 	Domain Path: Domain Path
@@ -293,7 +293,7 @@ class WP_Email_Essentials
 		return false;
 	}
 
-	function admin_menu()
+	public static function admin_menu()
 	{
 		add_submenu_page( 'tools.php', 'WP-Email-Essentials', 'Email-Essentials', 'manage_options', 'wp-email-essentials', array( 'WP_Email_Essentials', 'admin_interface' ) );
 		if ( $_GET[ 'page' ] == 'wp-email-essentials' && $_POST && $_POST[ 'form_id' ] == 'wp-email-essentials' )
@@ -376,7 +376,7 @@ class WP_Email_Essentials
 		exit;
 	}
 
-	function migrate_from_smtp_connect() {
+	public static function migrate_from_smtp_connect() {
 		$plugin = 'smtp-connect/smtp-connect.php';
 		if ( is_plugin_active( $plugin ) ) {
 			// plugin active, migrate
