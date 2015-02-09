@@ -86,6 +86,15 @@
 			</tr>
 			<tr>
 				<td colspan="2">
+					<b>Filters</b><br />
+					DEFAULTS can be overruled with WordPress filter <code>wpes_defaults</code>, parameters: <code>Array $defaults</code><br />
+					SETTINGS can be overruled with WordPress filter <code>wpes_settings</code>, parameters: <code>Array $settings</code><br />
+					Email HEAD can be overruled with WordPress filter <code>wpes_head</code>, parameters: <code>String $head_content</code>, <code>PHPMailer $mailer</code><br />
+					Email BODY can be overruled with WordPress filter <code>wpes_body</code>, parameters: <code>String $body_content</code>, <code>PHPMailer $mailer</code><br />
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
 					<?php print WP_Email_Essentials::$debug; ?>
 				</td>
 			</tr>

@@ -111,11 +111,17 @@ class WP_Email_Essentials
 		$config = self::get_config();
 		if ( $config['smtp'] )
 		{
-			$mailer->SMTPAuth = true;
 			$mailer->IsSMTP();
-			$mailer->Host = $config['smtp']['host'];
-			$mailer->Username = $config['smtp']['username'];
-			$mailer->Password = $config['smtp']['password'];
+			list($host, $port) = explode(':', $config['smtp']['host'] .':-1');
+			$mailer->Host = $host;
+			if ($port > 0)
+				$mailer->Port = $port;
+
+			if (isset($config['smtp']['username'])) {
+				$mailer->SMTPAuth = true;
+				$mailer->Username = $config['smtp']['username'];
+				$mailer->Password = $config['smtp']['password'];
+			}
 		}
 
 		$mailer->Sender = self::wp_mail_from();
@@ -230,11 +236,11 @@ class WP_Email_Essentials
 			'css_inliner' => false,
 		);
 
-		$defaults = apply_filters('wp_email_essentials_defaults', $defaults);
+		$defaults = apply_filters('wpes_defaults', $defaults);
 
 		$settings = get_option( 'wp-email-essentials', $defaults );
 
-		$settings = apply_filters('wp_email_essentials_settings', $settings);
+		$settings = apply_filters('wpes_settings', $settings);
 
 		return $settings;
 	}
