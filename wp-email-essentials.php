@@ -230,7 +230,12 @@ class WP_Email_Essentials
 			'css_inliner' => false,
 		);
 
+		$defaults = apply_filters('wp_email_essentials_defaults', $defaults);
+
 		$settings = get_option( 'wp-email-essentials', $defaults );
+
+		$settings = apply_filters('wp_email_essentials_settings', $settings);
+
 		return $settings;
 	}
 
