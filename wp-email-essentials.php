@@ -126,6 +126,8 @@ class WP_Email_Essentials
 
 		$mailer->Sender = self::wp_mail_from();
 
+		$mailer->Body = WP_Email_Essentials::preserve_weird_url_display( $mailer->Body );
+
 		if ( $config['is_html'] ) {
 			$mailer->Body = WP_Email_Essentials::maybe_convert_to_html( $mailer->Body, $mailer->Subject, $mailer );
 			if ($config['css_inliner']) {
@@ -170,6 +172,17 @@ class WP_Email_Essentials
 			exit;
 		}
 	}
+
+	function preserve_weird_url_display($html)
+	{
+		if (preg_match('/<(http(s)?:\/\/[^>]+)>/', $html, $m)) {
+			$url = $m[1];
+			return str_replace('<'. $url .'>', '['. $url .']', $html);
+		}
+		return $html;
+	}
+
+
 
 	function maybe_convert_to_html( $might_be_text, $subject, $mailer ) {
 		$html_preg = '<( br|a|p|body|table|div|span|body|html )';
