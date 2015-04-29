@@ -108,6 +108,7 @@ class WP_Email_Essentials
 
 	public static function action_phpmailer_init( &$mailer )
 	{
+		/** @var phpMailer $mailer */
 		$config = self::get_config();
 		if ( $config['smtp'] )
 		{
@@ -130,9 +131,11 @@ class WP_Email_Essentials
 
 		if ( $config['is_html'] ) {
 			$mailer->Body = WP_Email_Essentials::maybe_convert_to_html( $mailer->Body, $mailer->Subject, $mailer );
+			$css = apply_filters_ref_array( 'wpes_css', array('', &$mailer ));
+
 			if ($config['css_inliner']) {
 				require_once dirname(__FILE__) .'/lib/cssInliner.class.php';
-				$cssInliner = new cssInliner( $mailer->Body );
+				$cssInliner = new cssInliner( $mailer->Body, $css );
 				$mailer->Body = $cssInliner->convert();
 			}
 			$mailer->isHTML( true );
@@ -185,7 +188,7 @@ class WP_Email_Essentials
 
 
 	function maybe_convert_to_html( $might_be_text, $subject, $mailer ) {
-		$html_preg = '<( br|a|p|body|table|div|span|body|html )';
+		$html_preg = '<(br|a|p|body|table|div|span|body|html)';
 		if ( preg_match( "/$html_preg/", $might_be_text ) ) {
 			// probably html
 			$should_be_html = $might_be_text;
@@ -201,7 +204,7 @@ class WP_Email_Essentials
 
 		// now check for HTML evelope
 		if ( false === strpos( $should_be_html, '<html' ) ) {
-			$should_be_html = '<html><head>'. apply_filters( 'wpes_head', '<title>'. $subject .'</title>', $mailer ) . '</head><body>'. apply_filters( 'wpes_body', $should_be_html, $mailer ) .'</body></html>';
+			$should_be_html = '<html><head>'. apply_filters_ref_array( 'wpes_head', array('<title>'. $subject .'</title>', &$mailer )) . '</head><body>'. apply_filters_ref_array( 'wpes_body', array($should_be_html, &$mailer) ) .'</body></html>';
 		}
 
 		return $should_be_html;
@@ -332,7 +335,7 @@ class WP_Email_Essentials
 				case 'Send sample mail':
 					ob_start();
 					self::$debug = true;
-					$result = wp_mail( get_option( 'admin_email', false ), 'Test-email', 'Just a test' );
+					$result = wp_mail( get_option( 'admin_email', false ), 'Test-email', self::dummy_content() );
 					self::$debug = ob_get_clean();
 					if ( $result ) {
 						self::$message = 'Mail sent to ' . get_option( 'admin_email', false );
@@ -424,6 +427,19 @@ class WP_Email_Essentials
 			// log the deactivation.
 			update_option( 'recently_activated', array( $plugin => time() ) + (array) get_option( 'recently_activated' ) );
 		}
+	}
+
+	public static function dummy_content(){
+		return '<h1>Sample Email Body</h1><p>Some random text Lorem Ipsum is <b>bold simply dummy</b> text of the <strong>strong printing and typesetting</strong> industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><h2>A header-2</h2><p>Some more text</p><h3>A header-3</h3><ul><li>A list - unordered, item 1</li><li>Item 2</li></ul><h4>A header-4</h4><ol><li>A list - ordered, item 1</li><li>Item 2</li></ol>';
+	}
+
+	public static function cid_to_image( $html, $mailer ) {
+		foreach ($mailer->getAttachments() as $attachment) {
+			if ($attachment[7]) {
+				$html = str_replace('cid:'. $attachment[7], 'data:'. $attachment[4].';'. $attachment[3] .',' .base64_encode(file_get_contents($attachment[0])), $html);
+			}
+		}
+		return $html;
 	}
 }
 

@@ -6,14 +6,27 @@ class cssInliner
 {
 	var $CssToInlineStyles;
 	var $html;
-	function __construct( $html ) {
+	var $css;
+
+	function __construct( $html, $css=false ) {
 		$this->html = $html;
 		$this->CssToInlineStyles = new CssToInlineStyles();
+		if ($css) {
+			if (is_file($css)) {
+				$this->css = file_get_contents( $css );
+			}
+			else {
+				$this->css = $css;
+			}
+		}
+		else {
+			$this->css = $this->getCSS( $this->html );
+		}
 	}
 
 	function convert() {
 		$this->CssToInlineStyles->setHTML( $this->html );
-		$this->CssToInlineStyles->setCSS( $this->getCSS( $this->html ) );
+		$this->CssToInlineStyles->setCSS( $this->css );
 		$result = $this->CssToInlineStyles->convert();
 		return $result;
 	}

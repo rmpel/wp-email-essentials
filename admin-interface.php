@@ -82,6 +82,7 @@
 					<input type="submit" name="op" value="Save settings" class="button-primary action" />
 					<!-- input type="submit" name="op" value="Print debug output of sample mail" class="button-secondary action" / -->
 					<input type="submit" name="op" value="Send sample mail" class="button-secondary action" />
+					<em>Sample mail will be sent to the <a href="<?php print admin_url('options-general.php'); ?>">Site Administrator</a>; <b><?php print get_option( 'admin_email', false ); ?></b>.</em>
 				</td>
 			</tr>
 			<tr>
@@ -101,25 +102,45 @@
 	</form>
 </div>
 <table>
+	<?php
+		require_once ABSPATH . WPINC . '/class-phpmailer.php';
+		$mailer = new PHPMailer;
+		$config = WP_Email_Essentials::get_config();
+		$css = apply_filters_ref_array( 'wpes_css', array('', &$mailer ));
+		$subject = 'Sample email subject';
+		$body = WP_Email_Essentials::dummy_content();
+	?>
 	<tr>
 		<td>If HTML enabled: You can use WordPress filters to augment the HEAD and BODY sections of the HTML e-mail. To add information to the HEAD (or change the title) hook to filter wpes_head. For the body, hook to wpes_body</td>
-	</tr>
-	<tr>
-		<th>Example HEAD - with your filters applied</th>
-	</tr>
-	<tr>
-		<td><?php $subject = 'The Email Subject'; print htmlspecialchars('<head>'. apply_filters( 'wpes_head', '<title>'. $subject .'</title>' ) . '</head>'); ?></td>
-	</tr>
-	<tr>
-		<th>Example BODY (raw HTML) - with your filters applied</th>
-	</tr>
-	<tr>
-		<td><?php $body = 'The Email Body'; print htmlspecialchars('<body>'. apply_filters( 'wpes_body', $body ) .'</body>'); ?></td>
 	</tr>
 	<tr>
 		<th>Example Email (actual HTML) - with your filters applied</th>
 	</tr>
 	<tr>
-		<td><frameset><frame><html><head><?php print apply_filters( 'wpes_head', '<title>'. $subject .'</title>' ); ?></head><body><?php print apply_filters( 'wpes_body', $body ); ?></body></html></frame></frameset></td>
+		<td><frameset><frame><html><head><?php
+			print apply_filters_ref_array( 'wpes_head', array('<title>'. $subject .'</title>', &$mailer )); ?>
+		</head><body><?php
+			$bodyhtml = apply_filters_ref_array( 'wpes_body', array($body, &$mailer));
+
+			if ($config['css_inliner']) {
+				require_once dirname(__FILE__) .'/lib/cssInliner.class.php';
+				$cssInliner = new cssInliner( $bodyhtml, $css );
+				$bodyhtml = $cssInliner->convert();
+				$bodyhtml = WP_Email_Essentials::cid_to_image($bodyhtml, $mailer);
+			}
+			print $bodyhtml;
+			?></body></html></frame></frameset></td>
+	</tr>
+	<tr>
+		<th>Example HEAD - with your filters applied</th>
+	</tr>
+	<tr>
+		<td><?php print htmlspecialchars('<head>'. apply_filters_ref_array( 'wpes_head', array('<title>'. $subject .'</title>', &$mailer )) . '</head>'); ?></td>
+	</tr>
+	<tr>
+		<th>Example BODY (raw HTML) - with your filters applied</th>
+	</tr>
+	<tr>
+		<td><?php print htmlspecialchars('<body>'. apply_filters_ref_array( 'wpes_body', array($body, &$mailer )) .'</body>'); ?></td>
 	</tr>
 </table>
