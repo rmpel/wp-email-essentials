@@ -126,8 +126,8 @@
 				require_once dirname(__FILE__) .'/lib/cssInliner.class.php';
 				$cssInliner = new cssInliner( $bodyhtml, $css );
 				$bodyhtml = $cssInliner->convert();
-				$bodyhtml = WP_Email_Essentials::cid_to_image($bodyhtml, $mailer);
 			}
+			$bodyhtml = WP_Email_Essentials::cid_to_image($bodyhtml, $mailer);
 			print $bodyhtml;
 			?></body></html></frame></frameset></td>
 	</tr>
