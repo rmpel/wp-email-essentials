@@ -101,7 +101,7 @@
 			</tr>
 	</form>
 </div>
-<table>
+<table width="90%">
 	<?php
 		require_once ABSPATH . WPINC . '/class-phpmailer.php';
 		$mailer = new PHPMailer;
@@ -117,21 +117,9 @@
 		<th>Example Email (actual HTML) - with your filters applied</th>
 	</tr>
 	<tr>
-		<td><frameset><frame><html><head><?php
-			print apply_filters_ref_array( 'wpes_head', array('<title>'. $subject .'</title>', &$mailer )); ?>
-		</head><body><?php
-			$bodyhtml = apply_filters_ref_array( 'wpes_body', array($body, &$mailer));
-
-			if ($config['css_inliner']) {
-				require_once dirname(__FILE__) .'/lib/cssInliner.class.php';
-				$cssInliner = new cssInliner( $bodyhtml, $css );
-				$bodyhtml = $cssInliner->convert();
-			}
-			$bodyhtml = WP_Email_Essentials::cid_to_image($bodyhtml, $mailer);
-			print $bodyhtml;
-			?></body></html></frame></frameset></td>
+		<td><iframe style="width: 100%; min-width: 700px; height: auto; min-height: 600px;" src="<?php print add_query_arg("iframe","content"); ?>"></iframe></td>
 	</tr>
-	<tr>
+	<!-- tr>
 		<th>Example HEAD - with your filters applied</th>
 	</tr>
 	<tr>
@@ -142,5 +130,5 @@
 	</tr>
 	<tr>
 		<td><?php print htmlspecialchars('<body>'. apply_filters_ref_array( 'wpes_body', array($body, &$mailer )) .'</body>'); ?></td>
-	</tr>
+	</tr -->
 </table>

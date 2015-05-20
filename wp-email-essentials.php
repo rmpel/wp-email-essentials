@@ -5,7 +5,7 @@
 	Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 	Author: Remon Pel
 	Author URI: http://remonpel.nl
-	Version: 1.2.1
+	Version: 1.3.0
 	License: GPL2
 	Text Domain: Text Domain
 	Domain Path: Domain Path
@@ -346,6 +346,29 @@ class WP_Email_Essentials
 					}
 				break;
 			}
+		}
+		if ( $_GET[ 'page' ] == 'wp-email-essentials' && $_GET[ 'iframe' ] == 'content') {
+			require_once ABSPATH . WPINC . '/class-phpmailer.php';
+			$mailer = new PHPMailer;
+			$config = WP_Email_Essentials::get_config();
+			$css = apply_filters_ref_array( 'wpes_css', array('', &$mailer ));
+			$subject = 'Sample email subject';
+			$mailer->Subject = $subject;
+			$body = WP_Email_Essentials::dummy_content();
+			?><html><head><?php
+			print apply_filters_ref_array( 'wpes_head', array('<title>'. $subject .'</title>', &$mailer ));
+			?></head><body><?php
+			$bodyhtml = apply_filters_ref_array( 'wpes_body', array($body, &$mailer));
+
+			if ($config['css_inliner']) {
+				require_once dirname(__FILE__) .'/lib/cssInliner.class.php';
+				$cssInliner = new cssInliner( $bodyhtml, $css );
+				$bodyhtml = $cssInliner->convert();
+			}
+			$bodyhtml = WP_Email_Essentials::cid_to_image($bodyhtml, $mailer);
+			print $bodyhtml;
+			?></body></html><?php
+			exit;
 		}
 	}
 
