@@ -5,7 +5,7 @@
 	Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 	Author: Remon Pel
 	Author URI: http://remonpel.nl
-	Version: 1.3.0
+	Version: 1.3.1
 	License: GPL2
 	Text Domain: Text Domain
 	Domain Path: Domain Path
@@ -48,7 +48,7 @@ class WP_Email_Essentials
 		add_action( 'phpmailer_init', array( 'WP_Email_Essentials', 'action_phpmailer_init' ) );
 		if ( $config['is_html'] )
 		{
-			add_filter( 'wp_mail_content_type', create_function( '', 'return "text/html";' ) );
+			add_filter( 'wp_mail_content_type', create_function( '', 'return "text/html; charset=UTF-8";' ) );
 		}
 
 		// set default from email and from name
