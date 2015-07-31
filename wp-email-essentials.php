@@ -5,7 +5,7 @@
 	Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 	Author: Remon Pel
 	Author URI: http://remonpel.nl
-	Version: 1.3.1
+	Version: 1.4.0
 	License: GPL2
 	Text Domain: Text Domain
 	Domain Path: Domain Path
@@ -48,7 +48,8 @@ class WP_Email_Essentials
 		add_action( 'phpmailer_init', array( 'WP_Email_Essentials', 'action_phpmailer_init' ) );
 		if ( $config['is_html'] )
 		{
-			add_filter( 'wp_mail_content_type', create_function( '', 'return "text/html; charset=UTF-8";' ) );
+			add_filter( 'wp_mail_content_type', create_function( '', 'return "text/html";' ) );
+			add_filter( 'wp_mail_charset', create_function( '', 'return "UTF-8";' ) );
 		}
 
 		// set default from email and from name
@@ -145,8 +146,10 @@ class WP_Email_Essentials
 			$body = $mailer->Body;
 			$btag = strpos( $body, '<body' );
 			if ( false !== $btag ) {
+				$bodystart = strpos($body, '>', $btag);
+				$bodytag   = substr($body, $btag, $bodystart - $btag +1);
 				list( $body, $junk ) = explode( '</body', $body );
-				list( $junk, $body ) = explode( '<body', $body );
+				list( $junk, $body ) = explode( $bodytag, $body );
 			}
 
 			// links to link-text+url
@@ -167,6 +170,8 @@ class WP_Email_Essentials
 		if ( $_POST && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == 'Send sample mail' ) {
 			$mailer->SMTPDebug = false;
 		}
+
+		$mailer->ContentType .= '; charset='. $mailer->CharSet;
 
 		if ( $_POST && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == 'Print debug output of sample mail' ) {
 			$mailer->SMTPDebug = true;
@@ -206,6 +211,7 @@ class WP_Email_Essentials
 		if ( false === strpos( $should_be_html, '<html' ) ) {
 			$should_be_html = '<html><head>'. apply_filters_ref_array( 'wpes_head', array('<title>'. $subject .'</title>', &$mailer )) . '</head><body>'. apply_filters_ref_array( 'wpes_body', array($should_be_html, &$mailer) ) .'</body></html>';
 		}
+		$should_be_html    = htmlspecialchars_decode(htmlentities($should_be_html));
 
 		return $should_be_html;
 	}
