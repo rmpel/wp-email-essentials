@@ -173,6 +173,19 @@ class WP_Email_Essentials
 
 		$mailer->ContentType .= '; charset='. $mailer->CharSet;
 
+		$from = self::wp_mail_from();
+
+		$certificate_folder = $config['certfolder'];
+		if ('/' !== substr($certificate_folder, 0, 1)) {
+			$certificate_folder = rtrim(ABSPATH, '/') .'/'. $certificate_folder;
+		}
+		if (is_file($certificate_folder .'/'. $from .'.crt') && is_file($certificate_folder .'/'. $from .'.key')) {
+			$pass = '';
+			if (is_file($certificate_folder .'/'. $from .'.pass'))
+				$pass = trim(file_get_contents($certificate_folder .'/'. $from .'.pass'));
+			$mailer->sign($certificate_folder .'/'. $from .'.crt', $certificate_folder .'/'. $from .'.key', $pass);
+		}
+
 		if ( $_POST && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == 'Print debug output of sample mail' ) {
 			$mailer->SMTPDebug = true;
 			print '<h2>Dump of PHP Mailer object</h2><pre>';
@@ -289,6 +302,7 @@ class WP_Email_Essentials
 		$settings['css_inliner'] = $values['css_inliner'] ? true: false;
 		$settings['alt_body'] = $values['alt_body'] ? true: false;
 		$settings['SingleTo'] = $values['SingleTo'] ? true: false;
+		$settings['certfolder'] = $values['certfolder'];
 		update_option( 'wp-email-essentials', $settings );
 	}
 

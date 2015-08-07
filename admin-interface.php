@@ -78,6 +78,51 @@
 				</td>
 			</tr>
 			<tr>
+				<td>
+					<label for="certfolder">S/MIME Certificate/Private-Key path</label>
+				</td>
+				<td>
+					<input type="text" name="settings[certfolder]" value="<?php print esc_attr($c['certfolder']); ?>" id="certfolder" />
+				</td>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<strong>It is highly advised to pick a folder path <u>outside</u> your website, for example: <code><?php print dirname(ABSPATH); ?>/.smime/</code> to prevent stealing your identity </strong><br />
+					You can also type a relative path (any path not starting with a / is a relative path), this will be evaluated against ABSPATH (the root of your wordpress).<br />
+					naming convention: certificate: <code>email@addre.ss.crt</code>, private key: <code>email@addre.ss.key</code>, (optional) passphrase: <code>email@addre.ss.pass</code>.
+				</td>
+			</tr>
+			<?php if (isset($c['certfolder'])) {
+					$ids = array();
+					$certificate_folder = $c['certfolder'];
+					if ('/' !== substr($certificate_folder, 0, 1)) {
+						$certificate_folder = rtrim(ABSPATH, '/') .'/'. $certificate_folder;
+						if (is_dir($certificate_folder)) {
+							$files = glob($certificate_folder .'/*.crt');
+							$ids = array();
+							foreach ($files as $file) {
+								if (is_file($file) && is_file(preg_replace('/\.crt$/', '.key', $file))) {
+									$ids[] = basename(preg_replace('/\.crt$/', '', $file));
+								}
+							}
+						}
+						else {
+							?><tr>
+				<td colspan="2" style="color:red;">
+					<strong>Set folder <code><?php print $c['certfolder']; ?></code> not found. <?php if ($certificate_folder !== $c['certfolder']) { ?>Expanded path: <code><?php print $certificate_folder; ?></code><?php } ?> Evaluated path: <code><?php print realpath($certificate_folder); ?></code>
+				</td>
+			</tr><?php
+						}
+					}
+					if ($ids) {
+						?><tr>
+				<td colspan="2">
+					Found S/Mime identities for the following senders: <code><?php print implode('</code>, <code>', $ids); ?></code>
+				</td>
+			</tr><?php
+					}
+				} ?>
+			<tr>
 				<td colspan="2">
 					<input type="submit" name="op" value="Save settings" class="button-primary action" />
 					<!-- input type="submit" name="op" value="Print debug output of sample mail" class="button-secondary action" / -->
