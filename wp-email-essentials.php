@@ -5,7 +5,7 @@
 	Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 	Author: Remon Pel
 	Author URI: http://remonpel.nl
-	Version: 1.5.0
+	Version: 1.5.1
 	License: GPL2
 	Text Domain: Text Domain
 	Domain Path: Domain Path
@@ -175,16 +175,13 @@ class WP_Email_Essentials
 
 		$from = self::wp_mail_from();
 
-		$certificate_folder = $config['certfolder'];
-		if ('/' !== substr($certificate_folder, 0, 1)) {
-			$certificate_folder = rtrim(ABSPATH, '/') .'/'. $certificate_folder;
+		// S/MIME Signing
+		if ( $id = self::get_smime_identity( $from )) {
+			list($crt, $key, $pass) = $id;
+			$mailer->sign($crt, $key, $pass);
 		}
-		if (is_file($certificate_folder .'/'. $from .'.crt') && is_file($certificate_folder .'/'. $from .'.key')) {
-			$pass = '';
-			if (is_file($certificate_folder .'/'. $from .'.pass'))
-				$pass = trim(file_get_contents($certificate_folder .'/'. $from .'.pass'));
-			$mailer->sign($certificate_folder .'/'. $from .'.crt', $certificate_folder .'/'. $from .'.key', $pass);
-		}
+
+		// DEBUG output
 
 		if ( $_POST && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == 'Print debug output of sample mail' ) {
 			$mailer->SMTPDebug = true;
@@ -260,8 +257,11 @@ class WP_Email_Essentials
 		return self::wp_mail_from_name();
 	}
 
-	public static function get_config()
+	public static function get_config( $raw=false )
 	{
+		$settings = get_option( 'wp-email-essentials', $defaults );
+		if ($raw) return $settings;
+
 		$defaults = array(
 			'smtp' => false,
 			'from_email' => get_bloginfo( 'admin_email' ),
@@ -273,15 +273,21 @@ class WP_Email_Essentials
 
 		$defaults = apply_filters('wpes_defaults', $defaults);
 
-		$settings = get_option( 'wp-email-essentials', $defaults );
-
 		$settings = apply_filters('wpes_settings', $settings);
 
+		$settings['certificate_folder'] = $settings['certfolder'];
+		if ('/' !== substr($settings['certificate_folder'], 0, 1)) {
+			$settings['certificate_folder'] = rtrim(ABSPATH, '/') .'/'. $settings['certificate_folder'];
+		}
 		return $settings;
 	}
 
-	public static function set_config( $values )
+	private static function set_config( $values, $raw=false )
 	{
+		if ($raw) {
+			return update_option( 'wp-email-essentials', $values );
+		}
+
 		$values = stripslashes_deep( $values );
 		$settings = self::get_config();
 		if ( $values['smtp-enabled'] )
@@ -484,6 +490,103 @@ class WP_Email_Essentials
 		}
 		return $html;
 	}
+
+	function adminNotices() {
+		$config = WP_Email_Essentials::get_config();
+
+	  $from = $config['from_email'];
+	  if (!$from) {
+	  	$url = add_query_arg('page', 'wp-email-essentials', admin_url('tools.php'));
+	  	if ($_GET['page'] == 'wp-email-essentials') {
+		  	$class = "updated";
+				$message = "WP-Email-Essentials is not yet configured. Please fill out the form below.";
+		  	echo "<div class='$class'><p>$message</p></div>";
+		  }
+		  else {
+		  	$class = "error";
+				$message = "WP-Email-Essentials is not yet configured. Please go <a href='$url'>here</a>.";
+		  	echo "<div class='$class'><p>$message</p></div>";
+		  }
+	  	return;
+	  }
+
+
+		// certfolder == setting, certificate_folder == real path;
+		if (isset($config['certfolder'])) {
+			if (is_writable($config['certificate_folder']) && !get_option('suppress_smime_writable')) {
+				$class = "error";
+				$message = "The S/MIME certificate folder is writable. This is Extremely insecure. Please reconfigure, make sure the folder is not writable by Apache. If your server is running suPHP, you cannot make the folder read-only for apache. Please contact your hosting provider and ask for a more secure hosting package, one not based on suPHP.";
+	  		echo "<div class='$class'><p>$message</p></div>";
+	  	}
+
+	  	if (false !== strpos(realpath($config['certificate_folder']), realpath(ABSPATH))) {
+				$class = "error";
+				$message = "The S/MIME certificate folder is inside the webspace. This is Extremely insecure. Please reconfigure, make sure the folder is outside the website-root ". ABSPATH .".";
+	  		echo "<div class='$class'><p>$message</p></div>";
+	  	}
+	  }
+
+		// certfolder == setting, certificate_folder == real path;
+		if (!function_exists('openssl_pkcs7_sign')) {
+			$class = "error";
+			$message = "The openssl package for PHP is not installed, incomplete or broken. Please contact your hosting provider. S/MIME signing is NOT available.";
+	  	echo "<div class='$class'><p>$message</p></div>";
+	  }
+
+		// certfolder == setting, certificate_folder == real path;
+		if (isset($config['smtp']['host']) && false !== strpos( $config['smtp']['host'], 'mandrillapp' ) && function_exists('openssl_pkcs7_sign')) {
+			$class = "error";
+			$message = "MandrillApp will break S/MIME signing. Please use a different SMTP-service is signing is required.";
+	  	echo "<div class='$class'><p>$message</p></div>";
+	  }
+
+	  // default mail identity existance
+	  if (!self::get_smime_identity($from)) {
+	  	$rawset = self::get_config(true);
+	  	$set = $rawset['certfolder'];
+	  	$rawset['certfolder'] = __DIR__ .'/.smime';
+	  	self::set_config( $rawset );
+	  	if (self::get_smime_identity($from)) {
+		  	$class = "error";
+				$message = "There is no certificate for the default sender address <code>$from</code>. The required certificate is supplied with this plugin. Please copy it to the correct folder.";
+		  	echo "<div class='$class'><p>$message</p></div>";
+	  	}
+	  	else {
+		  	$class = "error";
+				$message = "There is no certificate for the default sender address <code>$from</code>. Start: <a href='https://www.comodo.com/home/email-security/free-email-certificate.php' target='_blank'>here</a>.";
+		  	echo "<div class='$class'><p>$message</p></div>";
+	  	}
+
+			$rawset['certfolder'] = $set;
+	  	self::set_config( $rawset, true );
+	  }
+
+	}
+
+	public static function list_smime_identities() {
+		$c = self::get_config();
+		$ids = array();
+		$certificate_folder = $c['certificate_folder'];
+		if (is_dir($certificate_folder)) {
+			$files = glob($certificate_folder .'/*.crt');
+			foreach ($files as $file) {
+				if (is_file($file) && is_file(preg_replace('/\.crt$/', '.key', $file))) {
+					$ids[ basename(preg_replace('/\.crt$/', '', $file)) ] = array($file, preg_replace('/\.crt$/', '.key', $file), trim(@file_get_contents(preg_replace('/\.crt$/', '.pass', $file))));
+				}
+			}
+		}
+		return $ids;
+	}
+
+	public static function get_smime_identity( $email ) {
+		$ids = self::list_smime_identities();
+		if (isset($ids[$email])) {
+			return $ids[$email];
+		}
+		return false;
+	}
+
 }
 
 $wp_email_essentials = new WP_Email_Essentials();
+add_action('admin_notices', array($wp_email_essentials, 'adminNotices'));

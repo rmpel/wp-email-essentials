@@ -77,6 +77,7 @@
 					<input type="checkbox" name="settings[alt_body]" value="1" <?php print $c['alt_body'] ? 'checked="checked" ': ''; ?>id="smtp-alt_body" /><label for="smtp-alt_body">Derive plain-text alternative? (Will derive text-ish body from html body as AltBody)</label>
 				</td>
 			</tr>
+			<?php if (function_exists('openssl_pkcs7_sign')) { ?>
 			<tr>
 				<td>
 					<label for="certfolder">S/MIME Certificate/Private-Key path</label>
@@ -94,34 +95,28 @@
 			</tr>
 			<?php if (isset($c['certfolder'])) {
 					$ids = array();
-					$certificate_folder = $c['certfolder'];
-					if ('/' !== substr($certificate_folder, 0, 1)) {
-						$certificate_folder = rtrim(ABSPATH, '/') .'/'. $certificate_folder;
-						if (is_dir($certificate_folder)) {
-							$files = glob($certificate_folder .'/*.crt');
-							$ids = array();
-							foreach ($files as $file) {
-								if (is_file($file) && is_file(preg_replace('/\.crt$/', '.key', $file))) {
-									$ids[] = basename(preg_replace('/\.crt$/', '', $file));
-								}
-							}
-						}
-						else {
+					$certificate_folder = $c['certificate_folder'];
+					if (is_dir($certificate_folder)) {
+						$files = glob($certificate_folder .'/*.crt');
+						$ids = WP_Email_Essentials::list_smime_identities();
+						$ids = array_keys($ids);
+					}
+					else {
 							?><tr>
 				<td colspan="2" style="color:red;">
 					<strong>Set folder <code><?php print $c['certfolder']; ?></code> not found. <?php if ($certificate_folder !== $c['certfolder']) { ?>Expanded path: <code><?php print $certificate_folder; ?></code><?php } ?> Evaluated path: <code><?php print realpath($certificate_folder); ?></code>
 				</td>
 			</tr><?php
-						}
 					}
 					if ($ids) {
 						?><tr>
 				<td colspan="2">
-					Found S/Mime identities for the following senders: <code><?php print implode('</code>, <code>', $ids); ?></code>
+					Found S/MIME identities for the following senders: <code><?php print implode('</code>, <code>', $ids); ?></code>
 				</td>
 			</tr><?php
 					}
 				} ?>
+			<?php } ?>
 			<tr>
 				<td colspan="2">
 					<input type="submit" name="op" value="Save settings" class="button-primary action" />
