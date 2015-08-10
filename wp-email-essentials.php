@@ -5,7 +5,7 @@
 	Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 	Author: Remon Pel
 	Author URI: http://remonpel.nl
-	Version: 1.5.1
+	Version: 1.5.2
 	License: GPL2
 	Text Domain: Text Domain
 	Domain Path: Domain Path
