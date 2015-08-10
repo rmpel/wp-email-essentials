@@ -493,11 +493,12 @@ class WP_Email_Essentials
 
 	function adminNotices() {
 		$config = WP_Email_Essentials::get_config();
+		$onpage = is_admin() && ($_GET['page'] == 'wp-email-essentials');
 
 	  $from = $config['from_email'];
 	  if (!$from) {
 	  	$url = add_query_arg('page', 'wp-email-essentials', admin_url('tools.php'));
-	  	if ($_GET['page'] == 'wp-email-essentials') {
+	  	if ($onpage) {
 		  	$class = "updated";
 				$message = "WP-Email-Essentials is not yet configured. Please fill out the form below.";
 		  	echo "<div class='$class'><p>$message</p></div>";
@@ -527,21 +528,21 @@ class WP_Email_Essentials
 	  }
 
 		// certfolder == setting, certificate_folder == real path;
-		if (!function_exists('openssl_pkcs7_sign')) {
+		if ($onpage && !function_exists('openssl_pkcs7_sign')) {
 			$class = "error";
 			$message = "The openssl package for PHP is not installed, incomplete or broken. Please contact your hosting provider. S/MIME signing is NOT available.";
 	  	echo "<div class='$class'><p>$message</p></div>";
 	  }
 
 		// certfolder == setting, certificate_folder == real path;
-		if (isset($config['smtp']['host']) && false !== strpos( $config['smtp']['host'], 'mandrillapp' ) && function_exists('openssl_pkcs7_sign')) {
+		if ($onpage && isset($config['smtp']['host']) && false !== strpos( $config['smtp']['host'], 'mandrillapp' ) && function_exists('openssl_pkcs7_sign')) {
 			$class = "error";
 			$message = "MandrillApp will break S/MIME signing. Please use a different SMTP-service is signing is required.";
 	  	echo "<div class='$class'><p>$message</p></div>";
 	  }
 
 	  // default mail identity existance
-	  if (!self::get_smime_identity($from)) {
+	  if ($onpage && !self::get_smime_identity($from)) {
 	  	$rawset = self::get_config(true);
 	  	$set = $rawset['certfolder'];
 	  	$rawset['certfolder'] = __DIR__ .'/.smime';
