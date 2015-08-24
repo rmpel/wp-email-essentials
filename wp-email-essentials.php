@@ -513,7 +513,7 @@ class WP_Email_Essentials
 
 
 		// certfolder == setting, certificate_folder == real path;
-		if (isset($config['certfolder'])) {
+		if (isset($config['certfolder']) && $config['certfolder']) {
 			if (is_writable($config['certificate_folder']) && !get_option('suppress_smime_writable')) {
 				$class = "error";
 				$message = "The S/MIME certificate folder is writable. This is Extremely insecure. Please reconfigure, make sure the folder is not writable by Apache. If your server is running suPHP, you cannot make the folder read-only for apache. Please contact your hosting provider and ask for a more secure hosting package, one not based on suPHP.";
@@ -537,7 +537,7 @@ class WP_Email_Essentials
 		// certfolder == setting, certificate_folder == real path;
 		if ($onpage && isset($config['smtp']['host']) && false !== strpos( $config['smtp']['host'], 'mandrillapp' ) && function_exists('openssl_pkcs7_sign')) {
 			$class = "error";
-			$message = "MandrillApp will break S/MIME signing. Please use a different SMTP-service is signing is required.";
+			$message = "MandrillApp will break S/MIME signing. Please use a different SMTP-service if signing is required.";
 	  	echo "<div class='$class'><p>$message</p></div>";
 	  }
 
