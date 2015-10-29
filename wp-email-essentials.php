@@ -5,7 +5,7 @@
 	Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 	Author: Remon Pel
 	Author URI: http://remonpel.nl
-	Version: 1.5.2
+	Version: 1.6.0
 	License: GPL2
 	Text Domain: Text Domain
 	Domain Path: Domain Path
@@ -176,7 +176,7 @@ class WP_Email_Essentials
 		$from = self::wp_mail_from();
 
 		// S/MIME Signing
-		if ( $id = self::get_smime_identity( $from )) {
+		if ($config['enable_smime'] &&  $id = self::get_smime_identity( $from )) {
 			list($crt, $key, $pass) = $id;
 			$mailer->sign($crt, $key, $pass);
 		}
@@ -308,6 +308,7 @@ class WP_Email_Essentials
 		$settings['css_inliner'] = $values['css_inliner'] ? true: false;
 		$settings['alt_body'] = $values['alt_body'] ? true: false;
 		$settings['SingleTo'] = $values['SingleTo'] ? true: false;
+		$settings['enable_smime'] = $values['enable_smime'];
 		$settings['certfolder'] = $values['certfolder'];
 		update_option( 'wp-email-essentials', $settings );
 	}
@@ -513,7 +514,7 @@ class WP_Email_Essentials
 
 
 		// certfolder == setting, certificate_folder == real path;
-		if (isset($config['certfolder']) && $config['certfolder']) {
+		if ($config['enable_smime'] && isset($config['certfolder']) && $config['certfolder']) {
 			if (is_writable($config['certificate_folder']) && !get_option('suppress_smime_writable')) {
 				$class = "error";
 				$message = "The S/MIME certificate folder is writable. This is Extremely insecure. Please reconfigure, make sure the folder is not writable by Apache. If your server is running suPHP, you cannot make the folder read-only for apache. Please contact your hosting provider and ask for a more secure hosting package, one not based on suPHP.";
@@ -528,21 +529,21 @@ class WP_Email_Essentials
 	  }
 
 		// certfolder == setting, certificate_folder == real path;
-		if ($onpage && !function_exists('openssl_pkcs7_sign')) {
+		if ($config['enable_smime'] && $onpage && !function_exists('openssl_pkcs7_sign')) {
 			$class = "error";
 			$message = "The openssl package for PHP is not installed, incomplete or broken. Please contact your hosting provider. S/MIME signing is NOT available.";
 	  	echo "<div class='$class'><p>$message</p></div>";
 	  }
 
 		// certfolder == setting, certificate_folder == real path;
-		if ($onpage && isset($config['smtp']['host']) && false !== strpos( $config['smtp']['host'], 'mandrillapp' ) && function_exists('openssl_pkcs7_sign')) {
+		if ($config['enable_smime'] && $onpage && isset($config['smtp']['host']) && false !== strpos( $config['smtp']['host'], 'mandrillapp' ) && function_exists('openssl_pkcs7_sign')) {
 			$class = "error";
 			$message = "MandrillApp will break S/MIME signing. Please use a different SMTP-service if signing is required.";
 	  	echo "<div class='$class'><p>$message</p></div>";
 	  }
 
 	  // default mail identity existance
-	  if ($onpage && !self::get_smime_identity($from)) {
+	  if ($config['enable_smime'] && $onpage && !self::get_smime_identity($from)) {
 	  	$rawset = self::get_config(true);
 	  	$set = $rawset['certfolder'];
 	  	$rawset['certfolder'] = __DIR__ .'/.smime';

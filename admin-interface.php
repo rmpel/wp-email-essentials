@@ -79,6 +79,11 @@
 			</tr>
 			<?php if (function_exists('openssl_pkcs7_sign')) { ?>
 			<tr>
+				<td colspan="2">
+					<input type="checkbox" name="settings[enable_smime]" value="1" <?php print $c['enable_smime'] ? 'checked="checked" ': ''; ?>id="enable-smime" /><label for="enable-smime">Sign emails with S/MIME certificate</label>
+				</td>
+			</tr>
+			<tr>
 				<td>
 					<label for="certfolder">S/MIME Certificate/Private-Key path</label>
 				</td>
@@ -116,7 +121,13 @@
 			</tr><?php
 					}
 				} ?>
-			<?php } ?>
+			<?php } else {?>
+			<tr>
+				<td colspan="2">
+					<input type="hidden" name="settings[enable_smime]" value="0" />
+				</td>
+			</tr>
+			<?php }?>
 			<tr>
 				<td colspan="2">
 					<input type="submit" name="op" value="Save settings" class="button-primary action" />
