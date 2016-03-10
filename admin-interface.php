@@ -42,6 +42,18 @@
 				</td>
 			</tr>
 			<tr>
+				<td>
+					<label for="smtp-secure">Secure?</label>
+				</td>
+				<td>
+					<select name="settings[secure]" id="smtp-secure">
+						<option value="">No</option>
+						<option value="ssl" <?php if ( 'ssl' == $c['smtp']['secure'] ) print 'selected="selected"'; ?>>SSL</option>
+						<option value="tls" <?php if ( 'tls' == $c['smtp']['secure'] ) print 'selected="selected"'; ?>>StartTLS</option>
+					</select>
+				</td>
+			</tr>
+			<tr>
 				<td colspan="2">
 					<input type="checkbox" name="settings[SingleTo]" value="1" <?php print $c['SingleTo'] ? 'checked="checked" ': ''; ?>id="smtp-singleto" /><label for="smtp-singleto">Split mail with more than one Recepient into separate mails?</label>
 				</td>

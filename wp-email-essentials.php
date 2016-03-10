@@ -5,7 +5,7 @@
 	Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 	Author: Remon Pel
 	Author URI: http://remonpel.nl
-	Version: 1.6.0
+	Version: 1.6.1
 	License: GPL2
 	Text Domain: Text Domain
 	Domain Path: Domain Path
@@ -123,6 +123,9 @@ class WP_Email_Essentials
 				$mailer->SMTPAuth = true;
 				$mailer->Username = $config['smtp']['username'];
 				$mailer->Password = $config['smtp']['password'];
+				if (isset($config['smtp']['secure'])) {
+					$mailer->SMTPSecure = $config['smtp']['secure'];
+				}
 			}
 		}
 
@@ -293,6 +296,7 @@ class WP_Email_Essentials
 		if ( $values['smtp-enabled'] )
 		{
 			$settings['smtp'] = array(
+				'secure'   => $values['secure'],
 				'host'     => $values['host'],
 				'username' => $values['username'],
 				'password' => ( $values['password'] == str_repeat( '*', strlen( $values['password'] ) ) && $settings['smtp'] ) ? $settings['smtp']['password'] : $values['password'],
@@ -536,9 +540,9 @@ class WP_Email_Essentials
 	  }
 
 		// certfolder == setting, certificate_folder == real path;
-		if ($config['enable_smime'] && $onpage && isset($config['smtp']['host']) && false !== strpos( $config['smtp']['host'], 'mandrillapp' ) && function_exists('openssl_pkcs7_sign')) {
+		if ($config['enable_smime'] && $onpage && isset($config['smtp']['host']) && (false !== strpos( $config['smtp']['host'], 'mandrillapp' ) || false !== strpos( $config['smtp']['host'], 'sparkpostmail' )) && function_exists('openssl_pkcs7_sign')) {
 			$class = "error";
-			$message = "MandrillApp will break S/MIME signing. Please use a different SMTP-service if signing is required.";
+			$message = "Services like MandrillApp or SparkPostMail will break S/MIME signing. Please use a different SMTP-service if signing is required.";
 	  	echo "<div class='$class'><p>$message</p></div>";
 	  }
 
