@@ -5,7 +5,7 @@
 	Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 	Author: Remon Pel
 	Author URI: http://remonpel.nl
-	Version: 1.7.0
+	Version: 1.7.1
 	License: GPL2
 	Text Domain: Text Domain
 	Domain Path: Domain Path
@@ -686,17 +686,12 @@ class WP_Email_Essentials
 
 	public static function mail_key_database() {
 		// supported;
-		$wp_filters = array('email_change_email','password_change_email','comment_notification_notify_author','update_welcome_user_email','notify_moderator','update_welcome_email','automatic_updates_debug_email','auto_core_update_email','retrieve_password_message');
-		$wp_actions = array('invite_user', 'retrieve_password_key');
-
-		// supported WPMU
-		$wpmu_filters = array('newuser_notify_siteadmin', 'newblog_notify_siteadmin', 'wpmu_signup_user_notification_subject', 'wpmu_signup_blog_notification_subject', 'new_user_email_content', 'new_admin_email_content', 'delete_site_email_content');
-		$wpmu_actions = array('network_site_new_created_user');
+		$wp_filters = array('automatic_updates_debug_email', 'auto_core_update_email');
 
 		// unsupported until added, @see wp_mail_key.patch, matched by subject, @see self::mail_subject_database
-		$unsupported_wp_filters = array('new_user_registration_admin_email', 'password_lost_changed_email', 'new_blog_notification');
+		$unsupported_wp_filters = array('new_user_registration_admin_email', 'password_lost_changed_email');
 
-		return array_merge($wp_filters, $wp_actions, $wpmu_filters, $wpmu_actions, $unsupported_wp_filters);
+		return array_merge($wp_filters, $unsupported_wp_filters);
 	}
 
 	public static function mail_subject_database( $lookup ) {
@@ -705,8 +700,6 @@ class WP_Email_Essentials
 			// wp
 			sprintf(__('[%s] New User Registration'), $blogname) => 'new_user_registration_admin_email',
 			sprintf(__('[%s] Password Lost/Changed'), $blogname) => 'password_lost_changed_email',
-			// wpmu
-			__('New WordPress Site') => 'new_blog_notification',
 		);
 		$key = @$keys[ $lookup ];
 		if ($key)
