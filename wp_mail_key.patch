@@ -1,0 +1,36 @@
+Index: wp-admin/includes/upgrade.php
+===================================================================
+--- wp-admin/includes/upgrade.php	(revision 37241)
++++ wp-admin/includes/upgrade.php	(working copy)
+@@ -385,6 +385,8 @@
+ https://wordpress.org/
+ "), $blog_url, $name, $password, $login_url );
+ 
++	$message = apply_filters( 'new_blog_notification', $message, $user );
++
+ 	@wp_mail($email, __('New WordPress Site'), $message);
+ }
+ endif;
+Index: wp-includes/pluggable.php
+===================================================================
+--- wp-includes/pluggable.php	(revision 37241)
++++ wp-includes/pluggable.php	(working copy)
+@@ -1677,6 +1677,9 @@
+ 		// The blogname option is escaped with esc_html on the way into the database in sanitize_option
+ 		// we want to reverse this for the plain text arena of emails.
+ 		$blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
++
++		$message = apply_filters( 'password_lost_changed_email', $message, $user );
++
+ 		wp_mail(get_option('admin_email'), sprintf(__('[%s] Password Lost/Changed'), $blogname), $message);
+ 	}
+ }
+@@ -1716,6 +1719,8 @@
+ 	$message .= sprintf(__('Username: %s'), $user->user_login) . "\r\n\r\n";
+ 	$message .= sprintf(__('Email: %s'), $user->user_email) . "\r\n";
+ 
++	$message = apply_filters( 'new_user_registration_admin_email', $message, $user );
++
+ 	@wp_mail(get_option('admin_email'), sprintf(__('[%s] New User Registration'), $blogname), $message);
+ 
+ 	// `$deprecated was pre-4.3 `$plaintext_pass`. An empty `$plaintext_pass` didn't sent a user notifcation.

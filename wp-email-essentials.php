@@ -13,7 +13,7 @@
 
 	/*
 
-			Copyright (C) 2013  Remon Pel  ik@remonpel.nl
+			Copyright (C) 2013-2016  Remon Pel  ik@remonpel.nl
 
 			This program is free software; you can redistribute it and/or modify
 			it under the terms of the GNU General Public License, version 2, as
@@ -65,6 +65,10 @@ class WP_Email_Essentials
 		add_action( 'admin_menu', array( 'WP_Email_Essentials', 'admin_menu' ), 10 );
 
 		add_action( 'admin_menu', array( 'WP_Email_Essentials', 'migrate_from_smtp_connect' ), -10000 );
+
+		add_action( 'admin_footer', array( 'WP_Email_Essentials', 'maybe_inject_admin_settings' ) );
+
+		self::mail_key_registrations();
 	}
 
 	public static function action_wp_mail( $wp_mail )
@@ -123,7 +127,7 @@ class WP_Email_Essentials
 				$mailer->SMTPAuth = true;
 				$mailer->Username = $config['smtp']['username'];
 				$mailer->Password = $config['smtp']['password'];
-				if (isset($config['smtp']['secure'])) {
+				if (isset($config['smtp']['secure']) && $config['smtp']['secure']) {
 					$mailer->SMTPSecure = $config['smtp']['secure'];
 				}
 			}
@@ -401,11 +405,43 @@ class WP_Email_Essentials
 			?></body></html><?php
 			exit;
 		}
+
+		add_submenu_page( 'tools.php', 'WP-Email-Essentials - Alternative Admins', 'Alternative admins', 'manage_options', 'wpes-admins', array( 'WP_Email_Essentials', 'admin_interface_admins' ) );
+		if ( $_GET[ 'page' ] == 'wpes-admins' && $_POST && $_POST[ 'form_id' ] == 'wpes-admins' )
+		{
+			switch ( $_POST[ 'op' ] )
+			{
+				case 'Save settings':
+					$keys = $_POST['settings']['keys'];
+					$keys = array_filter( $keys, function($el) { return filter_var($el, FILTER_VALIDATE_EMAIL); } );
+					update_option('mail_key_admins', $keys);
+					self::$message =  "Alternative Admins list saved.";
+
+					$regexps = $_POST['settings']['regexp'];
+					$list = array();
+
+					$__regex = "/^\/[\s\S]+\/$/";
+					foreach ($regexps as $entry) {
+						if ( preg_match($__regex, $entry['regexp']) )
+							$list[ $entry['regexp'] ] = $entry['key'];
+					}
+
+					update_option( 'mail_key_list', $list );
+					self::$message .= " Subject-RegExp list saved.";
+
+				break;
+			}
+		}
 	}
 
 	static function admin_interface()
 	{
 		include 'admin-interface.php';
+	}
+
+	static function admin_interface_admins()
+	{
+		include 'admin-admins.php';
 	}
 
 	public static function test()
@@ -592,7 +628,142 @@ class WP_Email_Essentials
 		return false;
 	}
 
+
+	public static function alternative_to( $email ) {
+		$admin_email = get_option('admin_email');
+		if ($email['to'] != $admin_email) {
+			return $email;
+		}
+
+		// this message is sent to the system admin
+		// we might want to send this to a different admin
+		if ($key = self::get_mail_key( $email['subject'] )) {
+			// we were able to determine a mailkey.
+			$admins = get_option('mail_key_admins', array());
+			if (@$admins[$key]) {
+				$email['to'] = $admins[$key];
+				return $email;
+			}
+			// known key, but no email set
+			// we revert to the DEFAULT admin_email, and prevent matching against subjects
+			return $email;
+		}
+
+		// perhaps we have a regexp?
+		$admin = self::mail_subject_match( $email['subject'] );
+		if ($admin) {
+			$email['to'] = $admin;
+			return $email;
+		}
+
+		// sorry, we failed :(
+		$fails = get_option('mail_key_fails', array());
+		$fails = array_combine( $fails, $fails );
+		$fails[ $email['subject'] ] = $email['subject'];
+		$fails = array_filter( $fails, function($item) { return ! WP_Email_Essentials::mail_subject_match($item) && ! WP_Email_Essentials::get_mail_key($item); } );
+		update_option('mail_key_fails', array_values( $fails ));
+
+		return $email;
+	}
+
+	public static function get_mail_key($subject)
+	{
+		// got a filter/action name?
+		$mail_key = self::current_mail_key();
+		if ($mail_key) {
+			self::current_mail_key( '*CLEAR*' );
+			self::log( "$subject matched to $mail_key by filter/action");
+		}
+		else {
+			$mail_key = self::mail_subject_database( $subject );
+			if ($mail_key) {
+				self::log( "$subject matched to $mail_key by subject-matching known subjects");
+			}
+		}
+
+		return $mail_key;
+	}
+
+	public static function mail_key_database() {
+		// supported;
+		$wp_filters = array('email_change_email','password_change_email','comment_notification_notify_author','update_welcome_user_email','notify_moderator','update_welcome_email','automatic_updates_debug_email','auto_core_update_email','retrieve_password_message');
+		$wp_actions = array('invite_user', 'retrieve_password_key');
+
+		// supported WPMU
+		$wpmu_filters = array('newuser_notify_siteadmin', 'newblog_notify_siteadmin', 'wpmu_signup_user_notification_subject', 'wpmu_signup_blog_notification_subject', 'new_user_email_content', 'new_admin_email_content', 'delete_site_email_content');
+		$wpmu_actions = array('network_site_new_created_user');
+
+		// unsupported until added, @see wp_mail_key.patch, matched by subject, @see self::mail_subject_database
+		$unsupported_wp_filters = array('new_user_registration_admin_email', 'password_lost_changed_email', 'new_blog_notification');
+
+		return array_merge($wp_filters, $wp_actions, $wpmu_filters, $wpmu_actions, $unsupported_wp_filters);
+	}
+
+	public static function mail_subject_database( $lookup ) {
+		$blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
+		$keys = array(
+			// wp
+			sprintf(__('[%s] New User Registration'), $blogname) => 'new_user_registration_admin_email',
+			sprintf(__('[%s] Password Lost/Changed'), $blogname) => 'password_lost_changed_email',
+			// wpmu
+			__('New WordPress Site') => 'new_blog_notification',
+		);
+		$key = @$keys[ $lookup ];
+		if ($key)
+			return $key;
+
+		return false;
+	}
+
+	private static function mail_subject_match( $subject ) {
+		$store = get_option('mail_key_list', array());
+		foreach ($store as $regexp => $mail_key) {
+			if (preg_match($regexp, $subject))
+				return $mail_key;
+		}
+		return false;
+	}
+
+	public static function mail_key_registrations() {
+		// this works on the mechanics that prior to sending an email, a filter or actions is hooked, a make-shift mail key
+		// actions and filters are equal to wordpress, but handled with or without return values.
+		foreach (self::mail_key_database() as $filter_name) {
+			add_filter($filter_name, array('WP_Email_Essentials', 'now_sending___'));
+		}
+	}
+
+	private static function current_mail_key( $set = null ) {
+		static $mail_key;
+		if ($set) {
+			if ($set == '*CLEAR*') $set = false;
+			$mail_key = $set;
+		}
+		return $mail_key;
+	}
+
+	public static function now_sending___( $value ) {
+		self::current_mail_key( current_filter() );
+		return $value;
+	}
+
+	public function log( $text ) {
+		// error_log( $text );
+	}
+
+	public static function maybe_inject_admin_settings() {
+		if (basename($_SERVER['PHP_SELF']) == 'options-general.php' && !@$_GET['page']) {
+			?>
+<script>
+	jQuery("#admin_email").after('<p class="description"><?php print sprintf(__('You can configure alternative administrators <a href="%s">here</a>.', 'wpes'), add_query_arg(array('page' => 'wpes-admins'), admin_url('tools.php'))); ?></p>');
+</script>
+<?php
+		}
+	}
 }
 
 $wp_email_essentials = new WP_Email_Essentials();
 add_action('admin_notices', array($wp_email_essentials, 'adminNotices'));
+
+
+
+add_filter('wp_mail', array('WP_Email_Essentials', 'alternative_to'));
