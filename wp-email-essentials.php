@@ -520,7 +520,7 @@ class WP_Email_Essentials
 	}
 
 	public static function dummy_content(){
-		return '<h1>Sample Email Body</h1><p>Some random text Lorem Ipsum is <b>bold simply dummy</b> text of the <strong>strong printing and typesetting</strong> industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><h2>A header-2</h2><p>Some more text</p><h3>A header-3</h3><ul><li>A list - unordered, item 1</li><li>Item 2</li></ul><h4>A header-4</h4><ol><li>A list - ordered, item 1</li><li>Item 2</li></ol>';
+		return '<h1>Sample Email Body</h1><p>Some råndôm text Lorem Ipsum is <b>bold simply dummy</b> text of the <strong>strong printing and typesetting</strong> industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><h2>A header-2</h2><p>Some more text</p><h3>A header-3</h3><ul><li>A list - unordered, item 1</li><li>Item 2</li></ul><h4>A header-4</h4><ol><li>A list - ordered, item 1</li><li>Item 2</li></ol>';
 	}
 
 	public static function cid_to_image( $html, $mailer ) {
@@ -658,7 +658,8 @@ class WP_Email_Essentials
 
 		// sorry, we failed :(
 		$fails = get_option('mail_key_fails', array());
-		$fails = array_combine( $fails, $fails );
+		if ($fails)
+			$fails = array_combine( $fails, $fails );
 		$fails[ $email['subject'] ] = $email['subject'];
 		$fails = array_filter( $fails, function($item) { return ! WP_Email_Essentials::mail_subject_match($item) && ! WP_Email_Essentials::get_mail_key($item); } );
 		update_option('mail_key_fails', array_values( $fails ));
@@ -708,7 +709,7 @@ class WP_Email_Essentials
 		return false;
 	}
 
-	private static function mail_subject_match( $subject ) {
+	public static function mail_subject_match( $subject ) {
 		$store = get_option('mail_key_list', array());
 		foreach ($store as $regexp => $mail_key) {
 			if (preg_match($regexp, $subject))
