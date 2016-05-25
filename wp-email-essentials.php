@@ -5,7 +5,7 @@
 	Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 	Author: Remon Pel
 	Author URI: http://remonpel.nl
-	Version: 1.7.1
+	Version: 1.7.2
 	License: GPL2
 	Text Domain: Text Domain
 	Domain Path: Domain Path
@@ -347,12 +347,20 @@ class WP_Email_Essentials
 		$email_part = str_replace( $name_part, '', $rfc );
 		// strip illegal characters;
 		$name_part = trim( $name_part, ' "' );
+		// the name part could have had escaped quotes (like "I have a quote \" here" <some@email.com> )
+		$name_part = stripslashes($name_part);
+
 		$email_part = trim( $email_part, ' <>' );
 		// verify :)
 		if ( is_email( $email_part ) ) {
 			return array( 'name' => stripslashes( $name_part ), 'email' => $email_part );
 		}
 		return false;
+	}
+
+	private static function rfc_encode( $email_array ) {
+		$email_array['name'] = json_encode($email_array['name']);
+		return sprintf("%s <%s>", $email_array['name'], $email_array['email']);
 	}
 
 	public static function admin_menu()
@@ -631,7 +639,12 @@ class WP_Email_Essentials
 
 	public static function alternative_to( $email ) {
 		$admin_email = get_option('admin_email');
-		if ($email['to'] != $admin_email) {
+
+		$to = self::rfc_decode( $email['to'] );
+		if (!$to)
+			$to = array('email' => $email['to']);
+
+		if ($to['email'] != $admin_email) {
 			return $email;
 		}
 
@@ -641,7 +654,12 @@ class WP_Email_Essentials
 			// we were able to determine a mailkey.
 			$admins = get_option('mail_key_admins', array());
 			if (@$admins[$key]) {
-				$email['to'] = $admins[$key];
+				$the_admin = self::rfc_decode($admins[$key]);
+				if ($the_admin['name'] == $the_admin['email'] && $to['name'] != $to['email']) {
+					// not rfc, just email, but the original TO has a real name
+					$the_admin['name'] = $to['name'];
+				}
+				$email['to'] = self::rfc_encode($the_admin);
 				return $email;
 			}
 			// known key, but no email set
@@ -652,7 +670,12 @@ class WP_Email_Essentials
 		// perhaps we have a regexp?
 		$admin = self::mail_subject_match( $email['subject'] );
 		if ($admin) {
-			$email['to'] = $admin;
+			$the_admin = self::rfc_decode($admin);
+			if ($the_admin['name'] == $the_admin['email'] && $to['name'] != $to['email']) {
+				// not rfc, just email, but the original TO has a real name
+				$the_admin['name'] = $to['name'];
+			}
+			$email['to'] = self::rfc_encode($the_admin);
 			return $email;
 		}
 
