@@ -266,9 +266,6 @@ class WP_Email_Essentials
 
 	public static function get_config( $raw=false )
 	{
-		$settings = get_option( 'wp-email-essentials', $defaults );
-		if ($raw) return $settings;
-
 		$defaults = array(
 			'smtp' => false,
 			'from_email' => get_bloginfo( 'admin_email' ),
@@ -279,6 +276,9 @@ class WP_Email_Essentials
 		);
 
 		$defaults = apply_filters('wpes_defaults', $defaults);
+
+		$settings = get_option( 'wp-email-essentials', $defaults );
+		if ($raw) return $settings;
 
 		$settings = apply_filters('wpes_settings', $settings);
 
