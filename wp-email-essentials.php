@@ -5,7 +5,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 1.7.3
+Version: 1.7.4
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -264,20 +264,21 @@ class WP_Email_Essentials
 			'is_html' => false,
 			'alt_body' => false,
 			'css_inliner' => false,
+			'enable_smime' => false,
 		);
 
 		$defaults = apply_filters('wpes_defaults', $defaults);
 
 		$settings = get_option('wp-email-essentials', $defaults);
-		if ($raw) return $settings;
+		if (!$raw) {
+			$settings = apply_filters('wpes_settings', $settings);
 
-		$settings = apply_filters('wpes_settings', $settings);
-
-		$settings['certificate_folder'] = $settings['certfolder'];
-		if ('/' !== substr($settings['certificate_folder'], 0, 1)) {
-			$settings['certificate_folder'] = rtrim(ABSPATH, '/') . '/' . $settings['certificate_folder'];
+			$settings['certificate_folder'] = $settings['certfolder'];
+			if ('/' !== substr($settings['certificate_folder'], 0, 1)) {
+				$settings['certificate_folder'] = rtrim(ABSPATH, '/') . '/' . $settings['certificate_folder'];
+			}
 		}
-		return $settings;
+		return array_merge($defaults, $settings);
 	}
 
 	private static function set_config($values, $raw = false)
@@ -404,7 +405,7 @@ class WP_Email_Essentials
 		}
 
 		add_submenu_page('tools.php', 'WP-Email-Essentials - Alternative Admins', 'Alternative admins', 'manage_options', 'wpes-admins', array('WP_Email_Essentials', 'admin_interface_admins'));
-		if ($_GET['page'] == 'wpes-admins' && $_POST && $_POST['form_id'] == 'wpes-admins') {
+		if (@$_GET['page'] == 'wpes-admins' && $_POST && @$_POST['form_id'] == 'wpes-admins') {
 			switch ($_POST['op']) {
 				case 'Save settings':
 					$keys = $_POST['settings']['keys'];
