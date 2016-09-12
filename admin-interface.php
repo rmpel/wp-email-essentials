@@ -75,6 +75,19 @@
 				</td>
 			</tr>
 			<tr>
+				<td>
+					<label for="make_from_valid">Fix sender-address?</label>
+				</td>
+				<td>
+					E-mails sent as different domain will probably be marked as spam. Fix the sender-address to always match the sending domain and send original From address as Reply-To: header?
+					<select name="settings[make_from_valid]" id="make_from_valid">
+						<option value="">No, send with possibly-invalid sender as is. (might cause your mails to be marked as spam!)</option>
+						<option value="-at-" <?php if ( '-at-' == $c['make_from_valid'] ) print 'selected="selected"'; ?>>Rewrite email@addre.ss to email-at-addre-dot-ss@<?php print parse_url(get_bloginfo('url'), PHP_URL_HOST); ?></option>
+						<option value="noreply" <?php if ( 'noreply' == $c['make_from_valid'] ) print 'selected="selected"'; ?>>Rewrite email@addre.ss to noreply@<?php print parse_url(get_bloginfo('url'), PHP_URL_HOST); ?></option>
+					</select>
+				</td>
+			</tr>
+			<tr>
 				<td colspan="2">
 					<input type="checkbox" name="settings[is_html]" value="1" <?php print $c['is_html'] ? 'checked="checked" ': ''; ?>id="smtp-is_html" /><label for="smtp-is_html">Send as HTML? (Will convert non-html body to html-ish body)</label>
 				</td>

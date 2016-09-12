@@ -5,7 +5,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 1.7.4
+Version: 1.7.6
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -103,7 +103,31 @@ class WP_Email_Essentials
 			$header_index['from'] = count($header_index);
 		$wp_mail['headers'][$header_index['from']] = 'From:"' . self::wp_mail_from_name() . '" <' . self::wp_mail_from() . '>';
 
+		if ($config['make_from_valid']) {
+			self::wp_mail_from(self::a_valid_from(self::wp_mail_from(), $config['make_from_valid']));
+			$wp_mail['headers'][$header_index['from']] = 'From:"' . self::wp_mail_from_name() . '" <' . self::a_valid_from(self::wp_mail_from(), $config['make_from_valid']) . '>';
+
+			if (!array_key_exists('reply-to', $header_index))
+				$header_index['reply-to'] = count($header_index);
+			$wp_mail['headers'][$header_index['reply-to']] = 'Reply-To:"' . self::wp_mail_from_name() . '" <' . self::wp_mail_from() . '>';
+		}
+
 		return $wp_mail;
+	}
+
+	public static function a_valid_from($invalid_from, $method) {
+		$url = get_bloginfo('url');
+		$host = parse_url($url, PHP_URL_HOST);
+		if ( !preg_match( '/@'. $host .'$/', $invalid_from) ) {
+			switch ($method) {
+				case '-at-':
+					return strtr($invalid_from, array('@' => '-at-', '.' => '-dot-')) . '@'. $host;
+				case 'noreply':
+					return 'noreply@'. $host;
+				default:
+					return $invalid_from;
+			}
+		}
 	}
 
 	public static function action_phpmailer_init(&$mailer)
@@ -307,6 +331,7 @@ class WP_Email_Essentials
 		$settings['SingleTo'] = $values['SingleTo'] ? true : false;
 		$settings['enable_smime'] = $values['enable_smime'];
 		$settings['certfolder'] = $values['certfolder'];
+		$settings['make_from_valid'] = $values['make_from_valid'];
 		update_option('wp-email-essentials', $settings);
 	}
 
@@ -769,6 +794,19 @@ class WP_Email_Essentials
 				jQuery("#admin_email").after('<p class="description"><?php print sprintf(__('You can configure alternative administrators <a href="%s">here</a>.', 'wpes'), add_query_arg(array('page' => 'wpes-admins'), admin_url('tools.php'))); ?></p>');
 			</script>
 			<?php
+		}
+
+		$config = self::get_config();
+		if ($config['make_from_valid']) {
+			?><script>
+				jQuery(document).ready(function(){
+					if (jQuery("#wpcf7-mail-sender").length > 0 && jQuery("#wpcf7-mail-sender").siblings('span.config-error').length > 0) {
+						jQuery("#wpcf7-mail-sender").siblings('span.config-error').html(
+							jQuery("#wpcf7-mail-sender").siblings('span.config-error').html() + '<br />' + <?php print json_encode(sprintf('But <strong>please do not worry</strong>! <a href="%s" target="_blank">WP-Email-Essentials</a> will automatically fix this upon sending the email.', admin_url('tools.php') .'?page=wp-email-essentials')); ?>
+						);
+					}
+				});
+			</script><?php
 		}
 	}
 }
