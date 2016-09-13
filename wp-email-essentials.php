@@ -5,7 +5,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 1.7.7
+Version: 1.8.0
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -42,7 +42,9 @@ class WP_Email_Essentials
 
 	public static function init()
 	{
-		// self::test();
+		add_action('init', function() {
+			load_plugin_textdomain( 'wpes', false, dirname( plugin_basename( __FILE__ ) ) .'/lang' );
+		});
 
 		$config = self::get_config();
 		add_action('phpmailer_init', array('WP_Email_Essentials', 'action_phpmailer_init'));
@@ -192,7 +194,7 @@ class WP_Email_Essentials
 			$mailer->AltBody = $body;
 		}
 
-		if ($_POST && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == 'Send sample mail') {
+		if ($_POST && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == __('Send sample mail', 'wpes') ) {
 			$mailer->SMTPDebug = false;
 		}
 
@@ -208,9 +210,9 @@ class WP_Email_Essentials
 
 		// DEBUG output
 
-		if ($_POST && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == 'Print debug output of sample mail') {
+		if ($_POST && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == __('Print debug output of sample mail', 'wpes') ) {
 			$mailer->SMTPDebug = true;
-			print '<h2>Dump of PHP Mailer object</h2><pre>';
+			print '<h2>'. __('Dump of PHP Mailer object', 'wpes') .'</h2><pre>';
 			var_dumP($mailer);
 			exit;
 		}
@@ -384,20 +386,20 @@ class WP_Email_Essentials
 		add_submenu_page('tools.php', 'WP-Email-Essentials', 'Email-Essentials', 'manage_options', 'wp-email-essentials', array('WP_Email_Essentials', 'admin_interface'));
 		if ($_GET['page'] == 'wp-email-essentials' && $_POST && $_POST['form_id'] == 'wp-email-essentials') {
 			switch ($_POST['op']) {
-				case 'Save settings':
+				case __('Save settings', 'wpes'):
 					self::set_config($_POST['settings']);
-					self::$message = 'Settings saved.';
+					self::$message = __('Settings saved.', 'wpes');
 					break;
-				case 'Print debug output of sample mail':
-				case 'Send sample mail':
+				case __('Print debug output of sample mail', 'wpes'):
+				case __('Send sample mail', 'wpes'):
 					ob_start();
 					self::$debug = true;
-					$result = wp_mail(get_option('admin_email', false), 'Test-email', self::dummy_content());
+					$result = wp_mail(get_option('admin_email', false), __('Test-email', 'wpes'), self::dummy_content());
 					self::$debug = ob_get_clean();
 					if ($result) {
-						self::$message = 'Mail sent to ' . get_option('admin_email', false);
+						self::$message = sprintf(__('Mail sent to %s', 'wpes'), get_option('admin_email', false));
 					} else {
-						self::$error = 'Mail NOT sent to ' . get_option('admin_email', false);
+						self::$error = sprintf(__('Mail NOT sent to %s', 'wpes'), get_option('admin_email', false));
 					}
 					break;
 			}
@@ -407,16 +409,17 @@ class WP_Email_Essentials
 			$mailer = new PHPMailer;
 			$config = WP_Email_Essentials::get_config();
 			$css = apply_filters_ref_array('wpes_css', array('', &$mailer));
-			$subject = 'Sample email subject';
+			$subject = __('Sample email subject', 'wpes');
 			$mailer->Subject = $subject;
 			$body = WP_Email_Essentials::dummy_content();
+			header("Content-Type: html; charset=utf-8");
 			?>
 			<html>
-		<head><?php
+		<head><meta http-equiv="Content-Type" content="text/html; charset=utf-8" /><?php
 			print apply_filters_ref_array('wpes_head', array('<title>' . $subject . '</title>', &$mailer));
 			?></head>
 		<body><?php
-		$bodyhtml = apply_filters_ref_array('wpes_body', array($body, &$mailer));
+		$bodyhtml = utf8_decode(apply_filters_ref_array('wpes_body', array($body, &$mailer)));
 
 		if ($config['css_inliner']) {
 			require_once dirname(__FILE__) . '/lib/cssInliner.class.php';
@@ -432,13 +435,13 @@ class WP_Email_Essentials
 		add_submenu_page('tools.php', 'WP-Email-Essentials - Alternative Admins', 'Alternative admins', 'manage_options', 'wpes-admins', array('WP_Email_Essentials', 'admin_interface_admins'));
 		if (@$_GET['page'] == 'wpes-admins' && $_POST && @$_POST['form_id'] == 'wpes-admins') {
 			switch ($_POST['op']) {
-				case 'Save settings':
+				case __('Save settings', 'wpes'):
 					$keys = $_POST['settings']['keys'];
 					$keys = array_filter($keys, function ($el) {
 						return filter_var($el, FILTER_VALIDATE_EMAIL);
 					});
 					update_option('mail_key_admins', $keys);
-					self::$message = "Alternative Admins list saved.";
+					self::$message = __('Alternative Admins list saved.', 'wpes');
 
 					$regexps = $_POST['settings']['regexp'];
 					$list = array();
@@ -450,7 +453,7 @@ class WP_Email_Essentials
 					}
 
 					update_option('mail_key_list', $list);
-					self::$message .= " Subject-RegExp list saved.";
+					self::$message .= " ". __('Subject-RegExp list saved.', 'wpes');
 
 					break;
 			}
@@ -559,11 +562,11 @@ class WP_Email_Essentials
 			$url = add_query_arg('page', 'wp-email-essentials', admin_url('tools.php'));
 			if ($onpage) {
 				$class = "updated";
-				$message = "WP-Email-Essentials is not yet configured. Please fill out the form below.";
+				$message = __('WP-Email-Essentials is not yet configured. Please fill out the form below.', 'wpes');
 				echo "<div class='$class'><p>$message</p></div>";
 			} else {
 				$class = "error";
-				$message = "WP-Email-Essentials is not yet configured. Please go <a href='$url'>here</a>.";
+				$message = sprintf(__('WP-Email-Essentials is not yet configured. Please go <a href="%s">here</a>.', 'wpes'), $url);
 				echo "<div class='$class'><p>$message</p></div>";
 			}
 			return;
@@ -574,13 +577,13 @@ class WP_Email_Essentials
 		if ($config['enable_smime'] && isset($config['certfolder']) && $config['certfolder']) {
 			if (is_writable($config['certificate_folder']) && !get_option('suppress_smime_writable')) {
 				$class = "error";
-				$message = "The S/MIME certificate folder is writable. This is Extremely insecure. Please reconfigure, make sure the folder is not writable by Apache. If your server is running suPHP, you cannot make the folder read-only for apache. Please contact your hosting provider and ask for a more secure hosting package, one not based on suPHP.";
+				$message = __('The S/MIME certificate folder is writable. This is Extremely insecure. Please reconfigure, make sure the folder is not writable by Apache. If your server is running suPHP, you cannot make the folder read-only for apache. Please contact your hosting provider and ask for a more secure hosting package, one not based on suPHP.', 'wpes');
 				echo "<div class='$class'><p>$message</p></div>";
 			}
 
 			if (false !== strpos(realpath($config['certificate_folder']), realpath(ABSPATH))) {
 				$class = "error";
-				$message = "The S/MIME certificate folder is inside the webspace. This is Extremely insecure. Please reconfigure, make sure the folder is outside the website-root " . ABSPATH . ".";
+				$message = sprintf(__('The S/MIME certificate folder is inside the webspace. This is Extremely insecure. Please reconfigure, make sure the folder is outside the website-root %s.', 'wpes'), ABSPATH);
 				echo "<div class='$class'><p>$message</p></div>";
 			}
 		}
@@ -588,14 +591,14 @@ class WP_Email_Essentials
 		// certfolder == setting, certificate_folder == real path;
 		if ($config['enable_smime'] && $onpage && !function_exists('openssl_pkcs7_sign')) {
 			$class = "error";
-			$message = "The openssl package for PHP is not installed, incomplete or broken. Please contact your hosting provider. S/MIME signing is NOT available.";
+			$message = __('The openssl package for PHP is not installed, incomplete or broken. Please contact your hosting provider. S/MIME signing is NOT available.', 'wpes');
 			echo "<div class='$class'><p>$message</p></div>";
 		}
 
 		// certfolder == setting, certificate_folder == real path;
 		if ($config['enable_smime'] && $onpage && isset($config['smtp']['host']) && (false !== strpos($config['smtp']['host'], 'mandrillapp') || false !== strpos($config['smtp']['host'], 'sparkpostmail')) && function_exists('openssl_pkcs7_sign')) {
 			$class = "error";
-			$message = "Services like MandrillApp or SparkPostMail will break S/MIME signing. Please use a different SMTP-service if signing is required.";
+			$message = __('Services like MandrillApp or SparkPostMail will break S/MIME signing. Please use a different SMTP-service if signing is required.', 'wpes');
 			echo "<div class='$class'><p>$message</p></div>";
 		}
 
@@ -607,11 +610,11 @@ class WP_Email_Essentials
 			self::set_config($rawset);
 			if (self::get_smime_identity($from)) {
 				$class = "error";
-				$message = "There is no certificate for the default sender address <code>$from</code>. The required certificate is supplied with this plugin. Please copy it to the correct folder.";
+				$message = sprintf(__('There is no certificate for the default sender address <code>%s</code>. The required certificate is supplied with this plugin. Please copy it to the correct folder.', 'wpes'), $from);
 				echo "<div class='$class'><p>$message</p></div>";
 			} else {
 				$class = "error";
-				$message = "There is no certificate for the default sender address <code>$from</code>. Start: <a href='https://www.comodo.com/home/email-security/free-email-certificate.php' target='_blank'>here</a>.";
+				$message = sprintf(__('There is no certificate for the default sender address <code>%s</code>. Start: <a href="https://www.comodo.com/home/email-security/free-email-certificate.php" target="_blank">here</a>.', 'wpes'), $from);
 				echo "<div class='$class'><p>$message</p></div>";
 			}
 
@@ -734,12 +737,17 @@ class WP_Email_Essentials
 	public static function mail_subject_database($lookup)
 	{
 		$blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
+		$new_user = '[%s] New User Registration';
+		$lost_pass = '[%s] Password Lost/Changed';
+
 		$keys = array(
-			// wp
-			sprintf(__('[%s] New User Registration'), $blogname) => 'new_user_registration_admin_email',
-			sprintf(__('[%s] Password Lost/Changed'), $blogname) => 'password_lost_changed_email',
+			// wp, do NOT use own text-domain here, this construction is here because these are WP translated strings
+			sprintf(__($new_user), $blogname) => 'new_user_registration_admin_email',
+			sprintf(__($lost_pass), $blogname) => 'password_lost_changed_email',
 		);
+
 		$key = @$keys[$lookup];
+
 		if ($key)
 			return $key;
 
@@ -788,6 +796,7 @@ class WP_Email_Essentials
 
 	public static function maybe_inject_admin_settings()
 	{
+		$host = parse_url( get_bloginfo('url'), PHP_URL_HOST );
 		if (basename($_SERVER['PHP_SELF']) == 'options-general.php' && !@$_GET['page']) {
 			?>
 			<script>
@@ -797,25 +806,84 @@ class WP_Email_Essentials
 		}
 
 		$config = self::get_config();
-		if ($config['make_from_valid']) {
+		switch ($config['make_from_valid']) {
+			case 'noreply':
+				$text = sprintf(__('But <strong>please do not worry</strong>! <a href="%s" target="_blank">WP-Email-Essentials</a> will set <em class="noreply">noreply@%s</em> as sender and set <em>this email address</em> as Reply-To header.', 'wpes'), admin_url('tools.php') .'?page=wp-email-essentials', $host);
+				break;
+			case '-at-':
+				$text = sprintf(__('But <strong>please do not worry</strong>! <a href="%s" target="_blank">WP-Email-Essentials</a> will set <em class="at-">example-email-at-youtserver-dot-com</em> as sender and set <em>this address</em> as Reply-To header.', 'wpes'), admin_url('tools.php') .'?page=wp-email-essentials');
+				break;
+			default:
+				$text = sprintf(__('You can fix this here, or you can let <a href="%s" target="_blank">WP-Email-Essentials</a> fix this automatically upon sending the email.', 'wpes'), admin_url('tools.php') .'?page=wp-email-essentials');
+				break;
+		}
+
+		if (basename($_SERVER['PHP_SELF']) == 'admin.php' && @$_GET['page'] == 'wpcf7') {
 			?><script>
-				jQuery(document).ready(function(){
-					if (jQuery("#wpcf7-mail-sender").length > 0 && jQuery("#wpcf7-mail-sender").siblings('span.config-error').length > 0) {
-						jQuery("#wpcf7-mail-sender").siblings('span.config-error').html(
-							jQuery("#wpcf7-mail-sender").siblings('span.config-error').html() + '<br />' + <?php print json_encode(sprintf('But <strong>please do not worry</strong>! <a href="%s" target="_blank">WP-Email-Essentials</a> will automatically fix this upon sending the email.', admin_url('tools.php') .'?page=wp-email-essentials')); ?>
-						);
+			jQuery(document).ready(function(){
+				var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
+				if (i.length > 0) {
+					var t = <?php print json_encode($text); ?>,
+				  	  e = i.siblings('.config-error');
+
+					if ( e.length > 0) {
+						if (e.is('ul')) {
+							e.append('<li class="wpes-err-add">' + t + '</li>');
+						}
+						else {
+							e.html( e.html() + '<br /><span class="wpes-err-add">' + t + '</span>');
+						}
 					}
-					if (jQuery("#wpcf7-mail-sender").length > 0 && jQuery("#wpcf7-mail-sender").siblings('ul.config-error').length > 0) {
-						jQuery("#wpcf7-mail-sender").siblings('ul.config-error').append('<li>' + <?php print json_encode(sprintf('But <strong>please do not worry</strong>! <a href="%s" target="_blank">WP-Email-Essentials</a> will automatically fix this upon sending the email.', admin_url('tools.php') .'?page=wp-email-essentials')); ?> + '</li>');
+				}
+
+				var atdottify = function( rfc ) {
+					var email = getEmail(rfc);
+					var newemail = email.replace('@', '-at-').replace(/\./g, '-dot-') + '@' + document.location.host;
+					return rfc.replace(email, newemail)	;
+				}
+
+				var noreplyify = function( rfc ) {
+					var email = getEmail(rfc);
+					var newemail = 'noreply' + '@' + document.location.host;
+					return rfc.replace(email, newemail)	;
+				}
+
+				var getEmail = function( rfc ) {
+					rfc = rfc.split('<');
+					if (rfc.length < 2) {
+						rfc.unshift('');
 					}
-				});
-			</script><?php
+					rfc = rfc[1].split('>');
+					return rfc[0];
+				}
+
+				i.bind('keyup', function() {
+					var e = jQuery(this).siblings('.config-error'), v = jQuery(this).val();
+					e.find('.wpes-err-add').find('em.noreply:nth(0)').text(noreplyify(v));
+					e.find('.wpes-err-add').find('em.at-:nth(0)').text(atdottify(v));
+					e.find('.wpes-err-add').find('em:nth(1)').text(v);
+				}).trigger('keyup');
+
+				jQuery(".wpes-err-add em").addClass('quote');
+			});
+		</script>
+		<style>
+			.wpes-err-add {
+
+			}
+			.wpes-err-add em {
+				font-style: inherit;
+			}
+			.wpes-err-add em.quote {
+				background: lightgray;
+				font-family: monospace;
+				font-weight: bold;
+			}
+		</style><?php
 		}
 	}
 }
 
 $wp_email_essentials = new WP_Email_Essentials();
 add_action('admin_notices', array($wp_email_essentials, 'adminNotices'));
-
-
 add_filter('wp_mail', array('WP_Email_Essentials', 'alternative_to'));

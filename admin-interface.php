@@ -14,12 +14,12 @@
 		<table>
 			<tr>
 				<td colspan="2">
-					<input type="checkbox" name="settings[smtp-enabled]" value="1" <?php print $c['smtp'] ? 'checked="checked" ': ''; ?>id="smtp-enabled" /><label for="smtp-enabled">Enable sending mail over SMTP?</label>
+					<input type="checkbox" name="settings[smtp-enabled]" value="1" <?php print $c['smtp'] ? 'checked="checked" ': ''; ?>id="smtp-enabled" /><label for="smtp-enabled"><?php _e('Enable sending mail over SMTP?', 'wpes'); ?></label>
 				</td>
 			</tr>
 			<tr>
 				<td>
-					<label for="smtp-hostname">Hostname or -ip</label>
+					<label for="smtp-hostname"><?php _e('Hostname or -ip', 'wpes'); ?></label>
 				</td>
 				<td>
 					<input type="text" name="settings[host]" value="<?php print $c['smtp']['host']; ?>" id="smtp-hostname" />
@@ -27,7 +27,7 @@
 			</tr>
 			<tr>
 				<td>
-					<label for="smtp-username">Username</label>
+					<label for="smtp-username"><?php _e('Username', 'wpes'); ?></label>
 				</td>
 				<td>
 					<input type="text" name="settings[username]" value="<?php print $c['smtp']['username']; ?>" id="smtp-username" />
@@ -35,7 +35,7 @@
 			</tr>
 			<tr>
 				<td>
-					<label for="smtp-password">Password</label>
+					<label for="smtp-password"><?php _e('Password', 'wpes'); ?></label>
 				</td>
 				<td>
 					<input type="password" name="settings[password]" value="<?php print str_repeat( '*', strlen( $c['smtp']['password'] ) ); ?>" id="smtp-password" />
@@ -43,11 +43,11 @@
 			</tr>
 			<tr>
 				<td>
-					<label for="smtp-secure">Secure?</label>
+					<label for="smtp-secure"><?php _e('Secure?', 'wpes'); ?></label>
 				</td>
 				<td>
 					<select name="settings[secure]" id="smtp-secure">
-						<option value="">No</option>
+						<option value=""><?php _e('No', 'wpes'); ?></option>
 						<option value="ssl" <?php if ( 'ssl' == $c['smtp']['secure'] ) print 'selected="selected"'; ?>>SSL</option>
 						<option value="tls" <?php if ( 'tls' == $c['smtp']['secure'] ) print 'selected="selected"'; ?>>StartTLS</option>
 					</select>
@@ -55,12 +55,12 @@
 			</tr>
 			<tr>
 				<td colspan="2">
-					<input type="checkbox" name="settings[SingleTo]" value="1" <?php print $c['SingleTo'] ? 'checked="checked" ': ''; ?>id="smtp-singleto" /><label for="smtp-singleto">Split mail with more than one Recepient into separate mails?</label>
+					<input type="checkbox" name="settings[SingleTo]" value="1" <?php print $c['SingleTo'] ? 'checked="checked" ': ''; ?>id="smtp-singleto" /><label for="smtp-singleto"><?php _e('Split mail with more than one Recepient into separate mails?', 'wpes'); ?></label>
 				</td>
 			</tr>
 			<tr>
 				<td>
-					<label for="from-name">Default from name</label>
+					<label for="from-name"><?php _e('Default from name', 'wpes'); ?></label>
 				</td>
 				<td>
 					<input type="text" name="settings[from_name]" value="<?php print esc_attr( $c['from_name'] ); ?>" id="from-name" />
@@ -68,7 +68,7 @@
 			</tr>
 			<tr>
 				<td>
-					<label for="from-email">Default from e-mail</label>
+					<label for="from-email"><?php _e('Default from e-mail', 'wpes'); ?></label>
 				</td>
 				<td>
 					<input type="text" name="settings[from_email]" value="<?php print esc_attr( $c['from_email'] ); ?>" id="from-email" />
@@ -76,41 +76,41 @@
 			</tr>
 			<tr>
 				<td>
-					<label for="make_from_valid">Fix sender-address?</label>
+					<label for="make_from_valid"><?php _e('Fix sender-address?', 'wpes'); ?></label>
 				</td>
 				<td>
-					E-mails sent as different domain will probably be marked as spam. Fix the sender-address to always match the sending domain and send original From address as Reply-To: header?
+					<?php _e('E-mails sent as different domain will probably be marked as spam. Fix the sender-address to always match the sending domain and send original From address as Reply-To: header?', 'wpes'); ?>
 					<select name="settings[make_from_valid]" id="make_from_valid">
-						<option value="">No, send with possibly-invalid sender as is. (might cause your mails to be marked as spam!)</option>
-						<option value="-at-" <?php if ( '-at-' == $c['make_from_valid'] ) print 'selected="selected"'; ?>>Rewrite email@addre.ss to email-at-addre-dot-ss@<?php print parse_url(get_bloginfo('url'), PHP_URL_HOST); ?></option>
-						<option value="noreply" <?php if ( 'noreply' == $c['make_from_valid'] ) print 'selected="selected"'; ?>>Rewrite email@addre.ss to noreply@<?php print parse_url(get_bloginfo('url'), PHP_URL_HOST); ?></option>
+						<option value=""><?php _e('No, send with possibly-invalid sender as is. (might cause your mails to be marked as spam!)', 'wpes'); ?></option>
+						<option value="-at-" <?php if ( '-at-' == $c['make_from_valid'] ) print 'selected="selected"'; ?>><?php print sprintf(__('Rewrite email@addre.ss to email-at-addre-dot-ss@%s', 'wpes'), parse_url(get_bloginfo('url'), PHP_URL_HOST)); ?></option>
+						<option value="noreply" <?php if ( 'noreply' == $c['make_from_valid'] ) print 'selected="selected"'; ?>><?php print sprintf(__('Rewrite email@addre.ss to noreply@%s', 'wpes'), parse_url(get_bloginfo('url'), PHP_URL_HOST)); ?></option>
 					</select>
 				</td>
 			</tr>
 			<tr>
 				<td colspan="2">
-					<input type="checkbox" name="settings[is_html]" value="1" <?php print $c['is_html'] ? 'checked="checked" ': ''; ?>id="smtp-is_html" /><label for="smtp-is_html">Send as HTML? (Will convert non-html body to html-ish body)</label>
+					<input type="checkbox" name="settings[is_html]" value="1" <?php print $c['is_html'] ? 'checked="checked" ': ''; ?>id="smtp-is_html" /><label for="smtp-is_html"><?php _e('Send as HTML? (Will convert non-html body to html-ish body)', 'wpes'); ?></label>
 				</td>
 			</tr>
 			<tr>
 				<td colspan="2">
-					<input type="checkbox" name="settings[css_inliner]" value="1" <?php print $c['css_inliner'] ? 'checked="checked" ': ''; ?>id="smtp-css_inliner" /><label for="smtp-css_inliner">Convert CSS to Inline Styles (for Outlook Online, Yahoo Mail, Google Mail, Hotmail)</label>
+					<input type="checkbox" name="settings[css_inliner]" value="1" <?php print $c['css_inliner'] ? 'checked="checked" ': ''; ?>id="smtp-css_inliner" /><label for="smtp-css_inliner"><?php _e('Convert CSS to Inline Styles (for Outlook Online, Yahoo Mail, Google Mail, Hotmail)', 'wpes'); ?></label>
 				</td>
 			</tr>
 			<tr>
 				<td colspan="2">
-					<input type="checkbox" name="settings[alt_body]" value="1" <?php print $c['alt_body'] ? 'checked="checked" ': ''; ?>id="smtp-alt_body" /><label for="smtp-alt_body">Derive plain-text alternative? (Will derive text-ish body from html body as AltBody)</label>
+					<input type="checkbox" name="settings[alt_body]" value="1" <?php print $c['alt_body'] ? 'checked="checked" ': ''; ?>id="smtp-alt_body" /><label for="smtp-alt_body"><?php _e('Derive plain-text alternative? (Will derive text-ish body from html body as AltBody)', 'wpes'); ?></label>
 				</td>
 			</tr>
 			<?php if (function_exists('openssl_pkcs7_sign')) { ?>
 			<tr>
 				<td colspan="2">
-					<input type="checkbox" name="settings[enable_smime]" value="1" <?php print $c['enable_smime'] ? 'checked="checked" ': ''; ?>id="enable-smime" /><label for="enable-smime">Sign emails with S/MIME certificate</label>
+					<input type="checkbox" name="settings[enable_smime]" value="1" <?php print $c['enable_smime'] ? 'checked="checked" ': ''; ?>id="enable-smime" /><label for="enable-smime"><?php _e('Sign emails with S/MIME certificate', 'wpes'); ?></label>
 				</td>
 			</tr>
 			<tr>
 				<td>
-					<label for="certfolder">S/MIME Certificate/Private-Key path</label>
+					<label for="certfolder"><?php _e('S/MIME Certificate/Private-Key path', 'wpes'); ?></label>
 				</td>
 				<td>
 					<input type="text" name="settings[certfolder]" value="<?php print esc_attr($c['certfolder']); ?>" id="certfolder" />
@@ -118,9 +118,9 @@
 			</tr>
 			<tr>
 				<td colspan="2">
-					<strong>It is highly advised to pick a folder path <u>outside</u> your website, for example: <code><?php print dirname(ABSPATH); ?>/.smime/</code> to prevent stealing your identity </strong><br />
-					You can also type a relative path (any path not starting with a / is a relative path), this will be evaluated against ABSPATH (the root of your wordpress).<br />
-					naming convention: certificate: <code>email@addre.ss.crt</code>, private key: <code>email@addre.ss.key</code>, (optional) passphrase: <code>email@addre.ss.pass</code>.
+					<strong><?php print sprintf(__('It is highly advised to pick a folder path <u>outside</u> your website, for example: <code>%s/.smime/</code> to prevent stealing your identity.', 'wpes'), dirname(ABSPATH)); ?></strong><br />
+					<?php _e('You can also type a relative path (any path not starting with a / is a relative path), this will be evaluated against ABSPATH (the root of your wordpress).', 'wpes'); ?><br />
+					<?php _e('The naming convention is: certificate: <code>email@addre.ss.crt</code>, private key: <code>email@addre.ss.key</code>, (optional) passphrase: <code>email@addre.ss.pass</code>.', 'wpes'); ?>
 				</td>
 			</tr>
 			<?php if (isset($c['certfolder'])) {
@@ -134,14 +134,18 @@
 					else {
 							?><tr>
 				<td colspan="2" style="color:red;">
-					<strong>Set folder <code><?php print $c['certfolder']; ?></code> not found. <?php if ($certificate_folder !== $c['certfolder']) { ?>Expanded path: <code><?php print $certificate_folder; ?></code><?php } ?> Evaluated path: <code><?php print realpath($certificate_folder); ?></code>
+					<strong><?php print sprintf(__('Set folder <code>%s</code> not found.', 'wpes'), $c['certfolder']);
+												if ($certificate_folder !== $c['certfolder']) {
+													print ' ' . sprintf(__('Expanded path: <code>%s</code>', 'wpes'), $certificate_folder);
+												}
+												print ' ' . sprintf(__('Evaluated path: <code>%s</code>', 'wpes'), realpath($certificate_folder)); ?>
 				</td>
 			</tr><?php
 					}
 					if ($ids) {
 						?><tr>
 				<td colspan="2">
-					Found S/MIME identities for the following senders: <code><?php print implode('</code>, <code>', $ids); ?></code>
+					<?php print sprintf(__('Found S/MIME identities for the following senders: <code>%s</code>', 'wpes'), implode('</code>, <code>', $ids)); ?>
 				</td>
 			</tr><?php
 					}
@@ -155,19 +159,19 @@
 			<?php }?>
 			<tr>
 				<td colspan="2">
-					<input type="submit" name="op" value="Save settings" class="button-primary action" />
-					<!-- input type="submit" name="op" value="Print debug output of sample mail" class="button-secondary action" / -->
-					<input type="submit" name="op" value="Send sample mail" class="button-secondary action" />
-					<em>Sample mail will be sent to the <a href="<?php print admin_url('options-general.php'); ?>">Site Administrator</a>; <b><?php print get_option( 'admin_email', false ); ?></b>.</em>
+					<input type="submit" name="op" value="<?php print esc_attr__('Save settings', 'wpes'); ?>" class="button-primary action" />
+					<!-- input type="submit" name="op" value="<?php print esc_attr__('Print debug output of sample mail', 'wpes'); ?>" class="button-secondary action" / -->
+					<input type="submit" name="op" value="<?php print esc_attr__('Send sample mail', 'wpes'); ?>" class="button-secondary action" />
+					<em><?php print sprintf(__('Sample mail will be sent to the <a href="%s">Site Administrator</a>; <b>%s</b>.', 'wpes'), admin_url('options-general.php'), get_option( 'admin_email', false )); ?></em>
 				</td>
 			</tr>
 			<tr>
 				<td colspan="2">
-					<b>Filters</b><br />
-					DEFAULTS can be overruled with WordPress filter <code>wpes_defaults</code>, parameters: <code>Array $defaults</code><br />
-					SETTINGS can be overruled with WordPress filter <code>wpes_settings</code>, parameters: <code>Array $settings</code><br />
-					Email HEAD can be overruled with WordPress filter <code>wpes_head</code>, parameters: <code>String $head_content</code>, <code>PHPMailer $mailer</code><br />
-					Email BODY can be overruled with WordPress filter <code>wpes_body</code>, parameters: <code>String $body_content</code>, <code>PHPMailer $mailer</code><br />
+					<b><?php _e('Filters', 'wpes'); ?></b><br />
+					<?php _e('DEFAULTS can be overruled with WordPress filter <code>wpes_defaults</code>, parameters: <code>Array $defaults</code>', 'wpes'); ?><br />
+					<?php _e('SETTINGS can be overruled with WordPress filter <code>wpes_settings</code>, parameters: <code>Array $settings</code>', 'wpes'); ?><br />
+					<?php _e('Email HEAD can be overruled with WordPress filter <code>wpes_head</code>, parameters: <code>String $head_content</code>, <code>PHPMailer $mailer</code>', 'wpes'); ?><br />
+					<?php _e('Email BODY can be overruled with WordPress filter <code>wpes_body</code>, parameters: <code>String $body_content</code>, <code>PHPMailer $mailer</code>', 'wpes'); ?><br />
 				</td>
 			</tr>
 			<tr>
@@ -183,28 +187,16 @@
 		$mailer = new PHPMailer;
 		$config = WP_Email_Essentials::get_config();
 		$css = apply_filters_ref_array( 'wpes_css', array('', &$mailer ));
-		$subject = 'Sample email subject';
+		$subject = __('Sample email subject', 'wpes');
 		$body = WP_Email_Essentials::dummy_content();
 	?>
 	<tr>
-		<td>If HTML enabled: You can use WordPress filters to augment the HEAD and BODY sections of the HTML e-mail. To add information to the HEAD (or change the title) hook to filter wpes_head. For the body, hook to wpes_body</td>
+		<td><?php _e('If HTML enabled: You can use WordPress filters to augment the HEAD and BODY sections of the HTML e-mail. To add information to the HEAD (or change the title) hook to filter wpes_head. For the body, hook to wpes_body', 'wpes'); ?></td>
 	</tr>
 	<tr>
-		<th>Example Email (actual HTML) - with your filters applied</th>
+		<th><?php _e('Example Email (actual HTML) - with your filters applied', 'wpes'); ?></th>
 	</tr>
 	<tr>
 		<td><iframe style="width: 100%; min-width: 700px; height: auto; min-height: 600px;" src="<?php print add_query_arg("iframe","content"); ?>"></iframe></td>
 	</tr>
-	<!-- tr>
-		<th>Example HEAD - with your filters applied</th>
-	</tr>
-	<tr>
-		<td><?php print htmlspecialchars('<head>'. apply_filters_ref_array( 'wpes_head', array('<title>'. $subject .'</title>', &$mailer )) . '</head>'); ?></td>
-	</tr>
-	<tr>
-		<th>Example BODY (raw HTML) - with your filters applied</th>
-	</tr>
-	<tr>
-		<td><?php print htmlspecialchars('<body>'. apply_filters_ref_array( 'wpes_body', array($body, &$mailer )) .'</body>'); ?></td>
-	</tr -->
 </table>

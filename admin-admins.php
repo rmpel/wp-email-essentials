@@ -8,15 +8,15 @@
 	<div class="icon32 icon32-posts-group" id="icon-edit">
 		<br />
 	</div>
-	<h2>WP-Email-Essentials - Alternative Admins</h2>
+	<h2>WP-Email-Essentials - <?php _e('Alternative Admins', 'wpes'); ?></h2>
 	<?php if ( WP_Email_Essentials::$message ) { print '<div class="updated"><p>'. WP_Email_Essentials::$message .'</p></div>'; } ?>
 	<?php if ( WP_Email_Essentials::$error ) { print '<div class="error"><p>'. WP_Email_Essentials::$error .'</p></div>'; } ?>
 	<form id="outpost" method='POST' action="">
 		<input type="hidden" name="form_id" value="wpes-admins" />
 		<table>
 			<thead>
-				<th>Mail Key</th>
-				<th>Send to</th>
+				<th><?php _e('Mail Key', 'wpes'); ?></th>
+				<th><?php _e('Send to', 'wpes'); ?></th>
 			</thead>
 			<tbody>
 				<?php foreach ($keys as $key) { ?>
@@ -31,8 +31,8 @@
 				<?php } ?>
 
 			<tr class="header">
-				<th>RegExp matched against subject</th>
-				<th>Send to</th>
+				<th><?php _e('RegExp matched against subject', 'wpes'); ?></th>
+				<th><?php _e('Send to', 'wpes'); ?></th>
 			</tr>
 				<?php $i = 0; $exps = get_option('mail_key_list', array()); foreach ($exps as $regexp => $key) { ?>
 			<tr>
@@ -56,11 +56,11 @@
 				<?php } ?>
 			<tr>
 				<td colspan="2">
-					<input type="submit" name="op" value="Save settings" class="button-primary action" />
+					<input type="submit" name="op" value="<?php print esc_attr__('Save settings', 'wpes'); ?>" class="button-primary action" />
 				</td>
 			</tr>
 			<tr class="header">
-				<th>Unmatched subjects</th>
+				<th><?php _e('Unmatched subjects', 'wpes'); ?></th>
 			</tr>
 				<?php
 				$fails = get_option('mail_key_fails', array());
