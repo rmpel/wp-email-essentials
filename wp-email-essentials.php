@@ -5,7 +5,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 1.8.0
+Version: 1.8.1
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -103,15 +103,15 @@ class WP_Email_Essentials
 
 		if (!array_key_exists('from', $header_index))
 			$header_index['from'] = count($header_index);
-		$wp_mail['headers'][$header_index['from']] = 'From:"' . self::wp_mail_from_name() . '" <' . self::wp_mail_from() . '>';
+		$wp_mail['headers'][$header_index['from']] = 'From: "' . self::wp_mail_from_name() . '" <' . self::wp_mail_from() . '>';
 
 		if ($config['make_from_valid']) {
 			self::wp_mail_from(self::a_valid_from(self::wp_mail_from(), $config['make_from_valid']));
-			$wp_mail['headers'][$header_index['from']] = 'From:"' . self::wp_mail_from_name() . '" <' . self::a_valid_from(self::wp_mail_from(), $config['make_from_valid']) . '>';
+			$wp_mail['headers'][$header_index['from']] = 'From: "' . self::wp_mail_from_name() . '" <' . self::a_valid_from(self::wp_mail_from(), $config['make_from_valid']) . '>';
 
 			if (!array_key_exists('reply-to', $header_index))
 				$header_index['reply-to'] = count($header_index);
-			$wp_mail['headers'][$header_index['reply-to']] = 'Reply-To:"' . self::wp_mail_from_name() . '" <' . self::wp_mail_from() . '>';
+			$wp_mail['headers'][$header_index['reply-to']] = 'Reply-To: "' . self::wp_mail_from_name() . '" <' . self::wp_mail_from() . '>';
 		}
 
 		return $wp_mail;
@@ -120,6 +120,8 @@ class WP_Email_Essentials
 	public static function a_valid_from($invalid_from, $method) {
 		$url = get_bloginfo('url');
 		$host = parse_url($url, PHP_URL_HOST);
+		$host = preg_replace('/^www[0-9]*\./', '', $host);
+
 		if ( !preg_match( '/@'. $host .'$/', $invalid_from) ) {
 			switch ($method) {
 				case '-at-':
@@ -130,6 +132,7 @@ class WP_Email_Essentials
 					return $invalid_from;
 			}
 		}
+		return $invalid_from;
 	}
 
 	public static function action_phpmailer_init(&$mailer)
