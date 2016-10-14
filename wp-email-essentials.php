@@ -55,9 +55,11 @@ class WP_Email_Essentials
 
 		// set default from email and from name
 		if ($config['from_email']) {
+			// print "WPES FromMail: ". $config['from_email'] ."\n";
 			add_filter('wp_mail_from', array('WP_Email_Essentials', 'filter_wp_mail_from'), 9999);
 		}
 		if ($config['from_name']) {
+			// print "WPES FromName: ". $config['from_name'] ."\n";
 			add_filter('wp_mail_from_name', array('WP_Email_Essentials', 'filter_wp_mail_from_name'), 9999);
 		}
 
@@ -99,6 +101,7 @@ class WP_Email_Essentials
 	public static function action_wp_mail($wp_mail)
 	{
 		$config = self::get_config();
+		// print "WPES ". __LINE__ ."set" ."\n";
 		self::wp_mail_from($config['from_email']);
 		self::wp_mail_from_name($config['from_name']);
 
@@ -110,6 +113,8 @@ class WP_Email_Essentials
 		if (!is_array($wp_mail['headers'])) {
 			$wp_mail['headers'] = array();
 		}
+		// print "WPES ". __LINE__ ."raw headers" ."\n";
+		// var_dump($wp_mail['headers']);
 
 		$header_index = array();
 		foreach ($wp_mail['headers'] as $i => $header) {
@@ -119,25 +124,47 @@ class WP_Email_Essentials
 		}
 
 		if ($all_headers['from']) {
+			// print "WPES ". __LINE__ ."headers has FROM: ". $all_headers['from'] ."\n";
 			$from = self::rfc_decode($all_headers['from']);
-			if ($from['email'])
+			// print "WPES ". __LINE__ ."decoded:\n";
+			// var_dumP($from);
+			if ($from['email']) {
+				// print "WPES ". __LINE__ ." set from mail" ."\n";
 				self::wp_mail_from($from['email']);
-			if ($from['name'])
+			}
+			if ($from['name']) {
+				// print "WPES ". __LINE__ ." set from name" ."\n";
 				self::wp_mail_from_name($from['name']);
+			}
 		}
 
 		if (!array_key_exists('from', $header_index))
 			$header_index['from'] = count($header_index);
 		$wp_mail['headers'][$header_index['from']] = 'From: "' . self::wp_mail_from_name() . '" <' . self::wp_mail_from() . '>';
 
-		if ($config['make_from_valid']) {
-			self::wp_mail_from(self::a_valid_from(self::wp_mail_from(), $config['make_from_valid']));
-			$wp_mail['headers'][$header_index['from']] = 'From: "' . self::wp_mail_from_name() . '" <' . self::a_valid_from(self::wp_mail_from(), $config['make_from_valid']) . '>';
+		// print "WPES ". __LINE__ ." headers now:\n";
+		// var_dumP($wp_mail['headers']);
 
-			if (!array_key_exists('reply-to', $header_index))
-				$header_index['reply-to'] = count($header_index);
+		if (!array_key_exists('reply-to', $header_index)) {
+			// print "WPES ". __LINE__ ." Adding REPLY-TO:\n";
+			$header_index['reply-to'] = count($header_index);
 			$wp_mail['headers'][$header_index['reply-to']] = 'Reply-To: "' . self::wp_mail_from_name() . '" <' . self::wp_mail_from() . '>';
 		}
+		else {
+			// print "WPES ". __LINE__ ." Already have REPLY-TO:\n";
+		}
+
+		// print "WPES ". __LINE__ ." headers now:\n";
+		// var_dumP($wp_mail['headers']);
+
+		if ($config['make_from_valid']) {
+			// print "WPES ". __LINE__ ." Validifying FROM:\n";
+			self::wp_mail_from(self::a_valid_from(self::wp_mail_from(), $config['make_from_valid']));
+			$wp_mail['headers'][$header_index['from']] = 'From: "' . self::wp_mail_from_name() . '" <' . self::a_valid_from(self::wp_mail_from(), $config['make_from_valid']) . '>';
+		}
+
+		// print "WPES ". __LINE__ ." headers now:\n";
+		// var_dumP($wp_mail['headers']);
 
 		return $wp_mail;
 	}
@@ -181,6 +208,7 @@ class WP_Email_Essentials
 			}
 		}
 
+		// print "WPES MAILER ". __LINE__ ." set FROM: ". self::wp_mail_from() ."\n";
 		$mailer->Sender = self::wp_mail_from();
 
 		$mailer->Body = WP_Email_Essentials::preserve_weird_url_display($mailer->Body);
@@ -850,7 +878,7 @@ class WP_Email_Essentials
 			?><script>
 			jQuery(document).ready(function(){
 				setTimeout(function(){
-				var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
+					var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
 					if (i.length > 0) {
 						var t = <?php print json_encode($text); ?>,
 					  	  e = i.siblings('.config-error');
@@ -887,11 +915,14 @@ class WP_Email_Essentials
 					return rfc[0];
 				}
 
+				var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
 				i.bind('keyup', function() {
 					var e = jQuery(this).siblings('.config-error'), v = jQuery(this).val();
-					e.find('.wpes-err-add').find('em.noreply:nth(0)').text(noreplyify(v));
-					e.find('.wpes-err-add').find('em.at-:nth(0)').text(atdottify(v));
-					e.find('.wpes-err-add').find('em:nth(1)').text(v);
+					if (e.length) {
+						e.find('.wpes-err-add').find('em.noreply:nth(0)').text(noreplyify(v));
+						e.find('.wpes-err-add').find('em.at-:nth(0)').text(atdottify(v));
+						e.find('.wpes-err-add').find('em:nth(1)').text(v);
+					}
 				}).trigger('keyup');
 
 				jQuery(".wpes-err-add em").addClass('quote');
