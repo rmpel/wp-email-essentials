@@ -5,7 +5,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 1.8.1
+Version: 1.8.2
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -68,8 +68,33 @@ class WP_Email_Essentials
 
 		add_action('admin_footer', array('WP_Email_Essentials', 'maybe_inject_admin_settings'));
 
+		add_filter('cfdb_form_data', array('WP_Email_Essentials', 'correct_cfdb_form_data_ip'));
+
 		self::mail_key_registrations();
 	}
+
+	function correct_cfdb_form_data_ip($cf7) {
+		// CF7 to DB tries variable X_FORWARDED_FOR which is never in use, Apache sets HTTP_X_FORWARDED_FOR
+		// use our own method to get the remote_addr.
+		$cf7->ip = self::server_remote_addr();
+		return $cf7;
+	}
+
+	public static function server_remote_addr($return_htaccess_variable = false)
+  {
+    $possibilities = array(
+      'HTTP_CF_CONNECTING_IP' => 'HTTP:CF-CONNECTING-IP',
+      'HTTP_X_FORWARDED_FOR' => 'HTTP:X-FORWARDED-FOR',
+      'REMOTE_ADDR' => false,
+    );
+    foreach ($possibilities as $option => $htaccess_variable) {
+      if (isset($_SERVER[$option]) && trim($_SERVER[$option])) {
+        $ip = explode(',', $_SERVER[$option]);
+        return $return_htaccess_variable ? $htaccess_variable : end($ip);
+      }
+    }
+    return $_SERVER['REMOTE_ADDR'];
+  }
 
 	public static function action_wp_mail($wp_mail)
 	{
@@ -824,30 +849,32 @@ class WP_Email_Essentials
 		if (basename($_SERVER['PHP_SELF']) == 'admin.php' && @$_GET['page'] == 'wpcf7') {
 			?><script>
 			jQuery(document).ready(function(){
+				setTimeout(function(){
 				var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
-				if (i.length > 0) {
-					var t = <?php print json_encode($text); ?>,
-				  	  e = i.siblings('.config-error');
+					if (i.length > 0) {
+						var t = <?php print json_encode($text); ?>,
+					  	  e = i.siblings('.config-error');
 
-					if ( e.length > 0) {
-						if (e.is('ul')) {
-							e.append('<li class="wpes-err-add">' + t + '</li>');
-						}
-						else {
-							e.html( e.html() + '<br /><span class="wpes-err-add">' + t + '</span>');
+						if ( e.length > 0) {
+							if (e.is('ul')) {
+								e.append('<li class="wpes-err-add">' + t + '</li>');
+							}
+							else {
+								e.html( e.html() + '<br /><span class="wpes-err-add">' + t + '</span>');
+							}
 						}
 					}
-				}
+				}, 1000);
 
 				var atdottify = function( rfc ) {
 					var email = getEmail(rfc);
-					var newemail = email.replace('@', '-at-').replace(/\./g, '-dot-') + '@' + document.location.host;
+					var newemail = email.replace('@', '-at-').replace(/\./g, '-dot-') + '@' + ( (document.location.host).replace(/^www\./, '') );
 					return rfc.replace(email, newemail)	;
 				}
 
 				var noreplyify = function( rfc ) {
 					var email = getEmail(rfc);
-					var newemail = 'noreply' + '@' + document.location.host;
+					var newemail = 'noreply' + '@' + ( (document.location.host).replace(/^www\./, '') );
 					return rfc.replace(email, newemail)	;
 				}
 
