@@ -106,7 +106,15 @@
 					<input type="checkbox" name="settings[alt_body]" value="1" <?php print $c['alt_body'] ? 'checked="checked" ': ''; ?>id="smtp-alt_body" /><label for="smtp-alt_body"><?php _e('Derive plain-text alternative? (Will derive text-ish body from html body as AltBody)', 'wpes'); ?></label>
 				</td>
 			</tr>
-			<?php if (function_exists('openssl_pkcs7_sign')) { ?>
+<!-- 			<tr>
+				<td>
+					<label for="errors-to"><?php _e('Errors-To', 'wpes'); ?></label>
+				</td>
+				<td>
+					<input type="text" name="settings[errors_to]" value="<?php print esc_attr( $c['errors_to'] ); ?>" id="errors-to" />
+				</td>
+			</tr>
+ -->			<?php if (function_exists('openssl_pkcs7_sign')) { ?>
 			<tr>
 				<td colspan="2">
 					<input type="checkbox" name="settings[enable_smime]" value="1" <?php print $c['enable_smime'] ? 'checked="checked" ': ''; ?>id="enable-smime" /><label for="enable-smime"><?php _e('Sign emails with S/MIME certificate', 'wpes'); ?></label>
@@ -180,7 +188,7 @@
 			</tr>
 			<tr>
 				<td colspan="2">
-					<?php print WP_Email_Essentials::$debug; ?>
+					<pre><?php print WP_Email_Essentials::$debug; ?></pre>
 				</td>
 			</tr>
 	</form>

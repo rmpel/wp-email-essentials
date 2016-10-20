@@ -5,7 +5,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 1.8.2
+Version: 1.8.4
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -148,11 +148,30 @@ class WP_Email_Essentials
 		if (!array_key_exists('reply-to', $header_index)) {
 			// print "WPES ". __LINE__ ." Adding REPLY-TO:\n";
 			$header_index['reply-to'] = count($header_index);
-			$wp_mail['headers'][$header_index['reply-to']] = 'Reply-To: "' . self::wp_mail_from_name() . '" <' . self::wp_mail_from() . '>';
+			$wp_mail['headers'][$header_index['reply-to']] = 'Reply-To: ' . self::wp_mail_from_name() . ' <' . self::wp_mail_from() . '>';
 		}
 		else {
 			// print "WPES ". __LINE__ ." Already have REPLY-TO:\n";
 		}
+
+		// if ($config['errors_to']) {
+		// 	if(!array_key_exists('errors-to', $header_index)) {
+		// 		// print "WPES ". __LINE__ ." Adding ERRORS-TO:\n";
+		// 		$header_index['errors-to'] = count($header_index);
+		// 		$wp_mail['headers'][$header_index['errors-to']] = 'Errors-To: '. trim($config['errors_to']);
+		// 	}
+		// 	else {
+		// 		// print "WPES ". __LINE__ ." Already have REPLY-TO:\n";
+		// 	}
+		// 	if (!array_key_exists('Return-Path', $header_index)) {
+		// 		// print "WPES ". __LINE__ ." Adding Return-Path:\n";
+		// 		$header_index['Return-Path'] = count($header_index);
+		// 		$wp_mail['headers'][$header_index['Return-Path']] = 'Return-Path: '. trim($config['errors_to']);
+		// 	}
+		// 	else {
+		// 		// print "WPES ". __LINE__ ." Already have REPLY-TO:\n";
+		// 	}
+		// }
 
 		// print "WPES ". __LINE__ ." headers now:\n";
 		// var_dumP($wp_mail['headers']);
@@ -211,10 +230,10 @@ class WP_Email_Essentials
 		// print "WPES MAILER ". __LINE__ ." set FROM: ". self::wp_mail_from() ."\n";
 		$mailer->Sender = self::wp_mail_from();
 
-		$mailer->Body = WP_Email_Essentials::preserve_weird_url_display($mailer->Body);
+		$mailer->Body = self::preserve_weird_url_display($mailer->Body);
 
 		if ($config['is_html']) {
-			$mailer->Body = WP_Email_Essentials::maybe_convert_to_html($mailer->Body, $mailer->Subject, $mailer);
+			$mailer->Body = self::maybe_convert_to_html($mailer->Body, $mailer->Subject, $mailer);
 			$css = apply_filters_ref_array('wpes_css', array('', &$mailer));
 
 			if ($config['css_inliner']) {
@@ -274,7 +293,7 @@ class WP_Email_Essentials
 		}
 	}
 
-	function preserve_weird_url_display($html)
+	private static function preserve_weird_url_display($html)
 	{
 		if (preg_match('/<(http(s)?:\/\/[^>]+)>/', $html, $m)) {
 			$url = $m[1];
@@ -284,7 +303,7 @@ class WP_Email_Essentials
 	}
 
 
-	function maybe_convert_to_html($might_be_text, $subject, $mailer)
+	private static function maybe_convert_to_html($might_be_text, $subject, $mailer)
 	{
 		$html_preg = '<(br|a|p|body|table|div|span|body|html)';
 		if (preg_match("/$html_preg/", $might_be_text)) {
@@ -347,6 +366,7 @@ class WP_Email_Essentials
 			'alt_body' => false,
 			'css_inliner' => false,
 			'enable_smime' => false,
+			'errors_to' => 'postmaster@clearsite.nl',
 		);
 
 		$defaults = apply_filters('wpes_defaults', $defaults);
@@ -390,6 +410,7 @@ class WP_Email_Essentials
 		$settings['enable_smime'] = $values['enable_smime'];
 		$settings['certfolder'] = $values['certfolder'];
 		$settings['make_from_valid'] = $values['make_from_valid'];
+		$settings['errors_to'] = $values['errors_to'];
 		update_option('wp-email-essentials', $settings);
 	}
 
