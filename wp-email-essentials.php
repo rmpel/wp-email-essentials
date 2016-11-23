@@ -466,7 +466,7 @@ class WP_Email_Essentials
 					break;
 			}
 		}
-		if ($_GET['page'] == 'wp-email-essentials' && $_GET['iframe'] == 'content') {
+		if (@$_GET['page'] == 'wp-email-essentials' && @$_GET['iframe'] == 'content') {
 			require_once ABSPATH . WPINC . '/class-phpmailer.php';
 			$mailer = new PHPMailer;
 			$config = WP_Email_Essentials::get_config();
