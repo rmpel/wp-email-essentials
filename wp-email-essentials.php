@@ -17,7 +17,7 @@ class WP_Email_Essentials
 	static $error;
 	static $debug;
 
-	function WP_Email_Essentials()
+	function __construct()
 	{
 		self::init();
 	}
@@ -279,6 +279,9 @@ class WP_Email_Essentials
 	{
 		if (preg_match('/<(http(s)?:\/\/[^>]+)>/', $html, $m)) {
 			$url = $m[1];
+			if (defined('WPES_CLEAN_LOGIN_RESET_URL') && WPES_CLEAN_LOGIN_RESET_URL === true) {
+				return str_replace('<' . $url . '>', $url, $html);
+			}
 			return str_replace('<' . $url . '>', '[' . $url . ']', $html);
 		}
 		return $html;
