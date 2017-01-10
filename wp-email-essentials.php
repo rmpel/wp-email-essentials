@@ -5,7 +5,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 1.9.0
+Version: 2.0.0
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -55,6 +55,7 @@ class WP_Email_Essentials
 		add_filter('cfdb_form_data', array('WP_Email_Essentials', 'correct_cfdb_form_data_ip'));
 
 		self::mail_key_registrations();
+
 	}
 
 	function correct_cfdb_form_data_ip($cf7) {
@@ -212,6 +213,18 @@ class WP_Email_Essentials
 				$mailer->Password = $config['smtp']['password'];
 				if (isset($config['smtp']['secure']) && $config['smtp']['secure']) {
 					$mailer->SMTPSecure = $config['smtp']['secure'];
+				}
+				else {
+					$mailer->SMTPAutoTLS = false;
+				}
+				if (true === WPES_ALLOW_SSL_SELF_SIGNED) {
+					$mailer->SMTPOptions = array(
+				    'ssl' => array(
+				        'verify_peer' => false,
+				        'verify_peer_name' => false,
+				        'allow_self_signed' => true
+				    )
+					);
 				}
 			}
 		}
@@ -452,7 +465,8 @@ class WP_Email_Essentials
 
 	public static function admin_menu()
 	{
-		add_submenu_page('tools.php', 'WP-Email-Essentials', 'Email-Essentials', 'manage_options', 'wp-email-essentials', array('WP_Email_Essentials', 'admin_interface'));
+		add_menu_page( 'WP-Email-Essentials', 'CLS Email-Essent', 'manage_options', 'wp-email-essentials', array('WP_Email_Essentials', 'admin_interface'), 'dashicons-email-alt' );
+
 		if ($_GET['page'] == 'wp-email-essentials' && $_POST && $_POST['form_id'] == 'wp-email-essentials') {
 			switch ($_POST['op']) {
 				case __('Save settings', 'wpes'):
@@ -508,7 +522,7 @@ class WP_Email_Essentials
 			exit;
 		}
 
-		add_submenu_page('tools.php', 'WP-Email-Essentials - Alternative Admins', 'Alternative admins', 'manage_options', 'wpes-admins', array('WP_Email_Essentials', 'admin_interface_admins'));
+		add_submenu_page('wp-email-essentials', 'WP-Email-Essentials - Alternative Admins', 'Alternative admins', 'manage_options', 'wpes-admins', array('WP_Email_Essentials', 'admin_interface_admins'));
 		if (@$_GET['page'] == 'wpes-admins' && $_POST && @$_POST['form_id'] == 'wpes-admins') {
 			switch ($_POST['op']) {
 				case __('Save settings', 'wpes'):
@@ -982,3 +996,114 @@ class WP_Email_Essentials
 $wp_email_essentials = new WP_Email_Essentials();
 add_action('admin_notices', array($wp_email_essentials, 'adminNotices'));
 add_filter('wp_mail', array('WP_Email_Essentials', 'alternative_to'));
+
+class WP_Email_Essentials_History {
+	public function getInstance() {
+		static $instance;
+		if (!$instance) {
+			$instance = new self();
+		}
+		return $instance;
+	}
+
+	public function __construct() {
+		self::init();
+	}
+
+	private static function last_insert( $set = null ) {
+		static $id;
+		if ($set)
+			$id = $set;
+		return $id;
+	}
+
+	private static function init() {
+		/** mail history */
+		if (get_option('wpes_hist_rev', 0) < 1) {
+			global $wpdb;
+			$wpdb->query("CREATE TABLE `{$wpdb->prefix}wpes_hist` (
+			  `ID` int(11) unsigned NOT NULL AUTO_INCREMENT,
+			  `sender` varchar(256) NOT NULL DEFAULT '',
+			  `recipient` varchar(256) NOT NULL DEFAULT '',
+			  `subject` varchar(256) NOT NULL DEFAULT '',
+			  `headers` text NOT NULL,
+			  `body` text NOT NULL,
+			  `alt_body` text NOT NULL,
+			  `thedatetime` datetime NOT NULL,
+			  `status` int(11) NOT NULL,
+			  `errinfo` text NOT NULL,
+			  `debug` text NOT NULL,
+			  PRIMARY KEY (`ID`),
+			  KEY `sender` (`sender`(255)),
+			  KEY `recipient` (`recipient`(255)),
+			  KEY `subject` (`subject`(255)),
+			  KEY `thedatetime` (`thedatetime`),
+			  KEY `status` (`status`)
+			)");
+			update_option('wpes_hist_rev', 1);
+		}
+
+		add_action('phpmailer_init', array('WP_Email_Essentials_History', 'phpmailer_init'), 10000000000);
+		add_filter('wp_mail', array('WP_Email_Essentials_History', 'wp_mail'), 10000000000);
+		add_action('wp_mail_failed', array('WP_Email_Essentials_History', 'wp_mail_failed'), 10000000000);
+
+		add_action('shutdown', array('WP_Email_Essentials_History', 'shutdown'));
+
+		add_action('admin_menu', array('WP_Email_Essentials_History', 'admin_menu'));
+	}
+
+	public function shutdown() {
+		global $wpdb;
+		$wpdb->query("DELETE FROM `{$wpdb->prefix}wpes_hist` WHERE thedatetime <  NOW() - INTERVAL 1 MONTH");
+	}
+
+	public static function admin_menu() {
+		add_submenu_page('wp-email-essentials', 'WP-Email-Essentials - Email History', 'Email History', 'manage_options', 'wpes-emails', array('WP_Email_Essentials_History', 'admin_interface'));
+	}
+
+	static function admin_interface()
+	{
+		include 'admin-emails.php';
+	}
+
+	public static function phpmailer_init(PHPMailer $phpmailer) {
+		global $wpdb;
+		$data = json_encode($phpmailer, JSON_PRETTY_PRINT);
+		$recipient = implode(',', $phpmailer->getToAddresses());
+		$sender = $phpmailer->Sender ?: $phpmailer->from_name .'<'. $phpmailer->from_email .'>';
+
+		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = 1, alt_body = %s, debug = %s WHERE ID = %d AND subject = %s LIMIT 1", $phpmailer->AltBody, $data, self::last_insert(), $phpmailer->Subject ) );
+	}
+
+	public static function wp_mail($data) {
+		global $wpdb;
+		//  'to', 'subject', 'message', 'headers', 'attachments'
+		extract($data);
+		$from = '';
+		foreach($headers as $header) {
+			if (preg_match('/^From:(.+)$/', $header, $m)) {
+				$from = trim($m[1]);
+			}
+		}
+		$_headers = trim(implode("\n", $headers));
+		$wpdb->query( $wpdb->prepare( "INSERT INTO `{$wpdb->prefix}wpes_hist` (status, sender, recipient, subject, headers, body, thedatetime) VALUES (0, %s, %s, %s, %s, %s, %s);", $from, $to, $subject, $_headers, $message, mysql2date('Y-m-d H:i:s', current_time( 'timestamp' ) ) ) );
+		self::last_insert( $wpdb->insert_id );
+
+		return $data;
+	}
+
+	public static function wp_mail_failed($error) {
+		global $wpdb;
+		$data = $error->get_error_data();
+		$errormsg = $error->get_error_message();
+		if (!$data) {
+			$errormsg = 'Unknown error';
+		}
+		//  'to', 'subject', 'message', 'headers', 'attachments'
+		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = 2, errinfo = CONCAT(%s, errinfo) WHERE ID = %d LIMIT 1",  $errormsg ."\n", self::last_insert() ) );
+	}
+
+
+}
+
+WP_Email_Essentials_History::getInstance();
