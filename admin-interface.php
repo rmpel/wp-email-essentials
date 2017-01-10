@@ -83,11 +83,17 @@
 					<select name="settings[make_from_valid]" id="make_from_valid">
 						<option value=""><?php _e('No, send with possibly-invalid sender as is. (might cause your mails to be marked as spam!)', 'wpes'); ?></option>
 						<option value="-at-" <?php
+
+						$config = WP_Email_Essentials::get_config();
+
 						$host = parse_url(get_bloginfo('url'), PHP_URL_HOST);
 						$host = preg_replace('/^www[0-9]*\./', '', $host);
 
 						if ( '-at-' == $c['make_from_valid'] ) print 'selected="selected"'; ?>><?php print sprintf(__('Rewrite email@addre.ss to email-at-addre-dot-ss@%s', 'wpes'), $host); ?></option>
 						<option value="noreply" <?php if ( 'noreply' == $c['make_from_valid'] ) print 'selected="selected"'; ?>><?php print sprintf(__('Rewrite email@addre.ss to noreply@%s', 'wpes'), $host); ?></option>
+						<?php $defmail = WP_Email_Essentials::wp_mail_from($config['from_email']); if (false !== strpos($defmail, '@' . $host)) { ?>
+						<option value="default" <?php if ( 'default' == $c['make_from_valid'] ) print 'selected="selected"'; ?>><?php print sprintf(__('Rewrite email@addre.ss to %s', 'wpes'), $defmail); ?></option>
+						<?php } ?>
 					</select>
 				</td>
 			</tr>

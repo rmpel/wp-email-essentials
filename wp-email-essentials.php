@@ -5,7 +5,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 1.8.5
+Version: 1.9.0
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -174,11 +174,18 @@ class WP_Email_Essentials
 		$url = get_bloginfo('url');
 		$host = parse_url($url, PHP_URL_HOST);
 		$host = preg_replace('/^www[0-9]*\./', '', $host);
+		$config = self::get_config();
 
 		if ( !preg_match( '/@'. $host .'$/', $invalid_from) ) {
 			switch ($method) {
 				case '-at-':
 					return strtr($invalid_from, array('@' => '-at-', '.' => '-dot-')) . '@'. $host;
+				case 'default':
+					$defmail = WP_Email_Essentials::wp_mail_from($config['from_email']);
+					if (false !== strpos($defmail, '@' . $host)) {
+						return WP_Email_Essentials::wp_mail_from($config['from_email']);
+					}
+					// if test fails, bleed through to noreply, so leave this order in tact!
 				case 'noreply':
 					return 'noreply@'. $host;
 				default:
@@ -449,6 +456,13 @@ class WP_Email_Essentials
 		if ($_GET['page'] == 'wp-email-essentials' && $_POST && $_POST['form_id'] == 'wp-email-essentials') {
 			switch ($_POST['op']) {
 				case __('Save settings', 'wpes'):
+					$config = WP_Email_Essentials::get_config();
+					$host = parse_url(get_bloginfo('url'), PHP_URL_HOST);
+					$host = preg_replace('/^www[0-9]*\./', '', $host);
+					$defmail = WP_Email_Essentials::wp_mail_from($_POST['settings']['from_email']);
+					if (false === strpos($defmail, '@' . $host)) {
+						$_POST['settings']['make_from_valid'] = 'noreply';
+					}
 					self::set_config($_POST['settings']);
 					self::$message = __('Settings saved.', 'wpes');
 					break;
@@ -872,6 +886,9 @@ class WP_Email_Essentials
 			case 'noreply':
 				$text = sprintf(__('But <strong>please do not worry</strong>! <a href="%s" target="_blank">WP-Email-Essentials</a> will set <em class="noreply">noreply@%s</em> as sender and set <em>this email address</em> as Reply-To header.', 'wpes'), admin_url('tools.php') .'?page=wp-email-essentials', $host);
 				break;
+			case 'default':
+				$text = sprintf(__('But <strong>please do not worry</strong>! <a href="%s" target="_blank">WP-Email-Essentials</a> will set <em class="default">%s</em> as sender and set <em>this email address</em> as Reply-To header.', 'wpes'), admin_url('tools.php') .'?page=wp-email-essentials', WP_Email_Essentials::wp_mail_from($config['from_email']));
+				break;
 			case '-at-':
 				$text = sprintf(__('But <strong>please do not worry</strong>! <a href="%s" target="_blank">WP-Email-Essentials</a> will set <em class="at-">example-email-at-youtserver-dot-com</em> as sender and set <em>this address</em> as Reply-To header.', 'wpes'), admin_url('tools.php') .'?page=wp-email-essentials');
 				break;
@@ -912,6 +929,16 @@ class WP_Email_Essentials
 					return rfc.replace(email, newemail)	;
 				}
 
+				var defaultify = function( rfc ) {
+					var host = ( (document.location.host).replace(/^www\./, '') );
+					var email = getEmail(rfc);
+					var newemail = <?php print json_encode(WP_Email_Essentials::wp_mail_from($config['from_email'])); ?>;
+					if ( (new RegExp('@' + host)).test( newemail ))
+						return rfc.replace(email, newemail)	;
+					else
+						return noreplyify( rfc );
+				}
+
 				var getEmail = function( rfc ) {
 					rfc = rfc.split('<');
 					if (rfc.length < 2) {
@@ -925,6 +952,7 @@ class WP_Email_Essentials
 				i.bind('keyup', function() {
 					var e = jQuery(this).siblings('.config-error'), v = jQuery(this).val();
 					if (e.length) {
+						e.find('.wpes-err-add').find('em.default:nth(0)').text(noreplyify(v));
 						e.find('.wpes-err-add').find('em.noreply:nth(0)').text(noreplyify(v));
 						e.find('.wpes-err-add').find('em.at-:nth(0)').text(atdottify(v));
 						e.find('.wpes-err-add').find('em:nth(1)').text(v);
