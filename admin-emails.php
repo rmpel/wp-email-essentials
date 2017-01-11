@@ -1,4 +1,7 @@
 <?php
+	if ( ! current_user_can('manage_options') ) {
+		wp_die(__('Uh uh uh! You didn\'t say the magic word!', 'wpes'));
+	}
 	global $current_user, $wpdb;
 	$c = WP_Email_Essentials::get_config();
 	$ofield = @$_GET['_ofield'] ?: 'ID';
@@ -17,33 +20,37 @@
 <style>
 	#mail-viewer {
 		position: relative;
-		border: 1px solid red;
+		border: 1px solid grey;
 		height: 600px;
+		width: 100%;
+	}
+	#mail-viewer .top-panel {
+		position: relative;
+		height: 30%;
+		overflow: auto;
+		width: 100%;
+		max-width: 100%;
 	}
 	#mail-viewer #mail-index {
 		margin: 0;
 		padding: 0;
 		list-style: none;
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		height: 30%;
-		overflow: auto;
+		display: table;
 	}
 	#mail-viewer #mail-index li {
 		margin: 0;
 		padding: 0;
-		height: 16px;
 		line-height: 16px;
 		cursor: pointer;
+		display: table-row;
 	}
 	#mail-viewer #mail-index li.active {
-		height: 48px;
+
 	}
 	#mail-viewer #mail-index #email-header {
 		background: grey;
 		color: white;
+		font-weight: bold;
 	}
 	#mail-viewer #mail-index li:nth-child(2n+1) {
 		background: #e0e0e0;
@@ -67,7 +74,7 @@
 		left: 0;
 		right: 0;
 		height: 69%;
-		border-top: 1px solid black;
+		border-top: 1px solid grey;
 		overflow: auto;
 	}
 
@@ -76,18 +83,19 @@
 	#mail-viewer #mail-index li .sender,
 	#mail-viewer #mail-index li .subject,
 	#mail-viewer #mail-index li .status{
-		float: left;
 		overflow: hidden;
-		white-space: nowrap;
-		display: inline-block;
+		/*white-space: nowrap;*/
+		display: table-cell;
 		border-right: 1px solid grey;
+		padding: 3px;
+		height: 100%;
 	}
 	#mail-viewer #mail-index li.active .thedatetime,
 	#mail-viewer #mail-index li.active .recipient,
 	#mail-viewer #mail-index li.active .sender,
 	#mail-viewer #mail-index li.active .subject,
 	#mail-viewer #mail-index li.active .status{
-		overflow: auto;
+		overflow-y: auto;
 		white-space: initial;
 	}
 	#mail-viewer #mail-index li .thedatetime {
@@ -130,13 +138,14 @@
 		if ($start > $total) $start = 0;
 		?>
 <div id="mail-viewer">
+	<div class="top-panel">
 	<ul id="mail-index">
 		<li id="email-header">
-			<span class="thedatetime">Date/Time</span>
-			<span class="recipient">Recipient</span>
-			<span class="sender">Sender</span>
-			<span class="subject">Subject</span>
-			<span class="status">?</span>
+			<span class="thedatetime"><?php _e('Date/Time', 'wpes'); ?></span>
+			<span class="recipient"><?php _e('Recipient', 'wpes'); ?></span>
+			<span class="sender"><?php _e('Sender', 'wpes'); ?></span>
+			<span class="subject"><?php _e('Subject', 'wpes'); ?></span>
+			<span class="status"><?php _e('Status', 'wpes'); ?></span>
 		</li>
 		<?php
 			$list = $wpdb->get_results("SELECT subject, sender, thedatetime, recipient, ID, body, alt_body, headers, status, `debug`, errinfo FROM {$wpdb->prefix}wpes_hist ORDER BY $ofield $order LIMIT $start,$limit");
@@ -153,7 +162,7 @@
 					<span class="subject"><?php print esc_html($item->subject); ?>&nbsp;</span>
 					<span class="status"><?php print $stati[$item->status]; ?> <?php print $item->errinfo; ?>&nbsp;</span>
 				</li><?php
-			} ?></ul>
+			} ?></ul></div>
 			<div id="mail-data-viewer">
 				<?php
 			foreach ($list as $item) {

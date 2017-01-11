@@ -1,4 +1,7 @@
 <?php
+	if ( ! current_user_can('manage_options') ) {
+		wp_die(__('Uh uh uh! You didn\'t say the magic word!', 'wpes'));
+	}
 	global $current_user;
 	$c = WP_Email_Essentials::get_config();
 ?>
@@ -48,8 +51,14 @@
 				<td>
 					<select name="settings[secure]" id="smtp-secure">
 						<option value=""><?php _e('No', 'wpes'); ?></option>
+						<option disabled>───────────────────────</option>
+						<option disabled><?php _e('Use encrypted connection', 'wpes'); ?> - <?php _e('strict SSL verify', 'wpes'); ?></option>
 						<option value="ssl" <?php if ( 'ssl' == $c['smtp']['secure'] ) print 'selected="selected"'; ?>>SSL</option>
 						<option value="tls" <?php if ( 'tls' == $c['smtp']['secure'] ) print 'selected="selected"'; ?>>StartTLS</option>
+						<option disabled>───────────────────────</option>
+						<option disabled><?php _e('Use encrypted connection', 'wpes'); ?> - <?php _e('allow self-signed SSL', 'wpes'); ?></option>
+						<option value="ssl-" <?php if ( 'ssl-' == $c['smtp']['secure'] ) print 'selected="selected"'; ?>>SSL</option>
+						<option value="tls-" <?php if ( 'tls-' == $c['smtp']['secure'] ) print 'selected="selected"'; ?>>StartTLS</option>
 					</select>
 				</td>
 			</tr>
@@ -82,6 +91,7 @@
 					<?php _e('E-mails sent as different domain will probably be marked as spam. Fix the sender-address to always match the sending domain and send original From address as Reply-To: header?', 'wpes'); ?>
 					<select name="settings[make_from_valid]" id="make_from_valid">
 						<option value=""><?php _e('No, send with possibly-invalid sender as is. (might cause your mails to be marked as spam!)', 'wpes'); ?></option>
+						<option disabled>────────────────────────────────────────────────────────────</option>
 						<option value="-at-" <?php
 
 						$config = WP_Email_Essentials::get_config();

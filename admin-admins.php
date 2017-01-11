@@ -1,4 +1,7 @@
 <?php
+if ( ! current_user_can('manage_options') ) {
+	wp_die(__('Uh uh uh! You didn\'t say the magic word!', 'wpes'));
+}
 global $current_user;
 $c = get_option('mail_key_admins', array());
 $keys = WP_Email_Essentials::mail_key_database();

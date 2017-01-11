@@ -5,7 +5,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.0.1
+Version: 2.0.2
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -212,12 +212,12 @@ class WP_Email_Essentials
 				$mailer->Username = $config['smtp']['username'];
 				$mailer->Password = $config['smtp']['password'];
 				if (isset($config['smtp']['secure']) && $config['smtp']['secure']) {
-					$mailer->SMTPSecure = $config['smtp']['secure'];
+					$mailer->SMTPSecure = trim($config['smtp']['secure'], '-');
 				}
 				else {
 					$mailer->SMTPAutoTLS = false;
 				}
-				if (true === WPES_ALLOW_SSL_SELF_SIGNED) {
+				if (true === WPES_ALLOW_SSL_SELF_SIGNED || substr($config['smtp']['secure'], -1, 1) == '-') {
 					$mailer->SMTPOptions = array(
 				    'ssl' => array(
 				        'verify_peer' => false,
