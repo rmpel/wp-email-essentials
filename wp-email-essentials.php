@@ -5,7 +5,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.0.3
+Version: 2.0.4
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -459,8 +459,12 @@ class WP_Email_Essentials
 
 	private static function rfc_encode($email_array)
 	{
+		if (!$email_array['name'])
+			return $email_array['email'];
+
 		$email_array['name'] = json_encode($email_array['name']);
-		return sprintf("%s <%s>", $email_array['name'], $email_array['email']);
+		$return = trim(sprintf("%s <%s>", $email_array['name'], $email_array['email']));
+		return $return;
 	}
 
 	public static function admin_menu()
@@ -744,13 +748,27 @@ class WP_Email_Essentials
 	{
 		$admin_email = get_option('admin_email');
 
-		$to = self::rfc_decode($email['to']);
-		if (!$to)
-			$to = array('email' => $email['to']);
+		// make sure we have a list of emails, not a single email
+		if (!is_array($email['to'])) {
+			$email['to'] = array($email['to']);
+		}
 
-		if ($to['email'] != $admin_email) {
+		// find the admin address
+		$found_mail_item_number = -1;
+		foreach ($email['to'] as $i => $email_address) {
+			$decoded = self::rfc_decode($email_address);
+			if ($decoded['email'] == $admin_email) {
+				$found_mail_item_number = $i;
+			}
+		}
+		if ($found_mail_item_number == -1) {
+			// var_dump($email, __LINE__);exit;
 			return $email;
 		}
+
+		// $to is our found admin addressee
+		$to = &$email['to'][ $found_mail_item_number ];
+		$to = self::rfc_decode($to);
 
 		// this message is sent to the system admin
 		// we might want to send this to a different admin
@@ -763,11 +781,13 @@ class WP_Email_Essentials
 					// not rfc, just email, but the original TO has a real name
 					$the_admin['name'] = $to['name'];
 				}
-				$email['to'] = self::rfc_encode($the_admin);
+				$to = self::rfc_encode($the_admin);
+				// var_dump($email, __LINE__);exit;
 				return $email;
 			}
 			// known key, but no email set
 			// we revert to the DEFAULT admin_email, and prevent matching against subjects
+			// var_dump($email, __LINE__);exit;
 			return $email;
 		}
 
@@ -779,7 +799,8 @@ class WP_Email_Essentials
 				// not rfc, just email, but the original TO has a real name
 				$the_admin['name'] = $to['name'];
 			}
-			$email['to'] = self::rfc_encode($the_admin);
+			$to = self::rfc_encode($the_admin);
+			// var_dump($email, __LINE__);exit;
 			return $email;
 		}
 
@@ -793,6 +814,7 @@ class WP_Email_Essentials
 		});
 		update_option('mail_key_fails', array_values($fails));
 
+		// var_dump($email, __LINE__);exit;
 		return $email;
 	}
 
@@ -819,7 +841,7 @@ class WP_Email_Essentials
 		$wp_filters = array('automatic_updates_debug_email', 'auto_core_update_email', 'comment_moderation_recipients', 'comment_notification_recipients');
 
 		// unsupported until added, @see wp_mail_key.patch, matched by subject, @see self::mail_subject_database
-		$unsupported_wp_filters = array('new_user_registration_admin_email', 'password_lost_changed_email');
+		$unsupported_wp_filters = array('new_user_registration_admin_email', 'password_lost_changed_email', 'password_reset_email', 'password_changed_email');
 
 		return array_merge($wp_filters, $unsupported_wp_filters);
 	}
@@ -827,19 +849,34 @@ class WP_Email_Essentials
 	public static function mail_subject_database($lookup)
 	{
 		$blogname = wp_specialchars_decode(get_option('blogname'), ENT_QUOTES);
-		$new_user = '[%s] New User Registration';
-		$lost_pass = '[%s] Password Lost/Changed';
 
+		// FULL TEXT LOOKUP
 		$keys = array(
 			// wp, do NOT use own text-domain here, this construction is here because these are WP translated strings
-			sprintf(__($new_user), $blogname) => 'new_user_registration_admin_email',
-			sprintf(__($lost_pass), $blogname) => 'password_lost_changed_email',
+			sprintf(__('[%s] New User Registration'), $blogname) => 'new_user_registration_admin_email',
+			sprintf(__('[%s] Password Reset'), $blogname) => 'password_reset_email', // wp 4.5 +
+			sprintf(__('[%s] Password Changed'), $blogname) => 'password_changed_email', // wp 4.5 +
+			sprintf(__('[%s] Password Lost/Changed'), $blogname) => 'password_lost_changed_email', // wp < 4.5
 		);
 
 		$key = @$keys[$lookup];
 
 		if ($key)
 			return $key;
+
+		// prepared just in case system fails.
+		// // REGEXP_LOOKUP
+		// $regexp_keys = array(
+		// 	// keys here are modified versions of the original gettext-string.
+		// 	sprintf(__('/\[%1\$s\] Please moderate: ".+"/'), $blogname) => 'comment_moderation_recipients', // pluggable.php:1616
+		// 	sprintf(__('/\[%1\$s\] Comment: ".+"/'), $blogname) => 'comment_notification_recipients', // pluggable.php:1454
+		// );
+
+		// foreach ($regexp_keys as $regexp => $key) {
+		// 	if (preg_match($regexp, $lookup)) {
+		// 		return $key;
+		// 	}
+		// }
 
 		return false;
 	}
@@ -890,7 +927,7 @@ class WP_Email_Essentials
 		if (basename($_SERVER['PHP_SELF']) == 'options-general.php' && !@$_GET['page']) {
 			?>
 			<script>
-				jQuery("#admin_email").after('<p class="description"><?php print sprintf(__('You can configure alternative administrators <a href="%s">here</a>.', 'wpes'), add_query_arg(array('page' => 'wpes-admins'), admin_url('tools.php'))); ?></p>');
+				jQuery("#admin_email").after('<p class="description"><?php print sprintf(__('You can configure alternative administrators <a href="%s">here</a>.', 'wpes'), add_query_arg(array('page' => 'wpes-admins'), admin_url('admin.php'))); ?></p>');
 			</script>
 			<?php
 		}
@@ -998,7 +1035,7 @@ add_action('admin_notices', array($wp_email_essentials, 'adminNotices'));
 add_filter('wp_mail', array('WP_Email_Essentials', 'alternative_to'));
 
 class WP_Email_Essentials_History {
-	public function getInstance() {
+	public static function getInstance() {
 		static $instance;
 		if (!$instance) {
 			$instance = new self();
@@ -1052,7 +1089,7 @@ class WP_Email_Essentials_History {
 		add_action('admin_menu', array('WP_Email_Essentials_History', 'admin_menu'));
 	}
 
-	public function shutdown() {
+	public static function shutdown() {
 		global $wpdb;
 		$wpdb->query("DELETE FROM `{$wpdb->prefix}wpes_hist` WHERE thedatetime <  NOW() - INTERVAL 1 MONTH");
 	}
@@ -1061,7 +1098,7 @@ class WP_Email_Essentials_History {
 		add_submenu_page('wp-email-essentials', 'WP-Email-Essentials - Email History', 'Email History', 'manage_options', 'wpes-emails', array('WP_Email_Essentials_History', 'admin_interface'));
 	}
 
-	static function admin_interface()
+	public static function admin_interface()
 	{
 		include 'admin-emails.php';
 	}
