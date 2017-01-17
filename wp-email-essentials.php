@@ -5,7 +5,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.0.2
+Version: 2.0.3
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -816,7 +816,7 @@ class WP_Email_Essentials
 	public static function mail_key_database()
 	{
 		// supported;
-		$wp_filters = array('automatic_updates_debug_email', 'auto_core_update_email');
+		$wp_filters = array('automatic_updates_debug_email', 'auto_core_update_email', 'comment_moderation_recipients', 'comment_notification_recipients');
 
 		// unsupported until added, @see wp_mail_key.patch, matched by subject, @see self::mail_subject_database
 		$unsupported_wp_filters = array('new_user_registration_admin_email', 'password_lost_changed_email');
