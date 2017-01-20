@@ -5,7 +5,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.0.4
+Version: 2.0.5
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -788,6 +788,8 @@ class WP_Email_Essentials
 			// known key, but no email set
 			// we revert to the DEFAULT admin_email, and prevent matching against subjects
 			// var_dump($email, __LINE__);exit;
+			if (is_array($to) && array_key_exists('email', $to))
+				$to = self::rfc_encode($to);
 			return $email;
 		}
 
@@ -1123,7 +1125,7 @@ class WP_Email_Essentials_History {
 			}
 		}
 		$_headers = trim(implode("\n", $headers));
-		$wpdb->query( $wpdb->prepare( "INSERT INTO `{$wpdb->prefix}wpes_hist` (status, sender, recipient, subject, headers, body, thedatetime) VALUES (0, %s, %s, %s, %s, %s, %s);", $from, $to, $subject, $_headers, $message, mysql2date('Y-m-d H:i:s', current_time( 'timestamp' ) ) ) );
+		$wpdb->query( $wpdb->prepare( "INSERT INTO `{$wpdb->prefix}wpes_hist` (status, sender, recipient, subject, headers, body, thedatetime) VALUES (0, %s, %s, %s, %s, %s, %s);", $from, is_array($to) ? implode(',', $to) : $to, $subject, $_headers, $message, mysql2date('Y-m-d H:i:s', current_time( 'timestamp' ) ) ) );
 		self::last_insert( $wpdb->insert_id );
 
 		return $data;
