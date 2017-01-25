@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.0.8
+Version: 2.0.9
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -202,12 +202,18 @@ class WP_Email_Essentials
 	{
 		/** @var phpMailer $mailer */
 		$config = self::get_config();
+
+		if ($config['smtp']['timeout'])
+			$mailer->Timeout = $config['smtp']['timeout'];
+
 		if ($config['smtp']) {
 			$mailer->IsSMTP();
 			list($host, $port) = explode(':', $config['smtp']['host'] . ':-1');
 			$mailer->Host = $host;
 			if ($port > 0)
 				$mailer->Port = $port;
+			if ($config['smtp']['port'])
+				$mailer->Port = $config['smtp']['port'];
 
 			if (isset($config['smtp']['username'])) {
 				$mailer->SMTPAuth = true;
@@ -402,14 +408,27 @@ class WP_Email_Essentials
 			$settings['smtp'] = array(
 				'secure' => $values['secure'],
 				'host' => $values['host'],
+				'port' => $values['port'],
 				'username' => $values['username'],
 				'password' => ($values['password'] == str_repeat('*', strlen($values['password'])) && $settings['smtp']) ? $settings['smtp']['password'] : $values['password'],
 			);
+
+			if (false !== strpos($settings['smtp']['host'], ':')) {
+				list ($host, $port) = explode(':', $settings['smtp']['host']);
+				if (is_numeric($port)) {
+					$settings['smtp']['port'] = $port;
+					$settings['smtp']['host'] = $host;
+				}
+			}
+
+			if ($settings['smtp']['port'] <= 0)
+				$settings['smtp']['port'] = '';
 		} else {
 			$settings['smtp'] = false;
 		}
 		$settings['from_name'] = $values['from_name'] ?: $settings['from_name'];
 		$settings['from_email'] = $values['from_email'] ?: $settings['from_email'];
+		$settings['timeout'] = $values['timeout'] ? true : false;
 		$settings['is_html'] = $values['is_html'] ? true : false;
 		$settings['css_inliner'] = $values['css_inliner'] ? true : false;
 		$settings['alt_body'] = $values['alt_body'] ? true : false;

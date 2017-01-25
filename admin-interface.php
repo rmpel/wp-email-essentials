@@ -12,9 +12,26 @@
 	<h2>WP-Email-Essentials</h2>
 	<?php if ( WP_Email_Essentials::$message ) { print '<div class="updated"><p>'. WP_Email_Essentials::$message .'</p></div>'; } ?>
 	<?php if ( WP_Email_Essentials::$error ) { print '<div class="error"><p>'. WP_Email_Essentials::$error .'</p></div>'; } ?>
+
+	<?php if (false !== strpos($c['smtp']['host'], ':')) {
+		list ($host,$port) = explode(':', $c['smtp']['host']);
+		if (is_numeric($port)) {
+			$c['smtp']['port'] = $port;
+			$c['smtp']['host'] = $host;
+		}
+	} ?>
+
 	<form id="outpost" method='POST' action="" enctype="multipart/form-data">
 		<input type="hidden" name="form_id" value="wp-email-essentials" />
 		<table>
+			<tr>
+				<td>
+					<label for="timeout"><?php _e('phpMailer Timeout', 'wpes'); ?></label>
+				</td>
+				<td>
+					<input type="text" name="settings[timeout]" value="<?php print $c['timeout']; ?>" id="timeout" placeholder="300" />
+				</td>
+			</tr>
 			<tr>
 				<td colspan="2">
 					<input type="checkbox" name="settings[smtp-enabled]" value="1" <?php print $c['smtp'] ? 'checked="checked" ': ''; ?>id="smtp-enabled" /><label for="smtp-enabled"><?php _e('Enable sending mail over SMTP?', 'wpes'); ?></label>
@@ -26,6 +43,14 @@
 				</td>
 				<td>
 					<input type="text" name="settings[host]" value="<?php print $c['smtp']['host']; ?>" id="smtp-hostname" />
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="smtp-port"><?php _e('SMTP Port', 'wpes'); ?></label>
+				</td>
+				<td>
+					<input type="text" name="settings[port]" value="<?php print $c['smtp']['port']; ?>" id="smtp-port" />
 				</td>
 			</tr>
 			<tr>
