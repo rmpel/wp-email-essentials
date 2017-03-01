@@ -22,7 +22,11 @@ $admin = get_option('admin_email');
 			<th><?php _e('Send to', 'wpes'); ?></th>
 			</thead>
 			<tbody>
-			<?php foreach ($keys as $key) { ?>
+			<?php foreach ($keys as $key) {
+				if (!isset($c[$key])) {
+                    $c[$key] = '';
+                }
+				?>
 				<tr>
 					<td>
 						<label for="key-<?php print $key; ?>"><?php print $key; ?></label>

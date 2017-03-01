@@ -426,17 +426,17 @@ class WP_Email_Essentials
 		} else {
 			$settings['smtp'] = false;
 		}
-		$settings['from_name'] = $values['from_name'] ?: $settings['from_name'];
-		$settings['from_email'] = $values['from_email'] ?: $settings['from_email'];
-		$settings['timeout'] = $values['timeout'] ? true : false;
-		$settings['is_html'] = $values['is_html'] ? true : false;
-		$settings['css_inliner'] = $values['css_inliner'] ? true : false;
-		$settings['alt_body'] = $values['alt_body'] ? true : false;
-		$settings['SingleTo'] = $values['SingleTo'] ? true : false;
-		$settings['enable_smime'] = $values['enable_smime'];
-		$settings['certfolder'] = $values['certfolder'];
-		$settings['make_from_valid'] = $values['make_from_valid'];
-		$settings['errors_to'] = $values['errors_to'];
+		$settings['from_name'] = array_key_exists( 'from_name', $values ) && $values['from_name'] ? $values['from_name'] : $settings['from_name'];
+        $settings['from_email'] = array_key_exists( 'from_email', $values ) && $values['from_email'] ? $values['from_email'] : $settings['from_email'];
+        $settings['timeout'] = array_key_exists( 'timeout', $values ) && $values['timeout'] ? true : false;
+        $settings['is_html'] = array_key_exists( 'is_html', $values ) && $values['is_html'] ? true : false;
+        $settings['css_inliner'] = array_key_exists( 'css_inliner', $values ) && $values['css_inliner'] ? true : false;
+        $settings['alt_body'] = array_key_exists( 'alt_body', $values ) && $values['alt_body'] ? true : false;
+        $settings['SingleTo'] = array_key_exists( 'SingleTo', $values ) && $values['SingleTo'] ? true : false;
+        $settings['enable_smime'] = array_key_exists( 'enable_smime', $values ) && $values['enable_smime'];
+        $settings['certfolder'] = array_key_exists( 'certfolder', $values ) && $values['certfolder'];
+        $settings['make_from_valid'] = array_key_exists( 'make_from_valid', $values ) && $values['make_from_valid'];
+        $settings['errors_to'] = array_key_exists( 'errors_to', $values ) && $values['errors_to'];
 		update_option('wp-email-essentials', $settings);
 	}
 
@@ -492,7 +492,7 @@ class WP_Email_Essentials
 	{
 		add_menu_page('WP-Email-Essentials', 'CLS Email-Essent', 'manage_options', 'wp-email-essentials', array('WP_Email_Essentials', 'admin_interface'), 'dashicons-email-alt');
 
-		if ($_GET['page'] == 'wp-email-essentials' && $_POST && $_POST['form_id'] == 'wp-email-essentials') {
+		if (isset($_GET['page']) && $_GET['page'] == 'wp-email-essentials' && $_POST && isset($_POST['form_id']) && $_POST['form_id'] == 'wp-email-essentials') {
 			switch ($_POST['op']) {
 				case __('Save settings', 'wpes'):
 					$config = WP_Email_Essentials::get_config();
@@ -519,7 +519,7 @@ class WP_Email_Essentials
 					break;
 			}
 		}
-		if (@$_GET['page'] == 'wp-email-essentials' && @$_GET['iframe'] == 'content') {
+		if (isset($_GET['page']) && $_GET['page'] == 'wp-email-essentials' && isset($_GET['iframe']) && $_GET['iframe'] == 'content') {
 			require_once ABSPATH . WPINC . '/class-phpmailer.php';
 			$mailer = new PHPMailer;
 			$config = WP_Email_Essentials::get_config();
@@ -549,7 +549,7 @@ class WP_Email_Essentials
 		}
 
 		add_submenu_page('wp-email-essentials', 'WP-Email-Essentials - Alternative Admins', 'Alternative admins', 'manage_options', 'wpes-admins', array('WP_Email_Essentials', 'admin_interface_admins'));
-		if (@$_GET['page'] == 'wpes-admins' && $_POST && @$_POST['form_id'] == 'wpes-admins') {
+		if (isset($GET['page']) && $_GET['page'] == 'wpes-admins' && $_POST && isset($_POST['form_id']) && $_POST['form_id'] == 'wpes-admins') {
 			switch ($_POST['op']) {
 				case __('Save settings', 'wpes'):
 					$keys = $_POST['settings']['keys'];
@@ -671,7 +671,7 @@ class WP_Email_Essentials
 	function adminNotices()
 	{
 		$config = WP_Email_Essentials::get_config();
-		$onpage = is_admin() && ($_GET['page'] == 'wp-email-essentials');
+		$onpage = is_admin() && isset($_GET['page']) && $_GET['page'] == 'wp-email-essentials';
 
 		$from = $config['from_email'];
 		if (!$from) {
@@ -884,7 +884,7 @@ class WP_Email_Essentials
 			sprintf(__('[%s] Password Lost/Changed'), $blogname) => 'password_lost_changed_email', // wp < 4.5
 		);
 
-		$key = @$keys[$lookup];
+		$key = isset($keys[$lookup]) ? $keys[$lookup] : '';
 
 		if ($key)
 			return $key;
