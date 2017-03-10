@@ -6,11 +6,15 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.0
+Version: 2.1.1
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
 */
+
+if (!class_exists('CIDR')) {
+	require_once __DIR__ . '/lib/class.cidr.php';
+}
 
 class WP_Email_Essentials
 {
@@ -179,7 +183,7 @@ class WP_Email_Essentials
 		$host = preg_replace('/^www[0-9]*\./', '', $host);
 		$config = self::get_config();
 
-		if (!preg_match('/@' . $host . '$/', $invalid_from)) {
+		if (!WP_Email_Essentials::i_am_allowed_to_send_in_name_of($invalid_from)) {
 			switch ($method) {
 				case '-at-':
 					return strtr($invalid_from, array('@' => '-at-', '.' => '-dot-')) . '@' . $host;
@@ -196,6 +200,186 @@ class WP_Email_Essentials
 			}
 		}
 		return $invalid_from;
+	}
+
+	public static function get_domain($email)
+	{
+		if (preg_match('/@(.+)$/', $email, $sending_domain)) {
+			$sending_domain = $sending_domain[1];
+		}
+
+		return $sending_domain;
+	}
+
+	public static function get_spf($email, $fix = false, $as_html = false)
+	{
+		static $lookup;
+		if (!$lookup) $lookup = array();
+
+		$sending_domain = self::get_domain($email);
+		if (!$sending_domain) {
+			return false; // invalid email
+		}
+		$sending_server = self::get_sending_ip();
+
+		if (!isset($lookup[$sending_domain])) {
+			$dns = dns_get_record($sending_domain, DNS_TXT);
+			foreach ($dns as $record) {
+				if (false !== strpos($record['txt'], 'v=spf1')) {
+					$lookup[$sending_domain] = $record['txt'];
+					break;
+				}
+			}
+		}
+
+		if (!isset($lookup[$sending_domain])) {
+			$lookup[$sending_domain] = '';
+		}
+
+		$spf = $lookup[$sending_domain];
+
+		if ($fix) {
+			if (!$spf) {
+				$spf = 'v=spf1 a mx ~all';
+			}
+
+			// insert
+			$spf = explode(' ', str_replace('include:', 'include: ', $spf));
+			$position = false !== array_search('mx', $spf) ? array_search('mx', $spf) + 1 : false;
+			$position = false !== $position ? $position : ( false !== array_search('a', $spf) ? array_search('a', $spf) + 1 : false );
+			$position = false !== $position ? $position : ( false !== array_search('include:', $spf) ? array_search('include:', $spf) - 1 : false );
+			$position = false !== $position ? $position : ( false !== array_search('v=spf1', $spf) ? array_search('v=spf1', $spf) + 1 : false );
+			array_splice($spf, $position, 0, 'include:'. $sending_server);
+			$spf = str_replace('include: ', 'include:', implode(' ', $spf));
+		}
+
+		if ($as_html) {
+			if (!$spf) {
+				$spf = '<span class="error">no spf-record available</span>';
+			}
+			else {
+				$spf = $sending_domain .'. IN TXT '. str_replace('include:'. $sending_server, '<strong>'. 'include:'. $sending_server .'</strong>', $spf);
+			}
+		}
+
+		return $spf;
+	}
+
+	public static function i_am_allowed_to_send_in_name_of($email) {
+		$i_tried_and_failed = get_option('wpes_spf_lookup_failed', 0);
+		if ($i_tried_and_failed && $i_tried_and_failed > time() - 24*60*60) {
+			// we tried and faile dless than a day ago
+			// do not try again
+			return self::this_email_matches_website_domain($email);
+		}
+
+		// try a SPF record
+
+		$sending_domain = array();
+		preg_match('/@(.+)$/', $email, $sending_domain);
+		if (!$sending_domain) {
+			return false; // invalid email
+		}
+		$sending_server = self::get_sending_ip();
+
+		$spf_valid_ips = self::gather_ips_from_spf($sending_domain[1]);
+
+		return in_array($sending_server, $spf_valid_ips);
+	}
+
+	public static function get_sending_ip()
+	{
+		$url = admin_url('admin-ajax.php');
+		$ip = wp_remote_retrieve_body(wp_remote_get($url .'?action=wpes_get_ip'));
+		if (!$ip)
+			$ip = $_SERVER["SERVER_ADDR"];
+		return $ip;
+	}
+
+	public static function gather_ips_from_spf($domain)
+	{
+		static $seen;
+		if (!$seen) $seen = array();
+		if (in_array($domain, $seen)) return array();
+		$seen[] = $domain;
+
+		$dns = dns_get_record ($domain, DNS_TXT);
+		$ips = array();
+		foreach ($dns as $record) {
+			$record['txt'] = strtolower($record['txt']);
+			if (false !== strpos($record['txt'], 'v=spf1')) {
+				$sections = explode(' ', $record['txt']);
+				foreach ($sections as $section) {
+					if ($section == 'a') {
+						$ips[] = gethostbyname($domain);
+					}
+					elseif ($section == 'mx') {
+						$mx = dns_get_record($domain, DNS_MX);
+						foreach ($mx as $mx_record) {
+							$target = $mx_record['target'];
+							try {
+								$new_target = gethostbyname($target);
+							}
+							catch (Exception $e) {
+								$new_target = $target;
+							}
+							$ips[] = $new_target;
+						}
+					}
+					elseif (preg_match('/ip4:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$/', $section, $ip)) {
+						$ips[] = $ip[1];
+					}
+					elseif (preg_match('/ip4:([0-9\.]+\/[0-9]+)$/', $section, $ip_cidr)) {
+						$ips = array_merge($ips, self::expand_ip4_cidr($ip_cidr[1]));
+					}
+					elseif (preg_match('/include:(.+)$/', $section, $include)) {
+						$ips = array_merge($ips, self::gather_ips_from_spf($include[1]));
+					}
+				}
+			}
+		}
+
+		return $ips;
+	}
+
+
+	public static function this_email_matches_website_domain($email)
+	{
+		$url = get_bloginfo('url');
+		$host = parse_url($url, PHP_URL_HOST);
+		$host = preg_replace('/^www[0-9]*\./', '', $host);
+
+		return (preg_match('/@' . $host . '$/', $email));
+	}
+
+	private static function expand_ip4_cidr($ip_cidr)
+	{
+		return self::ip4_range_to_list(CIDR::cidrToRange($ip_cidr));
+	}
+
+	private static function expand_ip4_mask($ip_mask)
+	{
+		list($base, $mask) = explode('/', $ip_mask);
+		return self::expand_ip4_cidr($base . '/' . CIDR::maskToCIDR($mask));
+	}
+
+	private static function ip4_range_to_list($range)
+	{
+		$list = array();
+		$first_ip = ip2long($range[0]);
+		$last_ip = ip2long($range[1]);
+
+		while ($first_ip <= $last_ip) {
+			$real_ip = long2ip($first_ip);
+
+			if (!preg_match('/\.0$/', $real_ip)) { // Don't include IPs that end in .0
+				$list[] = $real_ip;
+			}
+
+			$first_ip++;
+		}
+
+		return $list;
 	}
 
 	public static function action_phpmailer_init(&$mailer)
@@ -1056,11 +1240,19 @@ class WP_Email_Essentials
 			</style><?php
 		}
 	}
+
+	public static function ajax_get_ip()
+	{
+		print $_SERVER["REMOTE_ADDR"];
+		exit;
+	}
 }
 
 $wp_email_essentials = new WP_Email_Essentials();
 add_action('admin_notices', array($wp_email_essentials, 'adminNotices'));
 add_filter('wp_mail', array('WP_Email_Essentials', 'alternative_to'));
+
+add_action('wp_ajax_nopriv_wpes_get_ip', array('WP_Email_Essentials', 'ajax_get_ip'));
 
 class WP_Email_Essentials_History
 {

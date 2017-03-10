@@ -108,6 +108,14 @@
 					<input type="text" name="settings[from_email]" value="<?php print esc_attr( $c['from_email'] ); ?>" id="from-email" />
 				</td>
 			</tr>
+			<?php if (!WP_Email_Essentials::i_am_allowed_to_send_in_name_of($c['from_email'])) { ?>
+			<tr><td></td>
+				<td>SPF Records are checked: you are NOT allowed to send mail with this domain.<br />
+					If you really need to use this sender e-mail address, you need to change the SPF record to include the sending-IP of this server;<br />
+					Old: <code><?php print WP_Email_Essentials::get_spf($c['from_email'], false, true); ?></code><br />
+					New: <code><?php print WP_Email_Essentials::get_spf($c['from_email'], true , true); ?></code>
+				</td>
+			</tr><?php } ?>
 			<tr>
 				<td>
 					<label for="make_from_valid"><?php _e('Fix sender-address?', 'wpes'); ?></label>
