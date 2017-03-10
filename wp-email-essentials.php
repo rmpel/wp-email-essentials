@@ -611,16 +611,16 @@ class WP_Email_Essentials
 			$settings['smtp'] = false;
 		}
 		$settings['from_name'] = array_key_exists( 'from_name', $values ) && $values['from_name'] ? $values['from_name'] : $settings['from_name'];
-        $settings['from_email'] = array_key_exists( 'from_email', $values ) && $values['from_email'] ? $values['from_email'] : $settings['from_email'];
-        $settings['timeout'] = array_key_exists( 'timeout', $values ) && $values['timeout'] ? true : false;
-        $settings['is_html'] = array_key_exists( 'is_html', $values ) && $values['is_html'] ? true : false;
-        $settings['css_inliner'] = array_key_exists( 'css_inliner', $values ) && $values['css_inliner'] ? true : false;
-        $settings['alt_body'] = array_key_exists( 'alt_body', $values ) && $values['alt_body'] ? true : false;
-        $settings['SingleTo'] = array_key_exists( 'SingleTo', $values ) && $values['SingleTo'] ? true : false;
-        $settings['enable_smime'] = array_key_exists( 'enable_smime', $values ) && $values['enable_smime'];
-        $settings['certfolder'] = array_key_exists( 'certfolder', $values ) && $values['certfolder'];
-        $settings['make_from_valid'] = array_key_exists( 'make_from_valid', $values ) && $values['make_from_valid'];
-        $settings['errors_to'] = array_key_exists( 'errors_to', $values ) && $values['errors_to'];
+    $settings['from_email'] = array_key_exists( 'from_email', $values ) && $values['from_email'] ? $values['from_email'] : $settings['from_email'];
+    $settings['timeout'] = array_key_exists( 'timeout', $values ) && $values['timeout'] ? true : false;
+    $settings['is_html'] = array_key_exists( 'is_html', $values ) && $values['is_html'] ? true : false;
+    $settings['css_inliner'] = array_key_exists( 'css_inliner', $values ) && $values['css_inliner'] ? true : false;
+    $settings['alt_body'] = array_key_exists( 'alt_body', $values ) && $values['alt_body'] ? true : false;
+    $settings['SingleTo'] = array_key_exists( 'SingleTo', $values ) && $values['SingleTo'] ? true : false;
+    $settings['enable_smime'] = array_key_exists( 'enable_smime', $values ) && $values['enable_smime'] ? "1" : "0";
+    $settings['certfolder'] = array_key_exists( 'certfolder', $values ) && $values['certfolder'] ? $values['certfolder'] : '';
+    $settings['make_from_valid'] = array_key_exists( 'make_from_valid', $values ) && $values['make_from_valid'] ? $values['make_from_valid'] : "";
+    $settings['errors_to'] = array_key_exists( 'errors_to', $values ) && $values['errors_to'] ? $values['errors_to'] : '';
 		update_option('wp-email-essentials', $settings);
 	}
 

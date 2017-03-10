@@ -115,7 +115,8 @@
 					Old: <code><?php print WP_Email_Essentials::get_spf($c['from_email'], false, true); ?></code><br />
 					New: <code><?php print WP_Email_Essentials::get_spf($c['from_email'], true , true); ?></code>
 				</td>
-			</tr><?php } ?>
+			</tr><?php } else {?>
+			<tr><td></td><td>SPF Record: <code><?php print WP_Email_Essentials::get_spf($c['from_email'], false, true); ?></code></td></tr><?php } ?>
 			<tr>
 				<td>
 					<label for="make_from_valid"><?php _e('Fix sender-address?', 'wpes'); ?></label>
