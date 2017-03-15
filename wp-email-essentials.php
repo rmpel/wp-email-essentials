@@ -127,8 +127,9 @@ class WP_Email_Essentials
 			}
 		}
 
-		if (!array_key_exists('from', $header_index))
+		if (!array_key_exists('from', $header_index)) {
 			$header_index['from'] = count($header_index);
+		}
 		$wp_mail['headers'][$header_index['from']] = 'From: "' . self::wp_mail_from_name() . '" <' . self::wp_mail_from() . '>';
 
 		// print "WPES ". __LINE__ ." headers now:\n";
@@ -138,7 +139,8 @@ class WP_Email_Essentials
 			// print "WPES ". __LINE__ ." Adding REPLY-TO:\n";
 			$header_index['reply-to'] = count($header_index);
 			$wp_mail['headers'][$header_index['reply-to']] = 'Reply-To: ' . self::wp_mail_from_name() . ' <' . self::wp_mail_from() . '>';
-		} else {
+		}
+		else {
 			// print "WPES ". __LINE__ ." Already have REPLY-TO:\n";
 		}
 
@@ -214,7 +216,9 @@ class WP_Email_Essentials
 	public static function get_spf($email, $fix = false, $as_html = false)
 	{
 		static $lookup;
-		if (!$lookup) $lookup = array();
+		if (!$lookup) {
+			$lookup = array();
+		}
 
 		$sending_domain = self::get_domain($email);
 		if (!$sending_domain) {
@@ -246,10 +250,10 @@ class WP_Email_Essentials
 			// insert
 			$spf = explode(' ', str_replace('include:', 'include: ', $spf));
 			$position = false !== array_search('mx', $spf) ? array_search('mx', $spf) + 1 : false;
-			$position = false !== $position ? $position : ( false !== array_search('a', $spf) ? array_search('a', $spf) + 1 : false );
-			$position = false !== $position ? $position : ( false !== array_search('include:', $spf) ? array_search('include:', $spf) - 1 : false );
-			$position = false !== $position ? $position : ( false !== array_search('v=spf1', $spf) ? array_search('v=spf1', $spf) + 1 : false );
-			array_splice($spf, $position, 0, 'include:'. $sending_server);
+			$position = false !== $position ? $position : (false !== array_search('a', $spf) ? array_search('a', $spf) + 1 : false);
+			$position = false !== $position ? $position : (false !== array_search('include:', $spf) ? array_search('include:', $spf) - 1 : false);
+			$position = false !== $position ? $position : (false !== array_search('v=spf1', $spf) ? array_search('v=spf1', $spf) + 1 : false);
+			array_splice($spf, $position, 0, 'include:' . $sending_server);
 			$spf = str_replace('include: ', 'include:', implode(' ', $spf));
 		}
 
@@ -258,14 +262,15 @@ class WP_Email_Essentials
 				$spf = '<span class="error">no spf-record available</span>';
 			}
 			else {
-				$spf = $sending_domain .'. IN TXT '. str_replace('include:'. $sending_server, '<strong>'. 'include:'. $sending_server .'</strong>', $spf);
+				$spf = $sending_domain . '. IN TXT ' . str_replace('include:' . $sending_server, '<strong>' . 'include:' . $sending_server . '</strong>', $spf);
 			}
 		}
 
 		return $spf;
 	}
 
-	public static function i_am_allowed_to_send_in_name_of($email) {
+	public static function i_am_allowed_to_send_in_name_of($email)
+	{
 		$config = WP_Email_Essentials::get_config();
 		if (!$config['spf_lookup_enabled']) {
 			// we tried and faile dless than a day ago
@@ -290,20 +295,25 @@ class WP_Email_Essentials
 	public static function get_sending_ip()
 	{
 		$url = admin_url('admin-ajax.php');
-		$ip = wp_remote_retrieve_body(wp_remote_get($url .'?action=wpes_get_ip'));
-		if (!$ip)
+		$ip = wp_remote_retrieve_body(wp_remote_get($url . '?action=wpes_get_ip'));
+		if (!$ip) {
 			$ip = $_SERVER["SERVER_ADDR"];
+		}
 		return $ip;
 	}
 
 	public static function gather_ips_from_spf($domain)
 	{
 		static $seen;
-		if (!$seen) $seen = array();
-		if (in_array($domain, $seen)) return array();
+		if (!$seen) {
+			$seen = array();
+		}
+		if (in_array($domain, $seen)) {
+			return array();
+		}
 		$seen[] = $domain;
 
-		$dns = dns_get_record ($domain, DNS_TXT);
+		$dns = dns_get_record($domain, DNS_TXT);
 		$ips = array();
 		foreach ($dns as $record) {
 			$record['txt'] = strtolower($record['txt']);
@@ -387,17 +397,20 @@ class WP_Email_Essentials
 		/** @var phpMailer $mailer */
 		$config = self::get_config();
 
-		if ($config['smtp']['timeout'])
+		if ($config['smtp']['timeout']) {
 			$mailer->Timeout = $config['smtp']['timeout'];
+		}
 
 		if ($config['smtp']) {
 			$mailer->IsSMTP();
 			list($host, $port) = explode(':', $config['smtp']['host'] . ':-1');
 			$mailer->Host = $host;
-			if ($port > 0)
+			if ($port > 0) {
 				$mailer->Port = $port;
-			if ($config['smtp']['port'])
+			}
+			if ($config['smtp']['port']) {
 				$mailer->Port = $config['smtp']['port'];
+			}
 
 			if (isset($config['smtp']['username'])) {
 				$mailer->SMTPAuth = true;
@@ -405,7 +418,8 @@ class WP_Email_Essentials
 				$mailer->Password = $config['smtp']['password'];
 				if (isset($config['smtp']['secure']) && $config['smtp']['secure']) {
 					$mailer->SMTPSecure = trim($config['smtp']['secure'], '-');
-				} else {
+				}
+				else {
 					$mailer->SMTPAutoTLS = false;
 				}
 				if (true === WPES_ALLOW_SSL_SELF_SIGNED || substr($config['smtp']['secure'], -1, 1) == '-') {
@@ -506,7 +520,8 @@ class WP_Email_Essentials
 		if (preg_match("/$html_preg/", $might_be_text)) {
 			// probably html
 			$should_be_html = $might_be_text;
-		} else {
+		}
+		else {
 			$should_be_html = nl2br(trim($might_be_text));
 		}
 
@@ -606,24 +621,26 @@ class WP_Email_Essentials
 				}
 			}
 
-			if ($settings['smtp']['port'] <= 0)
+			if ($settings['smtp']['port'] <= 0) {
 				$settings['smtp']['port'] = '';
-		} else {
+			}
+		}
+		else {
 			$settings['smtp'] = false;
 		}
-		$settings['from_name'] = array_key_exists( 'from_name', $values ) && $values['from_name'] ? $values['from_name'] : $settings['from_name'];
-    $settings['from_email'] = array_key_exists( 'from_email', $values ) && $values['from_email'] ? $values['from_email'] : $settings['from_email'];
-    $settings['timeout'] = array_key_exists( 'timeout', $values ) && $values['timeout'] ? true : false;
-    $settings['is_html'] = array_key_exists( 'is_html', $values ) && $values['is_html'] ? true : false;
-    $settings['css_inliner'] = array_key_exists( 'css_inliner', $values ) && $values['css_inliner'] ? true : false;
-    $settings['alt_body'] = array_key_exists( 'alt_body', $values ) && $values['alt_body'] ? true : false;
-    $settings['SingleTo'] = array_key_exists( 'SingleTo', $values ) && $values['SingleTo'] ? true : false;
-    $settings['spf_lookup_enabled'] = array_key_exists( 'spf_lookup_enabled', $values ) && $values['spf_lookup_enabled'] ? true : false;
+		$settings['from_name'] = array_key_exists('from_name', $values) && $values['from_name'] ? $values['from_name'] : $settings['from_name'];
+		$settings['from_email'] = array_key_exists('from_email', $values) && $values['from_email'] ? $values['from_email'] : $settings['from_email'];
+		$settings['timeout'] = array_key_exists('timeout', $values) && $values['timeout'] ? true : false;
+		$settings['is_html'] = array_key_exists('is_html', $values) && $values['is_html'] ? true : false;
+		$settings['css_inliner'] = array_key_exists('css_inliner', $values) && $values['css_inliner'] ? true : false;
+		$settings['alt_body'] = array_key_exists('alt_body', $values) && $values['alt_body'] ? true : false;
+		$settings['SingleTo'] = array_key_exists('SingleTo', $values) && $values['SingleTo'] ? true : false;
+		$settings['spf_lookup_enabled'] = array_key_exists('spf_lookup_enabled', $values) && $values['spf_lookup_enabled'] ? true : false;
 
-    $settings['enable_smime'] = array_key_exists( 'enable_smime', $values ) && $values['enable_smime'] ? "1" : "0";
-    $settings['certfolder'] = array_key_exists( 'certfolder', $values ) && $values['certfolder'] ? $values['certfolder'] : '';
-    $settings['make_from_valid'] = array_key_exists( 'make_from_valid', $values ) && $values['make_from_valid'] ? $values['make_from_valid'] : "";
-    $settings['errors_to'] = array_key_exists( 'errors_to', $values ) && $values['errors_to'] ? $values['errors_to'] : '';
+		$settings['enable_smime'] = array_key_exists('enable_smime', $values) && $values['enable_smime'] ? "1" : "0";
+		$settings['certfolder'] = array_key_exists('certfolder', $values) && $values['certfolder'] ? $values['certfolder'] : '';
+		$settings['make_from_valid'] = array_key_exists('make_from_valid', $values) && $values['make_from_valid'] ? $values['make_from_valid'] : "";
+		$settings['errors_to'] = array_key_exists('errors_to', $values) && $values['errors_to'] ? $values['errors_to'] : '';
 		update_option('wp-email-essentials', $settings);
 	}
 
@@ -667,8 +684,9 @@ class WP_Email_Essentials
 
 	private static function rfc_encode($email_array)
 	{
-		if (!$email_array['name'])
+		if (!$email_array['name']) {
 			return $email_array['email'];
+		}
 
 		$email_array['name'] = json_encode($email_array['name']);
 		$return = trim(sprintf("%s <%s>", $email_array['name'], $email_array['email']));
@@ -700,7 +718,8 @@ class WP_Email_Essentials
 					self::$debug = ob_get_clean();
 					if ($result) {
 						self::$message = sprintf(__('Mail sent to %s', 'wpes'), get_option('admin_email', false));
-					} else {
+					}
+					else {
 						self::$error = sprintf(__('Mail NOT sent to %s', 'wpes'), get_option('admin_email', false));
 					}
 					break;
@@ -751,8 +770,9 @@ class WP_Email_Essentials
 
 					$__regex = "/^\/[\s\S]+\/$/";
 					foreach ($regexps as $entry) {
-						if (preg_match($__regex, $entry['regexp']))
+						if (preg_match($__regex, $entry['regexp'])) {
 							$list[$entry['regexp']] = $entry['key'];
+						}
 					}
 
 					update_option('mail_key_list', $list);
@@ -779,7 +799,8 @@ class WP_Email_Essentials
 		// should return array( 'name' => 'ik@remonpel.nl', 'email' => 'ik@remonpel.nl' )
 		if ($test['name'] == 'ik@remonpel.nl' && $test['email'] == 'ik@remonpel.nl') {
 			echo "simple email address verified<br />\n";
-		} else {
+		}
+		else {
 			echo "simple email address FAILED<br />\n";
 		}
 
@@ -787,7 +808,8 @@ class WP_Email_Essentials
 		// should return array( 'name' => 'Remon Pel', 'email' => 'ik@remonpel.nl' )
 		if ($test['name'] == 'Remon Pel' && $test['email'] == 'ik@remonpel.nl') {
 			echo "RFC2822 no quotes email address verified<br />\n";
-		} else {
+		}
+		else {
 			echo "RFC2822 no quotes email address FAILED<br />\n";
 		}
 
@@ -795,7 +817,8 @@ class WP_Email_Essentials
 		// should return array( 'name' => 'Remon Pel', 'email' => 'ik@remonpel.nl' )
 		if ($test['name'] == 'Remon Pel' && $test['email'] == 'ik@remonpel.nl') {
 			echo "RFC2822 with quotes email address verified<br />\n";
-		} else {
+		}
+		else {
 			echo "RFC2822 with quotes email address FAILED<br />\n";
 		}
 
@@ -803,7 +826,8 @@ class WP_Email_Essentials
 		// should return array( 'name' => 'Remon Pel', 'email' => 'ik@remonpel.nl' )
 		if ($test['name'] == 'Remon Pel' && $test['email'] == 'ik@remonpel.nl') {
 			echo "RFC2822 too many spaces - not valid RFC but still parses? verified<br />\n";
-		} else {
+		}
+		else {
 			echo "RFC2822 too many spaces - not valid RFC but still parses? FAILED<br />\n";
 		}
 
@@ -867,7 +891,8 @@ class WP_Email_Essentials
 				$class = "updated";
 				$message = __('WP-Email-Essentials is not yet configured. Please fill out the form below.', 'wpes');
 				echo "<div class='$class'><p>$message</p></div>";
-			} else {
+			}
+			else {
 				$class = "error";
 				$message = sprintf(__('WP-Email-Essentials is not yet configured. Please go <a href="%s">here</a>.', 'wpes'), $url);
 				echo "<div class='$class'><p>$message</p></div>";
@@ -915,7 +940,8 @@ class WP_Email_Essentials
 				$class = "error";
 				$message = sprintf(__('There is no certificate for the default sender address <code>%s</code>. The required certificate is supplied with this plugin. Please copy it to the correct folder.', 'wpes'), $from);
 				echo "<div class='$class'><p>$message</p></div>";
-			} else {
+			}
+			else {
 				$class = "error";
 				$message = sprintf(__('There is no certificate for the default sender address <code>%s</code>. Start: <a href="https://www.comodo.com/home/email-security/free-email-certificate.php" target="_blank">here</a>.', 'wpes'), $from);
 				echo "<div class='$class'><p>$message</p></div>";
@@ -997,8 +1023,9 @@ class WP_Email_Essentials
 			// known key, but no email set
 			// we revert to the DEFAULT admin_email, and prevent matching against subjects
 			// var_dump($email, __LINE__);exit;
-			if (is_array($to) && array_key_exists('email', $to))
+			if (is_array($to) && array_key_exists('email', $to)) {
 				$to = self::rfc_encode($to);
+			}
 			return $email;
 		}
 
@@ -1017,8 +1044,9 @@ class WP_Email_Essentials
 
 		// sorry, we failed :(
 		$fails = get_option('mail_key_fails', array());
-		if ($fails)
+		if ($fails) {
 			$fails = array_combine($fails, $fails);
+		}
 		$fails[$email['subject']] = $email['subject'];
 		$fails = array_filter($fails, function ($item) {
 			return !WP_Email_Essentials::mail_subject_match($item) && !WP_Email_Essentials::get_mail_key($item);
@@ -1037,7 +1065,8 @@ class WP_Email_Essentials
 		if ($mail_key) {
 			self::current_mail_key('*CLEAR*');
 			self::log("$subject matched to $mail_key by filter/action");
-		} else {
+		}
+		else {
 			$mail_key = self::mail_subject_database($subject);
 			if ($mail_key) {
 				self::log("$subject matched to $mail_key by subject-matching known subjects");
@@ -1073,8 +1102,9 @@ class WP_Email_Essentials
 
 		$key = isset($keys[$lookup]) ? $keys[$lookup] : '';
 
-		if ($key)
+		if ($key) {
 			return $key;
+		}
 
 		// prepared just in case system fails.
 		// // REGEXP_LOOKUP
@@ -1097,8 +1127,9 @@ class WP_Email_Essentials
 	{
 		$store = get_option('mail_key_list', array());
 		foreach ($store as $regexp => $mail_key) {
-			if (preg_match($regexp, $subject))
+			if (preg_match($regexp, $subject)) {
 				return $mail_key;
+			}
 		}
 		return false;
 	}
@@ -1116,7 +1147,9 @@ class WP_Email_Essentials
 	{
 		static $mail_key;
 		if ($set) {
-			if ($set == '*CLEAR*') $set = false;
+			if ($set == '*CLEAR*') {
+				$set = false;
+			}
 			$mail_key = $set;
 		}
 		return $mail_key;
@@ -1276,8 +1309,9 @@ class WP_Email_Essentials_History
 	private static function last_insert($set = null)
 	{
 		static $id;
-		if ($set)
+		if ($set) {
 			$id = $set;
+		}
 		return $id;
 	}
 

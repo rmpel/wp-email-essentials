@@ -19,7 +19,7 @@ $start = $page * $limit;
 ?>
 <div class="wrap">
 	<div class="icon32 icon32-posts-group" id="icon-edit">
-		<br />
+		<br/>
 	</div>
 	<style>
 		#mail-viewer {
@@ -28,6 +28,7 @@ $start = $page * $limit;
 			height: 600px;
 			width: 100%;
 		}
+
 		#mail-viewer .top-panel {
 			position: relative;
 			height: 30%;
@@ -35,12 +36,14 @@ $start = $page * $limit;
 			width: 100%;
 			max-width: 100%;
 		}
+
 		#mail-viewer #mail-index {
 			margin: 0;
 			padding: 0;
 			list-style: none;
 			display: table;
 		}
+
 		#mail-viewer #mail-index li {
 			margin: 0;
 			padding: 0;
@@ -48,30 +51,37 @@ $start = $page * $limit;
 			cursor: pointer;
 			display: table-row;
 		}
+
 		#mail-viewer #mail-index li.active {
 
 		}
+
 		#mail-viewer #mail-index #email-header {
 			background: grey;
 			color: white;
 			font-weight: bold;
 		}
+
 		#mail-viewer #mail-index li:nth-child(2n+1) {
 			background: #e0e0e0;
 		}
+
 		#mail-viewer #mail-index li.active {
 			background: black;
 			color: white;
 			font-weight: bold
 		}
+
 		#mail-viewer #mail-index li:hover {
 			background: darkgrey;
 			color: white;
 		}
+
 		#mail-viewer #mail-index li .sender,
 		#mail-viewer #mail-index li .thedatetime,
 		#mail-viewer #mail-index li .recipient {
 		}
+
 		#mail-data-viewer {
 			position: absolute;
 			top: 30%;
@@ -81,6 +91,7 @@ $start = $page * $limit;
 			border-top: 1px solid grey;
 			overflow: auto;
 		}
+
 		#mail-data-viewer .email-data.show-debug,
 		#mail-data-viewer .show-body,
 		#mail-data-viewer .show-alt-body,
@@ -93,7 +104,7 @@ $start = $page * $limit;
 		#mail-viewer #mail-index li .recipient,
 		#mail-viewer #mail-index li .sender,
 		#mail-viewer #mail-index li .subject,
-		#mail-viewer #mail-index li .status{
+		#mail-viewer #mail-index li .status {
 			overflow: hidden;
 			/*white-space: nowrap;*/
 			display: table-cell;
@@ -101,26 +112,32 @@ $start = $page * $limit;
 			padding: 3px;
 			height: 100%;
 		}
+
 		#mail-viewer #mail-index li.active .thedatetime,
 		#mail-viewer #mail-index li.active .recipient,
 		#mail-viewer #mail-index li.active .sender,
 		#mail-viewer #mail-index li.active .subject,
-		#mail-viewer #mail-index li.active .status{
+		#mail-viewer #mail-index li.active .status {
 			overflow-y: auto;
 			white-space: initial;
 		}
+
 		#mail-viewer #mail-index li .thedatetime {
 			width: 12%;
 		}
+
 		#mail-viewer #mail-index li .recipient {
 			width: 20%;
 		}
+
 		#mail-viewer #mail-index li .sender {
 			width: 20%;
 		}
+
 		#mail-viewer #mail-index li .subject {
 			width: 25%;
 		}
+
 		#mail-viewer #mail-index li .status {
 			width: 20%;
 			border-right: none;
@@ -146,11 +163,17 @@ $start = $page * $limit;
 
 	</style>
 	<h2>WP-Email-Essentials - Email history</h2>
-	<?php if ( WP_Email_Essentials::$message ) { print '<div class="updated"><p>'. WP_Email_Essentials::$message .'</p></div>'; } ?>
-	<?php if ( WP_Email_Essentials::$error ) { print '<div class="error"><p>'. WP_Email_Essentials::$error .'</p></div>'; } ?>
+	<?php if (WP_Email_Essentials::$message) {
+		print '<div class="updated"><p>' . WP_Email_Essentials::$message . '</p></div>';
+	} ?>
+	<?php if (WP_Email_Essentials::$error) {
+		print '<div class="error"><p>' . WP_Email_Essentials::$error . '</p></div>';
+	} ?>
 	<?php
 	$total = $wpdb->get_var("SELECT COUNT(ID) as thecount FROM {$wpdb->prefix}wpes_hist");
-	if ($start > $total) $start = 0;
+	if ($start > $total) {
+		$start = 0;
+	}
 	?>
 	<div id="mail-viewer">
 		<div class="top-panel">
@@ -170,19 +193,23 @@ $start = $page * $limit;
 					__('Failed'),
 				);
 				foreach ($list as $item) {
-					?><li class="email-item" id="email-<?php print $item->ID; ?>">
+					?>
+					<li class="email-item" id="email-<?php print $item->ID; ?>">
 					<span class="thedatetime"><?php print esc_html($item->thedatetime); ?>&nbsp;</span>
 					<span class="recipient"><?php print esc_html($item->recipient); ?>&nbsp;</span>
 					<span class="sender"><?php print esc_html($item->sender); ?>&nbsp;</span>
 					<span class="subject"><?php print esc_html($item->subject); ?>&nbsp;</span>
-					<span class="status"><?php print $stati[$item->status]; ?> <?php print $item->errinfo; ?>&nbsp;</span>
+					<span class="status"><?php print $stati[$item->status]; ?> <?php print $item->errinfo; ?>
+						&nbsp;</span>
 					</li><?php
-				} ?></ul></div>
+				} ?></ul>
+		</div>
 		<div id="mail-data-viewer">
 			<?php
 
-			if (!class_exists('PHPMailer'))
+			if (!class_exists('PHPMailer')) {
 				require_once ABSPATH . WPINC . '/class-phpmailer.php';
+			}
 			$mailer = new PHPMailer();
 			$config = WP_Email_Essentials::get_config();
 			$css = apply_filters_ref_array('wpes_css', array('', &$mailer));
@@ -195,18 +222,20 @@ $start = $page * $limit;
 				}
 				$item->debug->Password = '********';
 				$item->debug = json_encode($item->debug, JSON_PRETTY_PRINT);
-				?><div class="email-data" id="email-data-<?php print $item->ID; ?>">
+				?>
+				<div class="email-data" id="email-data-<?php print $item->ID; ?>">
 				<span class="headers"><pre><?php print esc_html($item->headers); ?></pre></span>
 				<span class="alt_body"><pre><?php print nl2br($item->alt_body); ?></pre></span>
-				<span class="body"><iframe class="autofit" width="100%" height="100%" border="0" frameborder="0" src="data:text/html;base64,<?php print base64_encode(WP_Email_Essentials::maybe_convert_to_html($item->body, $item->subject, $mailer)); ?>"></iframe></span>
+				<span class="body"><iframe class="autofit" width="100%" height="100%" border="0" frameborder="0"
+										   src="data:text/html;base64,<?php print base64_encode(WP_Email_Essentials::maybe_convert_to_html($item->body, $item->subject, $mailer)); ?>"></iframe></span>
 				<span class="debug"><pre><?php print esc_html($item->debug); ?></pre></span>
 				</div><?php
 			} ?>
 		</div><!-- /mdv -->
 	</div><!-- /mv -->
 	<script>
-		jQuery(document).ready(function($) {
-			$(".email-item").bind('click', function(e){
+		jQuery(document).ready(function ($) {
+			$(".email-item").bind('click', function (e) {
 				var alt = e.altKey || false;
 				$(this).addClass('active').siblings().removeClass('show-body').removeClass('show-debug').removeClass('show-headers').removeClass('show-alt-body').removeClass('active');
 				var id = '#' + $(".email-item.active").attr('id').replace('email-', 'email-data-');
@@ -236,8 +265,8 @@ $start = $page * $limit;
 				$(window).trigger('resize');
 			});
 
-			$(window).bind('resize', function(){
-				$(".autofit").each(function(){
+			$(window).bind('resize', function () {
+				$(".autofit").each(function () {
 					$(this).css('width', $(this).parent().innerWidth());
 					$(this).css('height', $(this).parent().innerHeight());
 				});

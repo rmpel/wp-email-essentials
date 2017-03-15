@@ -1,30 +1,30 @@
 {
-    "Plugin Name": "WordPress Email Essentials",
-    "Description": "A must-have plugin for WordPress to get your outgoing e-mails straightened out.",
-    "Plugin URI": "https:\/\/bitbucket.org\/rmpel\/wp-email-essentials",
-    "Author": "Remon Pel",
-    "Author URI": "http:\/\/remonpel.nl",
-    "License": "GPL2",
-    "Text Domain": "Text Domain",
-    "Domain Path": "Domain Path",
-    "Compat": {
-      "3.6": {
-        "2.1.2": 0
-      },
-      "3.7": {
-        "2.1.2": 0
-      },
-      "3.8": {
-        "2.1.2": 50
-      },
-      "3.9": {
-        "2.1.2": 50
-      },
-      "4": {
-        "2.1.2": 100
-      },
-      "4.7.3": {
-        "2.1.2": 100
-      }
+  "Plugin Name": "WordPress Email Essentials",
+  "Description": "A must-have plugin for WordPress to get your outgoing e-mails straightened out.",
+  "Plugin URI": "https:\/\/bitbucket.org\/rmpel\/wp-email-essentials",
+  "Author": "Remon Pel",
+  "Author URI": "http:\/\/remonpel.nl",
+  "License": "GPL2",
+  "Text Domain": "Text Domain",
+  "Domain Path": "Domain Path",
+  "Compat": {
+    "3.6": {
+      "2.1.2": 0
+    },
+    "3.7": {
+      "2.1.2": 0
+    },
+    "3.8": {
+      "2.1.2": 50
+    },
+    "3.9": {
+      "2.1.2": 50
+    },
+    "4": {
+      "2.1.2": 100
+    },
+    "4.7.3": {
+      "2.1.2": 100
     }
+  }
 }
