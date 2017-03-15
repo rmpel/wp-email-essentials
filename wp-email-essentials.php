@@ -266,8 +266,8 @@ class WP_Email_Essentials
 	}
 
 	public static function i_am_allowed_to_send_in_name_of($email) {
-		$i_tried_and_failed = get_option('wpes_spf_lookup_failed', 0);
-		if ($i_tried_and_failed && $i_tried_and_failed > time() - 24*60*60) {
+		$config = WP_Email_Essentials::get_config();
+		if (!$config['spf_lookup_enabled']) {
 			// we tried and faile dless than a day ago
 			// do not try again
 			return self::this_email_matches_website_domain($email);
@@ -563,6 +563,7 @@ class WP_Email_Essentials
 			'alt_body' => false,
 			'css_inliner' => false,
 			'enable_smime' => false,
+			'spf_lookup_enabled' => false,
 			'errors_to' => 'postmaster@clearsite.nl',
 		);
 
@@ -617,6 +618,8 @@ class WP_Email_Essentials
     $settings['css_inliner'] = array_key_exists( 'css_inliner', $values ) && $values['css_inliner'] ? true : false;
     $settings['alt_body'] = array_key_exists( 'alt_body', $values ) && $values['alt_body'] ? true : false;
     $settings['SingleTo'] = array_key_exists( 'SingleTo', $values ) && $values['SingleTo'] ? true : false;
+    $settings['spf_lookup_enabled'] = array_key_exists( 'spf_lookup_enabled', $values ) && $values['spf_lookup_enabled'] ? true : false;
+
     $settings['enable_smime'] = array_key_exists( 'enable_smime', $values ) && $values['enable_smime'] ? "1" : "0";
     $settings['certfolder'] = array_key_exists( 'certfolder', $values ) && $values['certfolder'] ? $values['certfolder'] : '';
     $settings['make_from_valid'] = array_key_exists( 'make_from_valid', $values ) && $values['make_from_valid'] ? $values['make_from_valid'] : "";
@@ -1182,13 +1185,13 @@ class WP_Email_Essentials
 						var email = getEmail(rfc);
 						var newemail = email.replace('@', '-at-').replace(/\./g, '-dot-') + '@' + ( (document.location.host).replace(/^www\./, '') );
 						return rfc.replace(email, newemail);
-					}
+					};
 
 					var noreplyify = function (rfc) {
 						var email = getEmail(rfc);
 						var newemail = 'noreply' + '@' + ( (document.location.host).replace(/^www\./, '') );
 						return rfc.replace(email, newemail);
-					}
+					};
 
 					var defaultify = function (rfc) {
 						var host = ( (document.location.host).replace(/^www\./, '') );
@@ -1198,7 +1201,7 @@ class WP_Email_Essentials
 							return rfc.replace(email, newemail);
 						else
 							return noreplyify(rfc);
-					}
+					};
 
 					var getEmail = function (rfc) {
 						rfc = rfc.split('<');
@@ -1207,7 +1210,7 @@ class WP_Email_Essentials
 						}
 						rfc = rfc[1].split('>');
 						return rfc[0];
-					}
+					};
 
 					var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
 					i.bind('keyup', function () {

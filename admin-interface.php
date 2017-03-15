@@ -108,6 +108,13 @@
 					<input type="text" name="settings[from_email]" value="<?php print esc_attr( $c['from_email'] ); ?>" id="from-email" />
 				</td>
 			</tr>
+			<tr>
+				<td colspan="2">
+					<input type="checkbox" name="settings[spf_lookup_enabled]" value="1" <?php print $c['spf_lookup_enabled'] ? 'checked="checked" ': ''; ?>id="spf_lookup_enabled" /><label for="spf_lookup_enabled"><?php _e('Use SPF-lookup to determine validity of sender instead of domainname-match.', 'wpes'); ?></label>
+				</td>
+			</tr>
+			<?php if ($c['spf_lookup_enabled']) { ?><!-- SPF -->
+
 			<?php if (!WP_Email_Essentials::i_am_allowed_to_send_in_name_of($c['from_email'])) { ?>
 			<tr><td></td>
 				<td>SPF Records are checked: you are NOT allowed to send mail with this domain.<br />
@@ -115,8 +122,22 @@
 					Old: <code><?php print WP_Email_Essentials::get_spf($c['from_email'], false, true); ?></code><br />
 					New: <code><?php print WP_Email_Essentials::get_spf($c['from_email'], true , true); ?></code>
 				</td>
-			</tr><?php } else {?>
-			<tr><td></td><td>SPF Record: <code><?php print WP_Email_Essentials::get_spf($c['from_email'], false, true); ?></code></td></tr><?php } ?>
+			</tr><?php } // ! i_am_allowed, spf variant
+						else { ?>
+			<tr><td></td><td>SPF Record: <code><?php print WP_Email_Essentials::get_spf($c['from_email'], false, true); ?></code></td></tr>
+
+			<?php } // ! i_am_allowed {else}, spf variant ?>
+
+			<?php } else { ?><!-- domain match -->
+
+			<?php if (!WP_Email_Essentials::i_am_allowed_to_send_in_name_of($c['from_email'])) { ?>
+			<tr><td></td>
+				<td>You are NOT allowed to send mail with this domain; it should match the domainname of the website.<br />
+					If you really need to use this sender e-mail address, you need to switch to SPF-record checking and make sure the SPF for this domain matches this server.
+				</td>
+			</tr><?php } // ! i_am_allowed, domain variant ?>
+
+		<?php } ?>
 			<tr>
 				<td>
 					<label for="make_from_valid"><?php _e('Fix sender-address?', 'wpes'); ?></label>
