@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.3
+Version: 2.1.4
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -262,9 +262,13 @@ class WP_Email_Essentials
 				$spf = '<span class="error">no spf-record available</span>';
 			}
 			else {
-				$spf = $sending_domain . '. IN TXT ' . str_replace('include:' . $sending_server, '<strong>' . 'include:' . $sending_server . '</strong>', $spf);
+				$spf = $sending_domain . '. IN TXT ' . $spf;
 			}
+
+			if ($fix) { $color = "red"; } else { $color = "darkgreen"; };
+			$spf = str_replace('include:' . $sending_server, '<strong style="color:'. $color .';">' . 'include:' . $sending_server . '</strong>', $spf);
 		}
+
 
 		return $spf;
 	}
