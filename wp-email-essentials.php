@@ -227,7 +227,7 @@ class WP_Email_Essentials
 		$sending_server = self::get_sending_ip();
 
 		if (!isset($lookup[$sending_domain])) {
-			$dns = dns_get_record($sending_domain, DNS_TXT);
+			$dns = self::dns_get_record($sending_domain, DNS_TXT);
 			foreach ($dns as $record) {
 				if (false !== strpos($record['txt'], 'v=spf1')) {
 					$lookup[$sending_domain] = $record['txt'];
@@ -253,7 +253,7 @@ class WP_Email_Essentials
 			$position = false !== $position ? $position : (false !== array_search('a', $spf) ? array_search('a', $spf) + 1 : false);
 			$position = false !== $position ? $position : (false !== array_search('include:', $spf) ? array_search('include:', $spf) - 1 : false);
 			$position = false !== $position ? $position : (false !== array_search('v=spf1', $spf) ? array_search('v=spf1', $spf) + 1 : false);
-			array_splice($spf, $position, 0, 'include:' . $sending_server);
+			array_splice($spf, $position, 0, 'ip4:' . $sending_server);
 			$spf = str_replace('include: ', 'include:', implode(' ', $spf));
 		}
 
@@ -265,10 +265,9 @@ class WP_Email_Essentials
 				$spf = $sending_domain . '. IN TXT ' . $spf;
 			}
 
-			if ($fix) { $color = "red"; } else { $color = "darkgreen"; };
-			$spf = str_replace('include:' . $sending_server, '<strong style="color:'. $color .';">' . 'include:' . $sending_server . '</strong>', $spf);
+			if ($fix) { $color = "red"; } else { $color = "green"; };
+			$spf = str_replace('ip4:' . $sending_server, '<strong style="color:'. $color .';">' . 'ip4:' . $sending_server . '</strong>', $spf);
 		}
-
 
 		return $spf;
 	}
@@ -317,7 +316,7 @@ class WP_Email_Essentials
 		}
 		$seen[] = $domain;
 
-		$dns = dns_get_record($domain, DNS_TXT);
+		$dns = self::dns_get_record($domain, DNS_TXT);
 		$ips = array();
 		foreach ($dns as $record) {
 			$record['txt'] = strtolower($record['txt']);
@@ -325,14 +324,14 @@ class WP_Email_Essentials
 				$sections = explode(' ', $record['txt']);
 				foreach ($sections as $section) {
 					if ($section == 'a') {
-						$ips[] = gethostbyname($domain);
+						$ips[] = self::dns_get_record($domain, DNS_A, true);
 					}
 					elseif ($section == 'mx') {
-						$mx = dns_get_record($domain, DNS_MX);
+						$mx = self::dns_get_record($domain, DNS_MX);
 						foreach ($mx as $mx_record) {
 							$target = $mx_record['target'];
 							try {
-								$new_target = gethostbyname($target);
+								$new_target = self::dns_get_record($domain, DNS_A, true);
 							}
 							catch (Exception $e) {
 								$new_target = $target;
@@ -356,6 +355,25 @@ class WP_Email_Essentials
 		return $ips;
 	}
 
+	public static function dns_get_record($lookup, $filter, $single_output=null)
+	{
+		$transient_name = "dns_{$lookup}__TYPE{$filter}__cache";
+		$transient = get_site_transient($transient_name);
+		if (!$transient) {
+			$transient = dns_get_record($lookup, $filter);
+			$ttl = count($transient) > 0 && is_array($transient[0] && isset($transient[0]['ttl'])) ? $transient[0]['ttl'] : 3600;
+			set_site_transient( $transient_name, $transient, $ttl );
+		}
+		if ($single_output) { // todo: most records are repeatable, should return array, calling code should proces array
+			if ($filter == DNS_A) {
+				return $transient[0]['ip'];
+			}
+			if ($filter == DNS_A6) {
+				return $transient[0]['ipv6'];
+			}
+		}
+		return $transient;
+	}
 
 	public static function this_email_matches_website_domain($email)
 	{
