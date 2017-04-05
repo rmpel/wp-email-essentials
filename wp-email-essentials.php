@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.5
+Version: 2.1.6
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -777,7 +777,7 @@ class WP_Email_Essentials
 		}
 
 		add_submenu_page('wp-email-essentials', 'WP-Email-Essentials - Alternative Admins', 'Alternative admins', 'manage_options', 'wpes-admins', array('WP_Email_Essentials', 'admin_interface_admins'));
-		if (isset($GET['page']) && $_GET['page'] == 'wpes-admins' && $_POST && isset($_POST['form_id']) && $_POST['form_id'] == 'wpes-admins') {
+		if (isset($_GET['page']) && $_GET['page'] == 'wpes-admins' && $_POST && isset($_POST['form_id']) && $_POST['form_id'] == 'wpes-admins') {
 			switch ($_POST['op']) {
 				case __('Save settings', 'wpes'):
 					$keys = $_POST['settings']['keys'];
