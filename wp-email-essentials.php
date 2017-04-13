@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.7
+Version: 2.1.8
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -42,11 +42,11 @@ class WP_Email_Essentials
 
 		// set default from email and from name
 		if ($config['from_email']) {
-			// print "WPES FromMail: ". $config['from_email'] ."\n";
+			self::log("Config FromMail: ". $config['from_email'] ."");
 			add_filter('wp_mail_from', array('WP_Email_Essentials', 'filter_wp_mail_from'), 9999);
 		}
 		if ($config['from_name']) {
-			// print "WPES FromName: ". $config['from_name'] ."\n";
+			self::log("Config FromName: ". $config['from_name'] ."");
 			add_filter('wp_mail_from_name', array('WP_Email_Essentials', 'filter_wp_mail_from_name'), 9999);
 		}
 
@@ -90,7 +90,7 @@ class WP_Email_Essentials
 	public static function action_wp_mail($wp_mail)
 	{
 		$config = self::get_config();
-		// print "WPES ". __LINE__ ."set" ."\n";
+
 		self::wp_mail_from($config['from_email']);
 		self::wp_mail_from_name($config['from_name']);
 
@@ -102,8 +102,8 @@ class WP_Email_Essentials
 		if (!is_array($wp_mail['headers'])) {
 			$wp_mail['headers'] = array();
 		}
-		// print "WPES ". __LINE__ ."raw headers" ."\n";
-		// var_dump($wp_mail['headers']);
+		self::log("". __LINE__ ."raw headers" ."");
+		self::log( json_encode($wp_mail['headers']));
 
 		$header_index = array();
 		foreach ($wp_mail['headers'] as $i => $header) {
@@ -113,16 +113,16 @@ class WP_Email_Essentials
 		}
 
 		if ($all_headers['from']) {
-			// print "WPES ". __LINE__ ."headers has FROM: ". $all_headers['from'] ."\n";
+			self::log("". __LINE__ ."headers has FROM: ". $all_headers['from'] ."");
 			$from = self::rfc_decode($all_headers['from']);
-			// print "WPES ". __LINE__ ."decoded:\n";
-			// var_dumP($from);
+			self::log("". __LINE__ ."decoded:");
+			self::log(json_encode($from));
 			if ($from['email']) {
-				// print "WPES ". __LINE__ ." set from mail" ."\n";
+				self::log("". __LINE__ ." set from mail" ."");
 				self::wp_mail_from($from['email']);
 			}
 			if ($from['name']) {
-				// print "WPES ". __LINE__ ." set from name" ."\n";
+				self::log("". __LINE__ ." set from name" ."");
 				self::wp_mail_from_name($from['name']);
 			}
 		}
@@ -132,48 +132,48 @@ class WP_Email_Essentials
 		}
 		$wp_mail['headers'][$header_index['from']] = 'From: "' . self::wp_mail_from_name() . '" <' . self::wp_mail_from() . '>';
 
-		// print "WPES ". __LINE__ ." headers now:\n";
-		// var_dumP($wp_mail['headers']);
+		self::log("". __LINE__ ." headers now:");
+		self::log( json_encode($wp_mail['headers']));
 
 		if (!array_key_exists('reply-to', $header_index)) {
-			// print "WPES ". __LINE__ ." Adding REPLY-TO:\n";
+			self::log("". __LINE__ ." Adding REPLY-TO:");
 			$header_index['reply-to'] = count($header_index);
 			$wp_mail['headers'][$header_index['reply-to']] = 'Reply-To: ' . self::wp_mail_from_name() . ' <' . self::wp_mail_from() . '>';
 		}
 		else {
-			// print "WPES ". __LINE__ ." Already have REPLY-TO:\n";
+			self::log("". __LINE__ ." Already have REPLY-TO:");
 		}
 
 		// if ($config['errors_to']) {
 		// 	if(!array_key_exists('errors-to', $header_index)) {
-		// 		// print "WPES ". __LINE__ ." Adding ERRORS-TO:\n";
+		// 		self::log("". __LINE__ ." Adding ERRORS-TO:");
 		// 		$header_index['errors-to'] = count($header_index);
 		// 		$wp_mail['headers'][$header_index['errors-to']] = 'Errors-To: '. trim($config['errors_to']);
 		// 	}
 		// 	else {
-		// 		// print "WPES ". __LINE__ ." Already have REPLY-TO:\n";
+		// 		self::log("". __LINE__ ." Already have REPLY-TO:");
 		// 	}
 		// 	if (!array_key_exists('Return-Path', $header_index)) {
-		// 		// print "WPES ". __LINE__ ." Adding Return-Path:\n";
+		// 		self::log("". __LINE__ ." Adding Return-Path:");
 		// 		$header_index['Return-Path'] = count($header_index);
 		// 		$wp_mail['headers'][$header_index['Return-Path']] = 'Return-Path: '. trim($config['errors_to']);
 		// 	}
 		// 	else {
-		// 		// print "WPES ". __LINE__ ." Already have REPLY-TO:\n";
+		// 		self::log("". __LINE__ ." Already have REPLY-TO:");
 		// 	}
 		// }
 
-		// print "WPES ". __LINE__ ." headers now:\n";
-		// var_dumP($wp_mail['headers']);
+		self::log("". __LINE__ ." headers now:");
+		self::log( json_encode($wp_mail['headers']));
 
 		if ($config['make_from_valid']) {
-			// print "WPES ". __LINE__ ." Validifying FROM:\n";
+			self::log("". __LINE__ ." Validifying FROM:");
 			self::wp_mail_from(self::a_valid_from(self::wp_mail_from(), $config['make_from_valid']));
 			$wp_mail['headers'][$header_index['from']] = 'From: "' . self::wp_mail_from_name() . '" <' . self::a_valid_from(self::wp_mail_from(), $config['make_from_valid']) . '>';
 		}
 
-		// print "WPES ". __LINE__ ." headers now:\n";
-		// var_dumP($wp_mail['headers']);
+		self::log("". __LINE__ ." headers now:");
+		self::log( json_encode($wp_mail['headers']));
 
 		return $wp_mail;
 	}
@@ -456,7 +456,7 @@ class WP_Email_Essentials
 			}
 		}
 
-		// print "WPES MAILER ". __LINE__ ." set FROM: ". self::wp_mail_from() ."\n";
+		self::log("MAILER ". __LINE__ ." set FROM: ". self::wp_mail_from() ."");
 		$mailer->Sender = self::wp_mail_from();
 
 		$mailer->Body = self::preserve_weird_url_display($mailer->Body);
@@ -1198,7 +1198,17 @@ class WP_Email_Essentials
 
 	public function log($text)
 	{
-		// error_log( $text );
+		// to enable logging, create a writable file "log" in the plugin dir
+
+		static $fp;
+		if (file_exists(__DIR__ . '/log') && is_writable(__DIR__ . '/log')) {
+			if (!$fp)
+				$fp = fopen(__DIR__ . '/log', 'a');
+			if ($fp)
+				fwrite($fp, date('r'). ' WPES: '. trim($text) ."\n");
+		}
+
+		// error_log(' WPES: ' . $text);
 	}
 
 	public static function maybe_inject_admin_settings()
