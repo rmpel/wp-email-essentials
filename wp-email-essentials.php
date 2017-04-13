@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.8
+Version: 2.1.9
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -688,6 +688,8 @@ class WP_Email_Essentials
 
 	private static function rfc_decode($rfc)
 	{
+		$rfc = trim($rfc);
+
 		// $rfc might just be an e-mail address
 		if (is_email($rfc)) {
 			return array('name' => $rfc, 'email' => $rfc);
@@ -704,15 +706,15 @@ class WP_Email_Essentials
 		$name_part = strip_tags($rfc);
 		// remove the name-part from the original and the email part is known
 		$email_part = str_replace($name_part, '', $rfc);
-		// strip illegal characters;
-		$name_part = trim($name_part, ' "');
-		// the name part could have had escaped quotes (like "I have a quote \" here" <some@email.com> )
-		$name_part = stripslashes($name_part);
 
-		$email_part = trim($email_part, ' <>');
+		// strip illegal characters;
+		// the name part could have had escaped quotes (like "I have a quote \" here" <some@email.com> )
+		$name_part = trim(stripslashes($name_part), "\n\t\r\" ");
+		$email_part = trim($email_part, "\n\t\r\"<> ");
+
 		// verify :)
 		if (is_email($email_part)) {
-			return array('name' => stripslashes($name_part), 'email' => $email_part);
+			return array('name' => $name_part, 'email' => $email_part);
 		}
 		return false;
 	}
@@ -724,7 +726,7 @@ class WP_Email_Essentials
 		}
 
 		$email_array['name'] = json_encode($email_array['name']);
-		$return = trim(sprintf("%s <%s>", $email_array['name'], $email_array['email']));
+		$return = trim(sprintf("\"%s\" <%s>", $email_array['name'], $email_array['email']));
 		return $return;
 	}
 
