@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.6
+Version: 2.1.7
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -493,6 +493,19 @@ class WP_Email_Essentials
 			// replace all forms of breaks, list items and table row endings to new-lines
 			$body = preg_replace('/<br[\/ ]*>/Ui', "\n", $body);
 			$body = preg_replace('/<\/( li|tr )>/Ui', '</\1>' . "\n", $body);
+
+			// remove all carriage return symbols
+			$body = str_replace("\r", "", $body);
+
+			// remove white-space at beginning and end of the lines
+			$body = explode("\n", $body);
+			foreach ($body as $i => $line) {
+				$body[$i] = trim($line);
+			}
+			$body = implode("\n", $body);
+
+			// remove newlines where more than two (two newlines make one blank line, remember that)
+			$body = preg_replace("/[\n]{2,}/", "\n\n", $body);
 
 			// set the alternate body
 			$mailer->AltBody = $body;
