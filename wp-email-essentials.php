@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.9
+Version: 2.1.10
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -1414,15 +1414,81 @@ class WP_Email_Essentials_History
 		include 'admin-emails.php';
 	}
 
+	public static function get_to_addresses(PHPMailer $phpmailer) {
+		if (method_exists($phpmailer, 'getToAddresses')) {
+			return $phpmailer->getToAddresses();
+		}
+
+		// this version of PHPMailer does not have getToAddresses and To is protected. Use a dump to get the data we need.
+		ob_start();
+		print_r($phpmailer);
+		$mailer_data = ob_get_clean();
+		$mailer_data = str_replace('PHPMailer Object', 'Array', $mailer_data);
+		$mailer_data = str_replace('[to:protected]', '[to]', $mailer_data);
+		$mailer_data = self::print_r_reverse($mailer_data);
+		$mailer_data = json_decode(json_encode($mailer_data));
+
+		return $mailer_data->to;
+	}
+
+	private static function print_r_reverse($in) { 
+	    $lines = explode("\n", trim($in)); 
+	    if (trim($lines[0]) != 'Array') { 
+	        // bottomed out to something that isn't an array 
+	        return $in; 
+	    } else { 
+	        // this is an array, lets parse it 
+	        if (preg_match("/(\s{5,})\(/", $lines[1], $match)) { 
+	            // this is a tested array/recursive call to this function 
+	            // take a set of spaces off the beginning 
+	            $spaces = $match[1]; 
+	            $spaces_length = strlen($spaces); 
+	            $lines_total = count($lines); 
+	            for ($i = 0; $i < $lines_total; $i++) { 
+	                if (substr($lines[$i], 0, $spaces_length) == $spaces) { 
+	                    $lines[$i] = substr($lines[$i], $spaces_length); 
+	                } 
+	            } 
+	        } 
+	        array_shift($lines); // Array 
+	        array_shift($lines); // ( 
+	        array_pop($lines); // ) 
+	        $in = implode("\n", $lines); 
+	        // make sure we only match stuff with 4 preceding spaces (stuff for this array and not a nested one) 
+	        preg_match_all("/^\s{4}\[(.+?)\] \=\> /m", $in, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER); 
+	        $pos = array(); 
+	        $previous_key = ''; 
+	        $in_length = strlen($in); 
+	        // store the following in $pos: 
+	        // array with key = key of the parsed array's item 
+	        // value = array(start position in $in, $end position in $in) 
+	        foreach ($matches as $match) { 
+	            $key = $match[1][0]; 
+	            $start = $match[0][1] + strlen($match[0][0]); 
+	            $pos[$key] = array($start, $in_length); 
+	            if ($previous_key != '') $pos[$previous_key][1] = $match[0][1] - 1; 
+	            $previous_key = $key; 
+	        } 
+	        $ret = array(); 
+	        foreach ($pos as $key => $where) { 
+	            // recursively see if the parsed out value is an array too 
+	            $ret[$key] = self::print_r_reverse(substr($in, $where[0], $where[1] - $where[0])); 
+	        } 
+	        return $ret; 
+	    } 
+	} 
+
+
 	public static function phpmailer_init(PHPMailer $phpmailer)
 	{
 		global $wpdb;
 		$data = json_encode($phpmailer, JSON_PRETTY_PRINT);
-		$recipient = implode(',', $phpmailer->getToAddresses());
+		$recipient = implode(',', self::get_to_addresses($phpmailer));
 		$sender = $phpmailer->Sender ?: $phpmailer->from_name . '<' . $phpmailer->from_email . '>';
 
 		$wpdb->query($wpdb->prepare("UPDATE `{$wpdb->prefix}wpes_hist` SET status = 1, alt_body = %s, debug = %s WHERE ID = %d AND subject = %s LIMIT 1", $phpmailer->AltBody, $data, self::last_insert(), $phpmailer->Subject));
 	}
+
 
 	public static function wp_mail($data)
 	{
