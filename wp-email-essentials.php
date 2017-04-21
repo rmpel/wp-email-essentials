@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.11
+Version: 2.1.12
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -736,7 +736,7 @@ class WP_Email_Essentials
 
 		// this is the unescaped, unencasulated RFC, as WP 4.6 and higher want it.
 		$email_array['name'] = trim(stripslashes($email_array['name']),'"');
-		if (version_compare(get_bloginfo('version'), '4.5', <=)) {
+		if (version_compare(get_bloginfo('version'), '4.5', '<=')) {
 			// this will escape all quotes and encapsulate with quotes, for 4.5 and older
 			$email_array['name'] = json_encode($email_array['name']);
 		}
