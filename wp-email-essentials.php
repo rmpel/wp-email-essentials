@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.12
+Version: 2.1.13
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -719,6 +719,30 @@ class WP_Email_Essentials
 		return false;
 	}
 
+	private static function rfc_explode($string)
+	{
+		// safequard escaped quotes
+		$string = str_replace("\\\"", "ESCAPEDQUOTE", $string);
+		// get chnks
+		$exploded = array();
+		$i = 0;
+		// this regexp will match any comma + a string behind it.
+		// therefore, to fetch all elements, we need a dummy element at the end that will be ignored.
+		$string .= ", dummy";
+		while( trim($string) && preg_match ('/(,)(([^"]|"[^"]*")*$)/', $string, $match) ) {
+			$i ++;
+			// print "Round $i; \n";
+			// print "String WAS: $string \n";
+			$matched_rest = $match[0];
+			$unmatched_first = str_replace($matched_rest, '', $string);
+			$string = trim($matched_rest, ', ');
+			$exploded[] = str_replace('ESCAPEDQUOTE', "\\\"", $unmatched_first);
+			// var_dump('match:', $match, "mrest:", $matched_rest, "umfirst:", $unmatched_first, "string is now:", $string);
+			// print '---------------------------------------------------------------------------------'. "\n";
+		}
+		return array_map('trim', $exploded );
+	}
+
 	private static function rfc_recode($e) {
 		if (!is_array($e)) {
 			$e = self::rfc_decode($e);
@@ -1037,7 +1061,7 @@ class WP_Email_Essentials
 
 		// make sure we have a list of emails, not a single email
 		if (!is_array($email['to'])) {
-			$email['to'] = array($email['to']);
+			$email['to'] = self::rfc_explode($email['to']);
 		}
 
 		// find the admin address
