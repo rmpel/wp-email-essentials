@@ -224,6 +224,23 @@ $c = WP_Email_Essentials::get_config();
 				</td>
 			</tr>
 			<tr>
+				<td>Content pre-coding (for lack of a better word)</td>
+				<td>
+					<label>Some servers have f*cked-up content-encoding settings, resulting in wrongly encoded diacritics. If you expect a character like &eacute; and all you get is something like &euro;&tilde;&Itilde;, experiment with this setting.</label><br />
+					<select name="settings[content_precode]">
+						<?php
+						$encoding_table = explode(',', '0,auto,'. WP_Email_Essentials::encodings);
+						$encoding_table = array_combine($encoding_table, $encoding_table);
+						$encoding_table['0'] = 'No precoding (default)';
+						$encoding_table['auto'] = 'Autodetect with mb_check_encoding()';
+						foreach ($encoding_table as $encoding => $nice_encoding) {
+							print '<option value="' . $encoding . '" ' . ($c['content_precode'] == $encoding ? 'selected="selected"' : '') .'>'. $nice_encoding .'</option>';
+						}
+						?>
+					</select>
+				</td>
+			</tr>
+			<tr>
 				<td colspan="2">
 					<input type="checkbox" name="settings[alt_body]" value="1"
 						   <?php print $c['alt_body'] ? 'checked="checked" ' : ''; ?>id="smtp-alt_body"/><label

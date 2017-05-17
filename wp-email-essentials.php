@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.13
+Version: 2.1.14
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -21,6 +21,8 @@ class WP_Email_Essentials
 	static $message;
 	static $error;
 	static $debug;
+	const encodings = 'utf-8,utf-16,utf-32,latin-1,iso-8859-1';
+
 
 	function __construct()
 	{
@@ -462,13 +464,38 @@ class WP_Email_Essentials
 		$mailer->Body = self::preserve_weird_url_display($mailer->Body);
 
 		if ($config['is_html']) {
+			$check_encoding_result = false;
+			if ($config['content_precode'] == 'auto') {
+				$encoding_table = explode(',', WP_Email_Essentials::encodings);
+				foreach ($encoding_table as $encoding) {
+					$check_encoding_result = mb_check_encoding($mailer->Body, $encoding);
+					if ($check_encoding_result) {
+						$check_encoding_result = $encoding;
+						break;
+					}
+				}
+			}
+
 			$mailer->Body = self::maybe_convert_to_html($mailer->Body, $mailer->Subject, $mailer);
+
 			$css = apply_filters_ref_array('wpes_css', array('', &$mailer));
 
 			if ($config['css_inliner']) {
+
+				$precode = $config['content_precode'];
+				if ($precode == 'auto')
+					$precode = $check_encoding_result;
+
+				if ($precode)
+					$precode = '<meta http-equiv="Content-Type" content="text/html; charset='. $precode .'">';
+				else
+					$precode = '';
+
 				require_once dirname(__FILE__) . '/lib/cssInliner.class.php';
+				$mailer->Body = strtr($mailer->Body, array('<head>' => '<head>'. $precode));
 				$cssInliner = new cssInliner($mailer->Body, $css);
 				$mailer->Body = $cssInliner->convert();
+				$mailer->Body = strtr($mailer->Body, array('<head>'. $precode => '<head>'));
 			}
 			$mailer->isHTML(true);
 		}
@@ -615,6 +642,7 @@ class WP_Email_Essentials
 			'enable_smime' => false,
 			'spf_lookup_enabled' => false,
 			'errors_to' => 'postmaster@clearsite.nl',
+			'content_precode' => false,
 		);
 
 		$defaults = apply_filters('wpes_defaults', $defaults);
@@ -668,6 +696,7 @@ class WP_Email_Essentials
 		$settings['timeout'] = array_key_exists('timeout', $values) && $values['timeout'] ? true : false;
 		$settings['is_html'] = array_key_exists('is_html', $values) && $values['is_html'] ? true : false;
 		$settings['css_inliner'] = array_key_exists('css_inliner', $values) && $values['css_inliner'] ? true : false;
+		$settings['content_precode'] = array_key_exists('content_precode', $values) && $values['content_precode'] ? $values['content_precode'] : false;
 		$settings['alt_body'] = array_key_exists('alt_body', $values) && $values['alt_body'] ? true : false;
 		$settings['SingleTo'] = array_key_exists('SingleTo', $values) && $values['SingleTo'] ? true : false;
 		$settings['spf_lookup_enabled'] = array_key_exists('spf_lookup_enabled', $values) && $values['spf_lookup_enabled'] ? true : false;
@@ -1539,7 +1568,7 @@ class WP_Email_Essentials_History
 	public static function wp_mail($data)
 	{
 		global $wpdb;
-		//  'to', 'subject', 'message', 'headers', 'attachments'
+		$to = $subject = $message = ''; $headers = $attachments = array(); // will be overwritten by extract, but this will prevent phpStorm issues
 		extract($data);
 		$from = '';
 		foreach ($headers as $header) {
