@@ -1268,7 +1268,7 @@ class WP_Email_Essentials
 		return $value;
 	}
 
-	public function log($text)
+	public static function log($text)
 	{
 		// to enable logging, create a writable file "log" in the plugin dir
 
