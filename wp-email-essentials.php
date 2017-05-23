@@ -52,7 +52,7 @@ class WP_Email_Essentials
 			add_filter('wp_mail_from_name', array('WP_Email_Essentials', 'filter_wp_mail_from_name'), 9999);
 		}
 
-		add_filter('wp_mail', array('WP_Email_Essentials', 'action_wp_mail'));
+		add_filter('wp_mail', array('WP_Email_Essentials', 'action_wp_mail'), PHP_INT_MAX - 1000);
 		add_action('admin_menu', array('WP_Email_Essentials', 'admin_menu'), 10);
 
 		add_action('admin_menu', array('WP_Email_Essentials', 'migrate_from_smtp_connect'), -10000);
@@ -91,6 +91,11 @@ class WP_Email_Essentials
 
 	public static function action_wp_mail($wp_mail)
 	{
+		if (!$wp_mail) return $wp_mail;
+		if (!$wp_mail['to']) return $wp_mail;
+		if (!$wp_mail['subject']) return $wp_mail;
+		if (!$wp_mail['message']) return $wp_mail;
+
 		$config = self::get_config();
 
 		self::wp_mail_from($config['from_email']);
@@ -1599,3 +1604,291 @@ class WP_Email_Essentials_History
 }
 
 WP_Email_Essentials_History::getInstance();
+
+class WP_Email_Essentials_Queue {
+	const FRESH = 0;
+	const SENDING = 1;
+	const SENT = 2;
+	const STALE = 3;
+	const BLOCK = 9;
+
+	public static function getInstance() {
+		static $me;
+		if (!$me) {
+			$me = new self();
+		}
+		return $me;
+	}
+
+	public function __construct() {
+		global $wpdb;
+		$rev = get_option('wpes_queue_rev', 0);
+		$table = "{$wpdb->prefix}wpes_queue";
+
+		if ($rev < 1) {
+			$wpdb->query("
+CREATE TABLE $table (
+  `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
+  `dt` datetime NOT NULL,
+  `ip` varchar(256) NOT NULL DEFAULT '',
+  `to` mediumtext NOT NULL,
+  `subject` varchar(256) NOT NULL DEFAULT '',
+  `message` mediumtext NOT NULL,
+  `headers` mediumtext NOT NULL,
+  `attachments` longtext NOT NULL,
+  `status` INT(2) NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `dt` (`dt`),
+  KEY `ip` (`ip`(255))
+);");
+
+			update_option('wpes_queue_rev', 1);
+		}
+	}
+
+	// hook wp_mail
+	public static function wp_mail( $mail_data ) {
+		if (!$mail_data) return $mail_data;
+		if (!$mail_data['to']) return $mail_data;
+		if (!$mail_data['subject']) return $mail_data;
+		if (!$mail_data['message']) return $mail_data;
+
+		$me = self::getInstance();
+
+		global $wpdb;
+		// to, subject, message, headers, attachments
+
+		$priority = self::getMailPriority($mail_data);
+
+		$skip_queue = $me->setSkipQueue();
+
+		if (defined('WP_EMAIL_ESSENTIALS_QUEUE_BYPASS') && true === WP_EMAIL_ESSENTIALS_QUEUE_BYPASS) $skip_queue=true;
+		if ($priority == 1) $skip_queue=true;
+		$throttle = false;
+
+		if (self::throttle()) {
+			$skip_queue = false;
+			$throttle = true;
+			print "throttling! ";
+		}
+		else {
+			print "letting go! ";
+		}
+
+		if (!$skip_queue) {
+			$queue_item = $mail_data;
+			$queue_item['attachments'] = self::getInstance()->getAttachmentData($queue_item);
+
+			$queue_item = array_map('serialize', $queue_item);
+
+			$queue_item = array_merge(array('dt' => date('Y-m-d H:i:s'), 'ip' => self::server_remote_addr(), 'status' => $throttle ? self::BLOCK : self::FRESH), $queue_item);
+
+			$wpdb->insert("{$wpdb->prefix}wpes_queue", $queue_item, array('%s', '%s', '%s', '%s', '%s', '%s', '%s'));
+
+			// do not send mail, but to prevent errors, keep the array in same
+			add_action('phpmailer_init', array('WP_Email_Essentials_Queue', 'stop_mail'), PHP_INT_MIN);
+		}
+
+		return $mail_data;
+	}
+
+	private function setSkipQueue( $_state=null ) {
+		static $state;
+		if (null !== $_state) {
+			$state = $_state;
+		}
+
+		return $state;
+	}
+
+	private static function throttle() {
+		$me = self::getInstance();
+		global $wpdb;
+		$ip = $me->server_remote_addr();
+
+		$q = $wpdb->prepare( "SELECT count(id) FROM {$wpdb->prefix}wpes_queue WHERE ip = %s AND dt >= %s", $ip, date('Y-m-d H:i:s', time() - 5) );
+		$mails_recently_sent = $wpdb->get_var( $q );
+		var_dump($mails_recently_sent);
+		if ($mails_recently_sent > 10) {
+			return apply_filters('wpes_mail_is_throttled', true, $ip, $mails_recently_sent);
+		}
+		return false;
+	}
+
+	public static function getMailPriority($mail_array)
+	{
+		$headers = self::processedMailHeaders($mail_array['headers']);
+
+		$prio_fields = array('x-priority', 'x-msmail-priority', 'importance');
+		foreach ($prio_fields as $field) {
+			if (isset($headers[ $field ])) {
+				$value = strtolower($headers[ $field ]);
+				$prio = strtr( $value, array('high' => 1, 'normal' => 3, 'low' => 5));
+				$prio = intval( $prio );
+				if ($prio) {
+					return $prio;
+				}
+			}
+		}
+		return 3;
+
+	}
+
+	public static function processedMailHeaders($headers)
+	{
+		if (!is_array($headers)) {
+			$headers = explode("\n", str_replace("\r", "\n", $headers) );
+			$headers = array_filter($headers);
+		}
+		$headers_assoc = array();
+		foreach ($headers as $_key => $value) {
+			if (is_numeric($_key)) {
+				list($key, $value) = explode(':', $value, 2);
+				if (!$value) {
+					$headers_assoc[] = $key;
+				}
+				else {
+					$headers_assoc[ $key ] = $value;
+				}
+			}
+			else {
+				$headers_assoc[ $_key ] = $value;
+			}
+		}
+		$headers_assoc = array_combine(array_map('strtolower', array_keys($headers_assoc)), array_values($headers_assoc));
+
+		return $headers_assoc;
+	}
+
+	public static function server_remote_addr($return_htaccess_variable = false)
+	{
+		$possibilities = array(
+			'HTTP_CF_CONNECTING_IP' => 'HTTP:CF-CONNECTING-IP',
+			'HTTP_X_FORWARDED_FOR' => 'HTTP:X-FORWARDED-FOR',
+			'REMOTE_ADDR' => false,
+		);
+		foreach ($possibilities as $option => $htaccess_variable) {
+			if (isset($_SERVER[$option]) && trim($_SERVER[$option])) {
+				$ip = explode(',', $_SERVER[$option]);
+				return $return_htaccess_variable ? $htaccess_variable : end($ip);
+			}
+		}
+		return $_SERVER['REMOTE_ADDR'];
+	}
+
+	// get database-ready attachments
+	public function getAttachmentData( $mail_data )
+	{
+		if (!$mail_data['attachments'])
+			$mail_data['attachments'] = array();
+		if (!is_array($mail_data['attachments']))
+			$mail_data['attachments'] = array($mail_data['attachments']);
+		$mail_data['attachments'] = array_combine(array_map('basename', $mail_data['attachments']), $mail_data['attachments']);
+		foreach ($mail_data['attachments'] as $filename => $path) {
+			$mail_data['attachments'][ $filename ] = base64_encode($path);
+		}
+
+		return $mail_data['attachments'];
+	}
+
+	// restore attachment data for sending with wp_mail
+	public function restoreAttachmentData( $mail_data )
+	{
+		$tmp = wp_upload_dir();
+		$tmp = $tmp['basedir'];
+		$tmp = "$tmp/mail_queue_atts";
+		if (!is_dir($tmp)) {
+			mkdir($tmp);
+			if (!is_writable(ABSPATH .'/wp-load.php')) {
+				chmod( $tmp, 0777 );
+			}
+		}
+		$tmp .= '/'. $this->mail_token();
+		if (!is_dir($tmp)) {
+			mkdir($tmp);
+			if (!is_writable(ABSPATH .'/wp-load.php')) {
+				chmod( $tmp, 0777 );
+			}
+		}
+		foreach ( $mail_data['attachments'] as $filename => $data ) {
+			file_put_contents("$tmp/$filename", base64_decode($data));
+			$mail_data['attachments'][$filename] = "$tmp/$filename";
+		}
+		$mail_data['attachments'] = array_values($mail_data['attachments']);
+
+		return $mail_data['attachments'];
+	}
+
+	private function mail_token() {
+		static $token;
+		if (!$token) {
+			$token = md5(microtime(true) . $_SERVER['REMOTE_ADDR'] . rand(0, PHP_INT_MAX));
+		}
+		return $token;
+	}
+
+	// hook cron
+	public static function scheduled_task()
+	{
+		self::sendBatch();
+	}
+
+	public static function sendOneMail()
+	{
+		global $wpdb;
+		$id = $wpdb->get_var("SELECT id FROM {$wpdb->prefix}wpes_queue WHERE status = ". self::FRESH ." ORDER BY dt ASC");
+		self::sendNow( $id );
+	}
+
+	public static function sendBatch()
+	{
+		global $wpdb;
+		$ids = $wpdb->get_col("SELECT id FROM {$wpdb->prefix}wpes_queue WHERE status = ". self::FRESH ." ORDER BY dt ASC LIMIT 25");
+		foreach ($ids as $id) {
+			self::sendNow( $id );
+		}
+	}
+
+	public static function sendNow( $id	)
+	{
+		global $wpdb;
+		$mail_data = $wpdb->get_row( $wpdb->prepare("SELECT `to`, `subject`, `message`, `headers`, `attachments` FROM {$wpdb->prefix}wpes_queue WHERE id = %d", $id), ARRAY_A);
+		self::getInstance()->setSkipQueue(true);
+		$mail_data = array_map('unserialize', $mail_data);
+		self::setStatus($id, self::SENDING);
+
+		$result = wp_mail($mail_data['to'], $mail_data['subject'], $mail_data['message'], $mail_data['headers'], self::getInstance()->restoreAttachmentData($mail_data));
+		self::getInstance()->setSkipQueue(false);
+		if ($result) {
+			self::setStatus($id, self::SENT);
+		}
+		else {
+			self::setStatus($id, self::STALE);
+		}
+	}
+
+	private static function setStatus($mail_id, $status)
+	{
+		global $wpdb;
+		$wpdb->update( "{$wpdb->prefix}wpes_queue", array('status' => $status), array( 'id' => $mail_id));
+	}
+
+
+	public static function stop_mail(&$phpmailer)
+	{
+		remove_action('phpmailer_init', array('WP_Email_Essentials_Queue', 'stop_mail'), PHP_INT_MIN);
+		$phpmailer = new WP_Email_Essentials_Fake_Sender();
+	}
+}
+
+
+// this section enables mail_queue, which is not yet finished
+//
+//add_filter('wp_mail', array('WP_Email_Essentials_Queue', 'wp_mail'), PHP_INT_MAX - 2000); // run before actual mail_send
+//
+//require_once ABSPATH .'/wp-includes/class-phpmailer.php';
+//class WP_Email_Essentials_Fake_Sender extends PHPMailer {
+//	function Send() {
+//		return true;
+//	}
+//}
