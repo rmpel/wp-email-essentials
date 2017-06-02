@@ -26,5 +26,13 @@
     "4.7.4": {
       "2.1.13": 100
     }
-  }
+  },
+  "Dist Cleanup": [
+    "readme.txt",
+    "README.md",
+    "smime-certificates",
+    ".editorconfig",
+    ".gitignore",
+    "lang/wpes-*.po"
+  ]
 }
