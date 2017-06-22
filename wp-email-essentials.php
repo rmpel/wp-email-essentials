@@ -61,8 +61,36 @@ class WP_Email_Essentials
 
 		add_filter('cfdb_form_data', array('WP_Email_Essentials', 'correct_cfdb_form_data_ip'));
 
-		self::mail_key_registrations();
+		add_filter( 'comment_moderation_headers', array('WP_Email_Essentials', 'correct_comment_from'), 11, 2);
 
+		self::mail_key_registrations();
+	}
+
+	public static function get_wordpress_default_emailaddress() {
+		$site = parse_url(get_bloginfo('url'));
+		$host = $site['host'];
+		$host = preg_replace('/^www\./', '', $host);
+		$wpemail = 'wordpress@'. $host;
+		self::log('wp-email '. $wpemail);
+		return $wpemail;
+	}
+
+	public static function correct_comment_from($mail_headers, $comment_id) {
+		$u = wp_get_current_user();
+		foreach ($mail_headers as $i => $header) {
+			if (preg_match('/^([Ff][Rr][Oo][Mm]|[Rr][Ee][Pp][Ll][Yy]\-[Tt][Oo]):[ \t]*(.+)$/', $header, $m)) {
+				$email = $m[2];
+				$email = self::rfc_decode($email);
+				if ($u->ID && $u->user_login == $email['name']) {
+					$email['name'] = $u->display_name;
+				}
+				if ($u->ID && $email['email'] == self::get_wordpress_default_emailaddress()) {
+					$email['email'] = $u->user_email;
+				}
+				$mail_headers[$i] = $m[1] .': '. self::rfc_encode($email);
+			}
+		}
+		return $mail_headers;
 	}
 
 	function correct_cfdb_form_data_ip($cf7)
@@ -124,7 +152,7 @@ class WP_Email_Essentials
 			$from = self::rfc_decode($all_headers['from']);
 			self::log("". __LINE__ ."decoded:");
 			self::log(json_encode($from));
-			if ($from['email']) {
+			if ($from['email'] && $from['email'] != self::get_wordpress_default_emailaddress()) {
 				self::log("". __LINE__ ." set from mail" ."");
 				self::wp_mail_from($from['email']);
 			}
