@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.14
+Version: 2.1.20
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -61,7 +61,10 @@ class WP_Email_Essentials
 
 		add_filter('cfdb_form_data', array('WP_Email_Essentials', 'correct_cfdb_form_data_ip'));
 
-		add_filter( 'comment_moderation_headers', array('WP_Email_Essentials', 'correct_comment_from'), 11, 2);
+		add_filter( 'comment_notification_headers', array('WP_Email_Essentials', 'correct_comment_from'), 11, 2);
+
+		// debug
+//		add_filter('comment_notification_notify_author', '__return_true');
 
 		self::mail_key_registrations();
 	}
@@ -77,10 +80,14 @@ class WP_Email_Essentials
 
 	public static function correct_comment_from($mail_headers, $comment_id) {
 		$u = wp_get_current_user();
+		$mail_headers = array_map('trim', explode("\n", $mail_headers));
 		foreach ($mail_headers as $i => $header) {
 			if (preg_match('/^([Ff][Rr][Oo][Mm]|[Rr][Ee][Pp][Ll][Yy]\-[Tt][Oo]):[ \t]*(.+)$/', $header, $m)) {
 				$email = $m[2];
 				$email = self::rfc_decode($email);
+				if ($email['email'] == $email['name']) {
+					$email['name'] = $u->ID ? $u->display_name : ( $email['name'] ?: __('anonymous') );
+				}
 				if ($u->ID && $u->user_login == $email['name']) {
 					$email['name'] = $u->display_name;
 				}
@@ -90,7 +97,7 @@ class WP_Email_Essentials
 				$mail_headers[$i] = $m[1] .': '. self::rfc_encode($email);
 			}
 		}
-		return $mail_headers;
+		return implode("\r\n", $mail_headers);
 	}
 
 	function correct_cfdb_form_data_ip($cf7)
