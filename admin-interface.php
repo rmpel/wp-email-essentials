@@ -247,6 +247,13 @@ $c = WP_Email_Essentials::get_config();
 						for="smtp-alt_body"><?php _e('Derive plain-text alternative? (Will derive text-ish body from html body as AltBody)', 'wpes'); ?></label>
 				</td>
 			</tr>
+			<tr>
+				<td colspan="2">
+					<input type="checkbox" name="settings[do_shortcodes]" value="1"
+						   <?php print $c['do_shortcodes'] ? 'checked="checked" ' : ''; ?>id="do_shortcodes"/><label
+						for="do_shortcodes"><?php _e('Process the body with <code>do_shortcode()</code>', 'wpes'); ?></label>
+				</td>
+			</tr>
 			<!-- 			<tr>
 				<td>
 					<label for="errors-to"><?php _e('Errors-To', 'wpes'); ?></label>

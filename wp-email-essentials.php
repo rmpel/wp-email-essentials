@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.20
+Version: 2.1.21
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -540,6 +540,10 @@ class WP_Email_Essentials
 			$mailer->isHTML(true);
 		}
 
+		if ($config['do_shortcodes']) {
+			$mailer->Body = do_shortcode($mailer->Body);
+		}
+
 		if ($config['alt_body']) {
 			$body = $mailer->Body;
 			$btag = strpos($body, '<body');
@@ -576,6 +580,11 @@ class WP_Email_Essentials
 
 			// set the alternate body
 			$mailer->AltBody = $body;
+
+			if ($config['do_shortcodes']) {
+				$mailer->AltBody = do_shortcode($mailer->AltBody);
+			}
+
 		}
 
 		if ($_POST && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == __('Send sample mail', 'wpes')) {
@@ -683,6 +692,7 @@ class WP_Email_Essentials
 			'spf_lookup_enabled' => false,
 			'errors_to' => 'postmaster@clearsite.nl',
 			'content_precode' => false,
+			'do_shortcodes' => false
 		);
 
 		$defaults = apply_filters('wpes_defaults', $defaults);
@@ -738,6 +748,7 @@ class WP_Email_Essentials
 		$settings['css_inliner'] = array_key_exists('css_inliner', $values) && $values['css_inliner'] ? true : false;
 		$settings['content_precode'] = array_key_exists('content_precode', $values) && $values['content_precode'] ? $values['content_precode'] : false;
 		$settings['alt_body'] = array_key_exists('alt_body', $values) && $values['alt_body'] ? true : false;
+		$settings['do_shortcodes'] = array_key_exists('do_shortcodes', $values) && $values['do_shortcodes'] ? true : false;
 		$settings['SingleTo'] = array_key_exists('SingleTo', $values) && $values['SingleTo'] ? true : false;
 		$settings['spf_lookup_enabled'] = array_key_exists('spf_lookup_enabled', $values) && $values['spf_lookup_enabled'] ? true : false;
 
@@ -1927,3 +1938,4 @@ CREATE TABLE $table (
 //		return true;
 //	}
 //}
+
