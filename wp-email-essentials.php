@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.21
+Version: 2.1.22
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -1622,12 +1622,16 @@ class WP_Email_Essentials_History
 		$to = $subject = $message = ''; $headers = $attachments = array(); // will be overwritten by extract, but this will prevent phpStorm issues
 		extract($data);
 		$from = '';
+
+		$headers = array_map('trim', explode("\n", $headers));
+
 		foreach ($headers as $header) {
-			if (preg_match('/^From:(.+)$/', $header, $m)) {
+			if (preg_match('/^[Ff][Rr][Oo][Mm]:(.+)$/', $header, $m)) {
 				$from = trim($m[1]);
 			}
 		}
 		$_headers = trim(implode("\n", $headers));
+
 		$wpdb->query($wpdb->prepare("INSERT INTO `{$wpdb->prefix}wpes_hist` (status, sender, recipient, subject, headers, body, thedatetime) VALUES (0, %s, %s, %s, %s, %s, %s);", $from, is_array($to) ? implode(',', $to) : $to, $subject, $_headers, $message, mysql2date('Y-m-d H:i:s', current_time('timestamp'))));
 		self::last_insert($wpdb->insert_id);
 
