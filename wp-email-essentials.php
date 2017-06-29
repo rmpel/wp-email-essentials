@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.22
+Version: 2.1.23
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -341,6 +341,22 @@ class WP_Email_Essentials
 	{
 		$url = admin_url('admin-ajax.php');
 		$ip = wp_remote_retrieve_body(wp_remote_get($url . '?action=wpes_get_ip'));
+		if (!preg_match('/^[0-9A-Fa-f\.\:]$/', $ip)) { $ip = false; }
+		if (!$ip) {
+			$ip = wp_remote_retrieve_body(wp_remote_get('https://ip.clearsite.nl'));
+			if ($ip == '0.0.0.0') {
+				$ip = false;
+			}
+		}
+		if (!$ip) {
+			$ip = wp_remote_retrieve_body(wp_remote_get('http://watismijnip.nl', array(
+				'httpversion' => '1.1',
+				'referer' => $_SERVER['HTTP_REFERER'],
+				'user-agent' => $_SERVER['HTTP_USER_AGENT'],
+			)));
+			preg_match('/Uw IP-Adres: <b>([.:0-9A-Fa-f]+)/', $ip, $part);
+			$ip = $part[1];
+		}
 		if (!$ip) {
 			$ip = $_SERVER["SERVER_ADDR"];
 		}
@@ -353,48 +369,49 @@ class WP_Email_Essentials
 		if (!$seen) {
 			$seen = array();
 		}
-		if (in_array($domain, $seen)) {
-			return array();
-		}
-		$seen[] = $domain;
+		if (! isset($seen[ $domain ])) {
+			$seen[ $domain ] = array();
 
-		$dns = self::dns_get_record($domain, DNS_TXT);
-		$ips = array();
-		foreach ($dns as $record) {
-			$record['txt'] = strtolower($record['txt']);
-			if (false !== strpos($record['txt'], 'v=spf1')) {
-				$sections = explode(' ', $record['txt']);
-				foreach ($sections as $section) {
-					if ($section == 'a') {
-						$ips[] = self::dns_get_record($domain, DNS_A, true);
-					}
-					elseif ($section == 'mx') {
-						$mx = self::dns_get_record($domain, DNS_MX);
-						foreach ($mx as $mx_record) {
-							$target = $mx_record['target'];
-							try {
-								$new_target = self::dns_get_record($domain, DNS_A, true);
-							}
-							catch (Exception $e) {
-								$new_target = $target;
-							}
-							$ips[] = $new_target;
+			$dns = self::dns_get_record($domain, DNS_TXT);
+			$ips = array();
+			foreach ($dns as $record) {
+				$record['txt'] = strtolower($record['txt']);
+				if (false !== strpos($record['txt'], 'v=spf1')) {
+					$sections = explode(' ', $record['txt']);
+					foreach ($sections as $section) {
+						if ($section == 'a') {
+							$ips[] = self::dns_get_record($domain, DNS_A, true);
 						}
-					}
-					elseif (preg_match('/ip4:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$/', $section, $ip)) {
-						$ips[] = $ip[1];
-					}
-					elseif (preg_match('/ip4:([0-9\.]+\/[0-9]+)$/', $section, $ip_cidr)) {
-						$ips = array_merge($ips, self::expand_ip4_cidr($ip_cidr[1]));
-					}
-					elseif (preg_match('/include:(.+)$/', $section, $include)) {
-						$ips = array_merge($ips, self::gather_ips_from_spf($include[1]));
+						elseif ($section == 'mx') {
+							$mx = self::dns_get_record($domain, DNS_MX);
+							foreach ($mx as $mx_record) {
+								$target = $mx_record['target'];
+								try {
+									$new_target = self::dns_get_record($domain, DNS_A, true);
+								}
+								catch (Exception $e) {
+									$new_target = $target;
+								}
+								$ips[] = $new_target;
+							}
+						}
+						elseif (preg_match('/ip4:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$/', $section, $ip)) {
+							$ips[] = $ip[1];
+						}
+						elseif (preg_match('/ip4:([0-9\.]+\/[0-9]+)$/', $section, $ip_cidr)) {
+							$ips = array_merge($ips, self::expand_ip4_cidr($ip_cidr[1]));
+						}
+						elseif (preg_match('/include:(.+)$/', $section, $include)) {
+							$ips = array_merge($ips, self::gather_ips_from_spf($include[1]));
+						}
 					}
 				}
 			}
+
+			$seen[ $domain ] = &$ips;
 		}
 
-		return $ips;
+		return $seen[ $domain ];
 	}
 
 	public static function dns_get_record($lookup, $filter, $single_output=null)

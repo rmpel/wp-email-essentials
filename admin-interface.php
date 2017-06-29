@@ -201,7 +201,7 @@ $c = WP_Email_Essentials::get_config();
 							print 'selected="selected"';
 						} ?>><?php print sprintf(__('Rewrite email@addre.ss to noreply@%s', 'wpes'), $host); ?></option>
 						<?php $defmail = WP_Email_Essentials::wp_mail_from($config['from_email']);
-						if (false !== strpos($defmail, '@' . $host)) { ?>
+						if (WP_Email_Essentials::i_am_allowed_to_send_in_name_of($defmail)) { ?>
 							<option value="default" <?php if ('default' == $c['make_from_valid']) {
 								print 'selected="selected"';
 							} ?>><?php print sprintf(__('Rewrite email@addre.ss to %s', 'wpes'), $defmail); ?></option>
