@@ -30,6 +30,25 @@ $c = WP_Email_Essentials::get_config();
 		<table>
 			<tr>
 				<td>
+					<label for="enable_history"><?php _e('Enable Email History', 'wpes'); ?></label>
+				</td>
+				<td>
+					<input type="checkbox" name="settings[enable_history]" value="1" <?php if ($c['enable_history']) { ?>checked="checked"<?php } ?> id="enable_history" />
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3">
+					<strong>Warning: </strong> Storing e-mails in your database is a BAD idea and illegal in most countries. Use this for DEBUGGING only!<br />
+					Disabling this feature will delete the mail-store.
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3">
+					<hr />
+				</td>
+			</tr>
+			<tr>
+				<td>
 					<label for="timeout"><?php _e('phpMailer Timeout', 'wpes'); ?></label>
 				</td>
 				<td>

@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.23
+Version: 2.1.24
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -709,7 +709,8 @@ class WP_Email_Essentials
 			'spf_lookup_enabled' => false,
 			'errors_to' => 'postmaster@clearsite.nl',
 			'content_precode' => false,
-			'do_shortcodes' => false
+			'do_shortcodes' => false,
+			'enable_history' => false,
 		);
 
 		$defaults = apply_filters('wpes_defaults', $defaults);
@@ -768,6 +769,7 @@ class WP_Email_Essentials
 		$settings['do_shortcodes'] = array_key_exists('do_shortcodes', $values) && $values['do_shortcodes'] ? true : false;
 		$settings['SingleTo'] = array_key_exists('SingleTo', $values) && $values['SingleTo'] ? true : false;
 		$settings['spf_lookup_enabled'] = array_key_exists('spf_lookup_enabled', $values) && $values['spf_lookup_enabled'] ? true : false;
+		$settings['enable_history'] = array_key_exists('enable_history', $values) && $values['enable_history'] ? true : false;
 
 		$settings['enable_smime'] = array_key_exists('enable_smime', $values) && $values['enable_smime'] ? "1" : "0";
 		$settings['certfolder'] = array_key_exists('certfolder', $values) && $values['certfolder'] ? $values['certfolder'] : '';
@@ -1502,10 +1504,15 @@ class WP_Email_Essentials_History
 
 	private static function init()
 	{
-		/** mail history */
-		if (get_option('wpes_hist_rev', 0) < 1) {
-			global $wpdb;
-			$wpdb->query("CREATE TABLE `{$wpdb->prefix}wpes_hist` (
+		global $wpdb;
+		$enabled = WP_Email_Essentials::get_config();
+		$enabled = $enabled['enable_history'];
+
+		if ($enabled) {
+
+			/** mail history */
+			if ( get_option( 'wpes_hist_rev', 0 ) < 1 ) {
+				$wpdb->query( "CREATE TABLE `{$wpdb->prefix}wpes_hist` (
 			  `ID` int(11) unsigned NOT NULL AUTO_INCREMENT,
 			  `sender` varchar(256) NOT NULL DEFAULT '',
 			  `recipient` varchar(256) NOT NULL DEFAULT '',
@@ -1523,17 +1530,24 @@ class WP_Email_Essentials_History
 			  KEY `subject` (`subject`(255)),
 			  KEY `thedatetime` (`thedatetime`),
 			  KEY `status` (`status`)
-			)");
-			update_option('wpes_hist_rev', 1);
+			)" );
+				update_option( 'wpes_hist_rev', 1 );
+			}
+
+			add_action( 'phpmailer_init', array( 'WP_Email_Essentials_History', 'phpmailer_init' ), 10000000000 );
+			add_filter( 'wp_mail', array( 'WP_Email_Essentials_History', 'wp_mail' ), 10000000000 );
+			add_action( 'wp_mail_failed', array( 'WP_Email_Essentials_History', 'wp_mail_failed' ), 10000000000 );
+
+			add_action( 'shutdown', array( 'WP_Email_Essentials_History', 'shutdown' ) );
+
+			add_action( 'admin_menu', array( 'WP_Email_Essentials_History', 'admin_menu' ) );
 		}
-
-		add_action('phpmailer_init', array('WP_Email_Essentials_History', 'phpmailer_init'), 10000000000);
-		add_filter('wp_mail', array('WP_Email_Essentials_History', 'wp_mail'), 10000000000);
-		add_action('wp_mail_failed', array('WP_Email_Essentials_History', 'wp_mail_failed'), 10000000000);
-
-		add_action('shutdown', array('WP_Email_Essentials_History', 'shutdown'));
-
-		add_action('admin_menu', array('WP_Email_Essentials_History', 'admin_menu'));
+		else {
+			if (get_option('wpes_hist_rev', 0)) {
+				$wpdb->query( "DROP TABLE `{$wpdb->prefix}wpes_hist`;" );
+				delete_option('wpes_hist_rev');
+			}
+		}
 	}
 
 	public static function shutdown()
