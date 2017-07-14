@@ -1750,10 +1750,10 @@ CREATE TABLE $table (
 		if (self::throttle()) {
 			$skip_queue = false;
 			$throttle = true;
-			print "throttling! ";
+			// print "throttling! ";
 		}
 		else {
-			print "letting go! ";
+			// print "letting go! ";
 		}
 
 		if (!$skip_queue) {
@@ -1789,7 +1789,7 @@ CREATE TABLE $table (
 
 		$q = $wpdb->prepare( "SELECT count(id) FROM {$wpdb->prefix}wpes_queue WHERE ip = %s AND dt >= %s", $ip, date('Y-m-d H:i:s', time() - 5) );
 		$mails_recently_sent = $wpdb->get_var( $q );
-		var_dump($mails_recently_sent);
+		// var_dump($mails_recently_sent);
 		if ($mails_recently_sent > 10) {
 			return apply_filters('wpes_mail_is_throttled', true, $ip, $mails_recently_sent);
 		}
@@ -1963,14 +1963,14 @@ CREATE TABLE $table (
 }
 
 
-// this section enables mail_queue, which is not yet finished
-//
-//add_filter('wp_mail', array('WP_Email_Essentials_Queue', 'wp_mail'), PHP_INT_MAX - 2000); // run before actual mail_send
-//
-//require_once ABSPATH .'/wp-includes/class-phpmailer.php';
-//class WP_Email_Essentials_Fake_Sender extends PHPMailer {
-//	function Send() {
-//		return true;
-//	}
-//}
+/* this section enables mail_queue, which is not yet finished */
+
+add_filter('wp_mail', array('WP_Email_Essentials_Queue', 'wp_mail'), PHP_INT_MAX - 2000); // run before actual mail_send
+
+require_once ABSPATH .'/wp-includes/class-phpmailer.php';
+class WP_Email_Essentials_Fake_Sender extends PHPMailer {
+	function Send() {
+		return true;
+	}
+}
 
