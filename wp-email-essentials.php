@@ -1895,7 +1895,7 @@ CREATE TABLE $table (
 		}
 		$mail_data['attachments'] = array_combine( array_map( 'basename', $mail_data['attachments'] ), $mail_data['attachments'] );
 		foreach ( $mail_data['attachments'] as $filename => $path ) {
-			$mail_data['attachments'][ $filename ] = base64_encode( $path );
+			$mail_data['attachments'][ $filename ] = base64_encode( file_get_contents($path) );
 		}
 
 		return $mail_data['attachments'];
@@ -1920,8 +1920,12 @@ CREATE TABLE $table (
 			}
 		}
 		foreach ( $mail_data['attachments'] as $filename => $data ) {
-			file_put_contents( "$tmp/$filename", base64_decode( $data ) );
-			$mail_data['attachments'][ $filename ] = "$tmp/$filename";
+			$data = base64_decode($data);
+			if (!is_file($data)) {
+				file_put_contents( "$tmp/$filename", $data );
+				$data = "$tmp/$filename";
+			}
+			$mail_data['attachments'][ $filename ] = $data;
 		}
 		$mail_data['attachments'] = array_values( $mail_data['attachments'] );
 
