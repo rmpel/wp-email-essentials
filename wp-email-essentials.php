@@ -1714,7 +1714,7 @@ class WP_Email_Essentials_Queue {
 
 		if ( $rev < 1 ) {
 			$wpdb->query( "
-CREATE TABLE $table (
+CREATE TABLE {$table} (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `dt` datetime NOT NULL,
   `ip` varchar(256) NOT NULL DEFAULT '',
@@ -1962,6 +1962,8 @@ CREATE TABLE $table (
 	}
 
 	public static function sendBatch() {
+		$me = self::getInstance();
+
 		global $wpdb;
 		$ids = $wpdb->get_col( "SELECT id FROM {$wpdb->prefix}wpes_queue WHERE status = " . self::FRESH . " ORDER BY dt ASC LIMIT 25" );
 		foreach ( $ids as $id ) {
