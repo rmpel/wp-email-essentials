@@ -1712,9 +1712,9 @@ class WP_Email_Essentials_Queue {
 		$rev   = get_option( 'wpes_queue_rev', 0 );
 		$table = "{$wpdb->prefix}wpes_queue";
 
-		if ( $rev < 1 ) {
+		if ( $rev < 2 ) {
 			$wpdb->query( "
-CREATE TABLE {$table} (
+CREATE TABLE IF NOT EXISTS {$table} (
   `id` int(11) unsigned NOT NULL AUTO_INCREMENT,
   `dt` datetime NOT NULL,
   `ip` varchar(256) NOT NULL DEFAULT '',
@@ -1729,7 +1729,7 @@ CREATE TABLE {$table} (
   KEY `ip` (`ip`(255))
 );" );
 
-			update_option( 'wpes_queue_rev', 1 );
+			update_option( 'wpes_queue_rev', 2 );
 		}
 	}
 
