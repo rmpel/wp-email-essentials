@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.25
+Version: 2.1.26
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -1518,6 +1518,7 @@ class WP_Email_Essentials_History {
 				$wpdb->query( "CREATE TABLE `{$wpdb->prefix}wpes_hist` (
 			  `ID` int(11) unsigned NOT NULL AUTO_INCREMENT,
 			  `sender` varchar(256) NOT NULL DEFAULT '',
+			  `ip` varchar(128) NOT NULL DEFAULT '',
 			  `recipient` varchar(256) NOT NULL DEFAULT '',
 			  `subject` varchar(256) NOT NULL DEFAULT '',
 			  `headers` text NOT NULL,
@@ -1669,7 +1670,8 @@ class WP_Email_Essentials_History {
 		}
 		$_headers = trim( implode( "\n", $headers ) );
 
-		$wpdb->query( $wpdb->prepare( "INSERT INTO `{$wpdb->prefix}wpes_hist` (status, sender, recipient, subject, headers, body, thedatetime) VALUES (0, %s, %s, %s, %s, %s, %s);", $from, is_array( $to ) ? implode( ',', $to ) : $to, $subject, $_headers, $message, mysql2date( 'Y-m-d H:i:s', current_time( 'timestamp' ) ) ) );
+		$ip = self::server_remote_addr();
+		$wpdb->query( $wpdb->prepare( "INSERT INTO `{$wpdb->prefix}wpes_hist` (status, sender, recipient, subject, headers, body, thedatetime, ip) VALUES (0, %s, %s, %s, %s, %s, %s);", $from, is_array( $to ) ? implode( ',', $to ) : $to, $subject, $_headers, $message, date( 'Y-m-d H:i:s', current_time( 'timestamp' ) ), $ip ) );
 		self::last_insert( $wpdb->insert_id );
 
 		return $data;
