@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.28
+Version: 2.1.29
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -238,8 +238,8 @@ class WP_Email_Essentials {
 					return strtr( $invalid_from, array( '@' => '-at-', '.' => '-dot-' ) ) . '@' . $host;
 				case 'default':
 					$defmail = WP_Email_Essentials::wp_mail_from( $config['from_email'] );
-					if ( false !== strpos( $defmail, '@' . $host ) ) {
-						return WP_Email_Essentials::wp_mail_from( $config['from_email'] );
+					if ( WP_Email_Essentials::i_am_allowed_to_send_in_name_of( $defmail ) ) {
+						return $defmail;
 					}
 				// if test fails, bleed through to noreply, so leave this order in tact!
 				case 'noreply':
@@ -882,7 +882,7 @@ class WP_Email_Essentials {
 					$host    = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
 					$host    = preg_replace( '/^www[0-9]*\./', '', $host );
 					$defmail = WP_Email_Essentials::wp_mail_from( $_POST['settings']['from_email'] );
-					if ( 'default' == $_POST['settings']['make_from_valid'] && false === strpos( $defmail, '@' . $host ) ) {
+					if ( 'default' == $_POST['settings']['make_from_valid'] && !self::i_am_allowed_to_send_in_name_of( $defmail ) ) {
 						$_POST['settings']['make_from_valid'] = 'noreply';
 					}
 					self::set_config( $_POST['settings'] );
