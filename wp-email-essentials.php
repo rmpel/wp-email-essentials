@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.29
+Version: 2.1.30
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
