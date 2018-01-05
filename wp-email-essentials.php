@@ -138,6 +138,11 @@ class WP_Email_Essentials {
 			return $wp_mail;
 		}
 
+		return self::patch_wp_mail( $wp_mail );
+	}
+
+	public static function patch_wp_mail( $wp_mail ) {
+
 		$config = self::get_config();
 
 		self::wp_mail_from( $config['from_email'] );
@@ -151,7 +156,7 @@ class WP_Email_Essentials {
 		if ( ! is_array( $wp_mail['headers'] ) ) {
 			$wp_mail['headers'] = array();
 		}
-		self::log( "" . __LINE__ . "raw headers" . "" );
+		self::log( "" . __LINE__ . " raw headers" . "" );
 		self::log( json_encode( $wp_mail['headers'] ) );
 
 		$header_index = array();
@@ -162,9 +167,9 @@ class WP_Email_Essentials {
 		}
 
 		if ( $all_headers['from'] ) {
-			self::log( "" . __LINE__ . "headers has FROM: " . $all_headers['from'] . "" );
+			self::log( "" . __LINE__ . " headers has FROM: " . $all_headers['from'] . "" );
 			$from = self::rfc_decode( $all_headers['from'] );
-			self::log( "" . __LINE__ . "decoded:" );
+			self::log( "" . __LINE__ . " decoded:" );
 			self::log( json_encode( $from ) );
 			if ( $from['email'] && $from['email'] != self::get_wordpress_default_emailaddress() ) {
 				self::log( "" . __LINE__ . " set from mail" . "" );
@@ -1347,6 +1352,7 @@ class WP_Email_Essentials {
 
 	public static function log( $text ) {
 		// to enable logging, create a writable file "log" in the plugin dir
+		if (defined('WPES_DEBUG')) { print "LOG: $text\n"; return; }
 
 		static $fp;
 		if ( file_exists( __DIR__ . '/log' ) && is_writable( __DIR__ . '/log' ) ) {
