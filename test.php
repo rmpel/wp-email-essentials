@@ -25,7 +25,11 @@ $mail = array(
 // var_dump(WP_Email_Essentials::patch_wp_mail($mail));
 
 add_action('wp_mail', function( $wp_mail ){
-	var_dump($wp_mail);
+	var_dump("BEFORE WPES", $wp_mail);
+}, PHP_INT_MIN);
+
+add_action('wp_mail', function( $wp_mail ){
+	var_dump("AFTER WPES", $wp_mail);
 	exit;
 }, PHP_INT_MAX);
 
