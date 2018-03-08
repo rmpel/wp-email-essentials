@@ -742,7 +742,7 @@ class WP_Email_Essentials {
 
 		$values   = stripslashes_deep( $values );
 		$settings = self::get_config();
-		if ( $values['smtp-enabled'] ) {
+		if ( isset($values['smtp-enabled']) && $values['smtp-enabled'] ) {
 			$settings['smtp'] = array(
 				'secure'   => $values['secure'],
 				'host'     => $values['host'],
@@ -1544,6 +1544,11 @@ class WP_Email_Essentials_History {
 				update_option( 'wpes_hist_rev', 1 );
 			}
 
+			if ( get_option( 'wpes_hist_rev', 0 ) < 2 ) {
+				$wpdb->query( "ALTER TABLE `{$wpdb->prefix}wpes_hist` ADD eml LONGTEXT NOT NULL" );
+				update_option( 'wpes_hist_rev', 2 );
+			}
+
 			add_action( 'phpmailer_init', array( 'WP_Email_Essentials_History', 'phpmailer_init' ), 10000000000 );
 			add_filter( 'wp_mail', array( 'WP_Email_Essentials_History', 'wp_mail' ), 10000000000 );
 			add_action( 'wp_mail_failed', array( 'WP_Email_Essentials_History', 'wp_mail_failed' ), 10000000000 );
@@ -1557,6 +1562,20 @@ class WP_Email_Essentials_History {
 				delete_option( 'wpes_hist_rev' );
 			}
 		}
+
+		add_action('init', function() {
+			global $wpdb;
+			if ( current_user_can( 'manage_options' ) && isset( $_GET['download_eml'] ) ) {
+				$eml = $wpdb->get_var( $wpdb->prepare( "SELECT eml FROM {$wpdb->prefix}wpes_hist WHERE id = %d LIMIT 1", $_GET['download_eml'] ) );
+				if ( $eml ) {
+					header( "Content-Type: message/rfc822" );
+					header( "Content-Disposition: inline; filename=message.eml" );
+					header( "Content-Length: " . strlen( $eml ) );
+					print $eml;
+					exit;
+				}
+			}
+		});
 	}
 
 	public static function shutdown() {
@@ -1656,7 +1675,10 @@ class WP_Email_Essentials_History {
 		$recipient = implode( ',', self::get_to_addresses( $phpmailer ) );
 		$sender    = $phpmailer->Sender ?: $phpmailer->from_name . '<' . $phpmailer->from_email . '>';
 
-		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = 1, alt_body = %s, debug = %s WHERE ID = %d AND subject = %s LIMIT 1", $phpmailer->AltBody, $data, self::last_insert(), $phpmailer->Subject ) );
+		$phpmailer->PreSend();
+		$eml = $phpmailer->GetSentMIMEMessage();
+
+		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = 1, alt_body = %s, debug = %s, eml = %s WHERE ID = %d AND subject = %s LIMIT 1", $phpmailer->AltBody, $data, $eml, self::last_insert(), $phpmailer->Subject ) );
 	}
 
 

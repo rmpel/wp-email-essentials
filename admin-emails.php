@@ -184,9 +184,10 @@ $start = $page * $limit;
 					<span class="sender"><?php _e('Sender', 'wpes'); ?></span>
 					<span class="subject"><?php _e('Subject', 'wpes'); ?></span>
 					<span class="status"><?php _e('Status', 'wpes'); ?></span>
+					<span class="eml"><?php _e('EML', 'wpes'); ?></span>
 				</li>
 				<?php
-				$list = $wpdb->get_results("SELECT subject, sender, thedatetime, recipient, ID, body, alt_body, headers, status, `debug`, errinfo FROM {$wpdb->prefix}wpes_hist ORDER BY $ofield $order LIMIT $start,$limit");
+				$list = $wpdb->get_results("SELECT subject, sender, thedatetime, recipient, ID, body, alt_body, headers, status, `debug`, errinfo, eml FROM {$wpdb->prefix}wpes_hist ORDER BY $ofield $order LIMIT $start,$limit");
 				$stati = array(
 					__('Sent ??'),
 					__('Sent Ok'),
@@ -199,8 +200,8 @@ $start = $page * $limit;
 					<span class="recipient"><?php print esc_html($item->recipient); ?>&nbsp;</span>
 					<span class="sender"><?php print esc_html($item->sender); ?>&nbsp;</span>
 					<span class="subject"><?php print esc_html($item->subject); ?>&nbsp;</span>
-					<span class="status"><?php print $stati[$item->status]; ?> <?php print $item->errinfo; ?>
-						&nbsp;</span>
+					<span class="status"><?php print $stati[$item->status]; ?> <?php print $item->errinfo; ?>&nbsp;</span>
+					<span class="eml"><?php if ($item->eml) { print '<a href="'. add_query_arg('download_eml', $item->ID) .'" class="dashicons dashicons-email-alt"></a>'; } ?></span>
 					</li><?php
 				} ?></ul>
 		</div>
