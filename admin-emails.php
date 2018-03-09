@@ -77,6 +77,10 @@ $start = $page * $limit;
 			color: white;
 		}
 
+		#mail-viewer #mail-index li:hover .dashicons {
+			color: white;
+		}
+
 		#mail-viewer #mail-index li .sender,
 		#mail-viewer #mail-index li .thedatetime,
 		#mail-viewer #mail-index li .recipient {
@@ -104,6 +108,7 @@ $start = $page * $limit;
 		#mail-viewer #mail-index li .recipient,
 		#mail-viewer #mail-index li .sender,
 		#mail-viewer #mail-index li .subject,
+		#mail-viewer #mail-index li .eml,
 		#mail-viewer #mail-index li .status {
 			overflow: hidden;
 			/*white-space: nowrap;*/
@@ -179,12 +184,12 @@ $start = $page * $limit;
 		<div class="top-panel">
 			<ul id="mail-index">
 				<li id="email-header">
+					<span class="eml"><span class="dashicons dashicons-email-alt"></span></span>
 					<span class="thedatetime"><?php _e('Date/Time', 'wpes'); ?></span>
 					<span class="recipient"><?php _e('Recipient', 'wpes'); ?></span>
 					<span class="sender"><?php _e('Sender', 'wpes'); ?></span>
 					<span class="subject"><?php _e('Subject', 'wpes'); ?></span>
 					<span class="status"><?php _e('Status', 'wpes'); ?></span>
-					<span class="eml"><?php _e('EML', 'wpes'); ?></span>
 				</li>
 				<?php
 				$list = $wpdb->get_results("SELECT subject, sender, thedatetime, recipient, ID, body, alt_body, headers, status, `debug`, errinfo, eml FROM {$wpdb->prefix}wpes_hist ORDER BY $ofield $order LIMIT $start,$limit");
@@ -196,12 +201,12 @@ $start = $page * $limit;
 				foreach ($list as $item) {
 					?>
 					<li class="email-item" id="email-<?php print $item->ID; ?>">
+					<span class="eml"><?php if ($item->eml) { print '<a href="'. add_query_arg('download_eml', $item->ID) .'" class="dashicons dashicons-download"></a>'; } ?></span>
 					<span class="thedatetime"><?php print esc_html($item->thedatetime); ?>&nbsp;</span>
 					<span class="recipient"><?php print esc_html($item->recipient); ?>&nbsp;</span>
 					<span class="sender"><?php print esc_html($item->sender); ?>&nbsp;</span>
 					<span class="subject"><?php print esc_html($item->subject); ?>&nbsp;</span>
 					<span class="status"><?php print $stati[$item->status]; ?> <?php print $item->errinfo; ?>&nbsp;</span>
-					<span class="eml"><?php if ($item->eml) { print '<a href="'. add_query_arg('download_eml', $item->ID) .'" class="dashicons dashicons-email-alt"></a>'; } ?></span>
 					</li><?php
 				} ?></ul>
 		</div>
