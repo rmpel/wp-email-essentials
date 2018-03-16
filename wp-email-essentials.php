@@ -897,7 +897,7 @@ class WP_Email_Essentials {
 				case __( 'Send sample mail', 'wpes' ):
 					ob_start();
 					self::$debug = true;
-					$result      = wp_mail( 'Remon "Pelculator" Pel <remon@clearsite.nl>', /*get_option('admin_email', false),*/
+					$result      = wp_mail( get_option('admin_email', false),
 						__( 'Test-email', 'wpes' ), self::dummy_content() );
 					self::$debug = ob_get_clean();
 					if ( $result ) {
