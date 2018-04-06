@@ -161,12 +161,13 @@ class WP_Email_Essentials {
 
 		$header_index = array();
 		foreach ( $wp_mail['headers'] as $i => $header ) {
-			preg_match( '/([^:]+):(.*)$/U', $header, $match );
-			$all_headers[ strtolower( trim( $match[1] ) ) ]  = $match[2];
-			$header_index[ strtolower( trim( $match[1] ) ) ] = $i;
+			if (preg_match( '/([^:]+):(.*)$/U', $header, $match )) {
+				$all_headers[ strtolower( trim( $match[1] ) ) ]  = $match[2];
+				$header_index[ strtolower( trim( $match[1] ) ) ] = $i;
+			}
 		}
 
-		if ( $all_headers['from'] ) {
+		if ( isset($all_headers['from']) ) {
 			self::log( "" . __LINE__ . " headers has FROM: " . $all_headers['from'] . "" );
 			$from = self::rfc_decode( $all_headers['from'] );
 			self::log( "" . __LINE__ . " decoded:" );
@@ -609,7 +610,7 @@ class WP_Email_Essentials {
 
 		}
 
-		if ( $_POST && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == __( 'Send sample mail', 'wpes' ) ) {
+		if ( $_POST && isset($_POST['form_id']) && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == __( 'Send sample mail', 'wpes' ) ) {
 			$mailer->Timeout   = 5;
 			$mailer->SMTPDebug = 2;
 		}
@@ -626,7 +627,7 @@ class WP_Email_Essentials {
 
 		// DEBUG output
 
-		if ( $_POST && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == __( 'Print debug output of sample mail', 'wpes' ) ) {
+		if ( $_POST && isset($_POST['form_id']) && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == __( 'Print debug output of sample mail', 'wpes' ) ) {
 			$mailer->SMTPDebug = true;
 			print '<h2>' . __( 'Dump of PHP Mailer object', 'wpes' ) . '</h2><pre>';
 			var_dumP( $mailer );
@@ -1672,8 +1673,8 @@ class WP_Email_Essentials_History {
 	public static function phpmailer_init( PHPMailer $phpmailer ) {
 		global $wpdb;
 		$data      = json_encode( self::object_data( $phpmailer ), JSON_PRETTY_PRINT );
-		$recipient = implode( ',', self::get_to_addresses( $phpmailer ) );
-		$sender    = $phpmailer->Sender ?: $phpmailer->from_name . '<' . $phpmailer->from_email . '>';
+//		$recipient = implode( ',', self::get_to_addresses( $phpmailer ) );
+//		$sender    = $phpmailer->Sender ?: $phpmailer->from_name . '<' . $phpmailer->from_email . '>';
 
 		$phpmailer->PreSend();
 		$eml = $phpmailer->GetSentMIMEMessage();
