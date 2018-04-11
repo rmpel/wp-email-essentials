@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.31
+Version: 2.1.32
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -1685,12 +1685,21 @@ class WP_Email_Essentials_History {
 
 	public static function wp_mail( $data ) {
 		global $wpdb;
-		$to      = $subject = $message = '';
-		$headers = $attachments = array(); // will be overwritten by extract, but this will prevent phpStorm issues
-		extract( $data );
-		$from = '';
+		// fallback values
+		$to      = $subject = $message = $from = '';
+		$headers = $attachments = array();
 
-		$headers = array_map( 'trim', explode( "\n", $headers ) );
+		/** @var String $to the addressee */
+		/** @var String $subject the subject */
+		/** @var String $message the message */
+		/** @var array|String $headers the headers */
+		/** @var array $attachments the attachments */
+		extract( $data );
+
+		if (!is_array($headers))
+			$headers = explode( "\n", $headers );
+
+		$headers = array_map( 'trim', $headers );
 
 		foreach ( $headers as $header ) {
 			if ( preg_match( '/^[Ff][Rr][Oo][Mm]:(.+)$/', $header, $m ) ) {
