@@ -11,7 +11,7 @@ if (!in_array($ofield, array('subject', 'sender', 'thedatetime', 'recipient'))) 
 	$ofield = 'ID';
 }
 
-$order = isset($_GET['_order']) ? $_GET['_order'] : ($ofield == 'ID' ? 'DESC' : 'ASC');
+$order = isset($_GET['_order']) ? ( $_GET['_order'] == 'DESC' ? 'DESC' : 'ASC') : ($ofield == 'ID' ? 'DESC' : 'ASC');
 $limit = isset($_GET['_limit']) && intval($_GET['_limit']) > 0 ? intval($_GET['_limit']) : 25;
 $page = isset($_GET['_page']) && intval($_GET['_page']) > 0 ? intval($_GET['_page']) : 0;
 $start = $page * $limit;
