@@ -1672,7 +1672,9 @@ class WP_Email_Essentials_History {
 
 	public static function phpmailer_init( PHPMailer $phpmailer ) {
 		global $wpdb;
-		$data      = json_encode( self::object_data( $phpmailer ), JSON_PRETTY_PRINT );
+		$data      = self::object_data( $phpmailer );
+		$data->Password = '********';
+		$data      = json_encode( $data, JSON_PRETTY_PRINT );
 //		$recipient = implode( ',', self::get_to_addresses( $phpmailer ) );
 //		$sender    = $phpmailer->Sender ?: $phpmailer->from_name . '<' . $phpmailer->from_email . '>';
 

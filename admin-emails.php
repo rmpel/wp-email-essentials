@@ -226,14 +226,13 @@ $start = $page * $limit;
 				if (!$item->debug) {
 					$item->debug = new stdClass();
 				}
-				$item->debug->Password = '********';
 				$item->debug = json_encode($item->debug, JSON_PRETTY_PRINT);
 				?>
 				<div class="email-data" id="email-data-<?php print $item->ID; ?>">
 				<span class="headers"><pre><?php print esc_html($item->headers); ?></pre></span>
 				<span class="alt_body"><pre><?php print nl2br($item->alt_body); ?></pre></span>
 				<span class="body"><iframe class="autofit" width="100%" height="100%" border="0" frameborder="0"
-										   src="data:text/html;base64,<?php print base64_encode(WP_Email_Essentials::maybe_convert_to_html($item->body, $item->subject, $mailer)); ?>"></iframe></span>
+										   src="data:text/html;headers=<?php print urlencode('Content-Security-Policy: script-src none;'); ?>;base64,<?php print base64_encode(str_ireplace(array('onload', '<script', '</script>'), array('nonload', '[SCRIPT', '[/SCRIPT]'), WP_Email_Essentials::maybe_convert_to_html($item->body, $item->subject, $mailer))); ?>"></iframe></span>
 				<span class="debug"><pre><?php print esc_html($item->debug); ?></pre></span>
 				</div><?php
 			} ?>
@@ -254,7 +253,7 @@ $start = $page * $limit;
 				}
 				else if ($(this).is('.show-body')) {
 					$(this).removeClass('show-body').addClass('show-headers');
-					$(that).removeClass('show-body').addClass('show-headers');
+					$(that).removeClass('show-body').addClass('show-headers');t
 				}
 				else if ($(this).is('.show-headers')) {
 					$(this).removeClass('show-headers').addClass('show-alt-body');
