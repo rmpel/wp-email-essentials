@@ -1373,7 +1373,7 @@ class WP_Email_Essentials {
 		if ( basename( $_SERVER['PHP_SELF'] ) == 'options-general.php' && ! @$_GET['page'] ) {
 			?>
 			<script>
-				jQuery("#admin_email").after('<p class="description"><?php print sprintf( __( 'You can configure alternative administrators <a href="%s">here</a>.', 'wpes' ), add_query_arg( array( 'page' => 'wpes-admins' ), admin_url( 'admin.php' ) ) ); ?></p>');
+				jQuery("#admin_email,#new_admin_email").after('<p class="description"><?php print sprintf( __( 'You can configure alternative administrators <a href="%s">here</a>.', 'wpes' ), add_query_arg( array( 'page' => 'wpes-admins' ), admin_url( 'admin.php' ) ) ); ?></p>');
 			</script>
 			<?php
 		}
