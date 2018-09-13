@@ -35,8 +35,8 @@ class WP_Email_Essentials {
 		$config = self::get_config();
 		add_action( 'phpmailer_init', array( 'WP_Email_Essentials', 'action_phpmailer_init' ) );
 		if ( $config['is_html'] ) {
-			add_filter( 'wp_mail_content_type', create_function( '', 'return "text/html";' ) );
-			add_filter( 'wp_mail_charset', create_function( '', 'return "UTF-8";' ) );
+			add_filter( 'wp_mail_content_type', function() { return "text/html"; } );
+			add_filter( 'wp_mail_charset', function() { return "UTF-8"; } );
 		}
 
 		// set default from email and from name
