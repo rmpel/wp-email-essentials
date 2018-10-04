@@ -27,7 +27,11 @@ class cssInliner
 	function convert() {
 		$this->CssToInlineStyles->setHTML( $this->html );
 		$this->CssToInlineStyles->setCSS( $this->css );
-		$result = $this->CssToInlineStyles->convert();
+		try {
+			$result = $this->CssToInlineStyles->convert();
+		} catch ( Exception $e ) {
+			$result = $this->html;
+		}
 		return $result;
 	}
 
