@@ -67,7 +67,7 @@ $c = WP_Email_Essentials::get_config();
 						<?php $timeouts = array(
 							60  => __( '1 minute', 'wpes' ),
 							300 => __( '5 minutes (default)', 'wpes' ),
-							600 => __( '10 minutes (for very slow hosts', 'wpes' ),
+							600 => __( '10 minutes (for very slow hosts)', 'wpes' ),
 						);
 						if ( ! isset( $c['timeout'] ) || ! $c['timeout'] ) {
 							$c['timeout'] = 300;
