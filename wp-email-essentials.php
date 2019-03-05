@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.1.32
+Version: 2.2.0
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -344,9 +344,7 @@ class WP_Email_Essentials {
 		}
 		$sending_server = self::get_sending_ip();
 
-		$spf_valid_ips = self::gather_ips_from_spf( $sending_domain[1] );
-
-		return in_array( $sending_server, $spf_valid_ips );
+		return self::validate_ip_listed_in_spf( $sending_domain[1], $sending_server );
 	}
 
 	public static function get_sending_ip() {
@@ -421,6 +419,57 @@ class WP_Email_Essentials {
 		}
 
 		return $seen[ $domain ];
+	}
+
+	public static function validate_ip_listed_in_spf( $domain, $ip ) {
+		$dns = self::dns_get_record( $domain, DNS_TXT );
+		if (!$dns) {
+			return NULL;
+		}
+		$ips = array();
+		echo "Testing $domain for $ip\n";
+
+		foreach ( $dns as $record ) {
+			$record['txt'] = strtolower( $record['txt'] );
+			if ( false !== strpos( $record['txt'], 'v=spf1' ) ) {
+				$sections = explode( ' ', $record['txt'] );
+				foreach ( $sections as $section ) {
+					echo "Section: $section\n";
+					if ( $section == 'a' ) {
+						$m_ip = self::dns_get_record( $domain, DNS_A, true );
+						if ($m_ip == $ip) {
+							return true;
+						}
+					} elseif ( $section == 'mx' ) {
+						$mx = self::dns_get_record( $domain, DNS_MX );
+						foreach ( $mx as $mx_record ) {
+							$target = $mx_record['target'];
+							try {
+								$new_target = self::dns_get_record( $domain, DNS_A, true );
+							}
+							catch ( Exception $e ) {
+								$new_target = $target;
+							}
+							if ($ip == $new_target) {
+								return true;
+							}
+						}
+					} elseif ( preg_match( '/ip4:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$/', $section, $m_ip ) ) {
+						if ($ip == $m_ip[1]) {
+							return true;
+						}
+					} elseif ( preg_match( '/ip4:([0-9\.]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
+						if (in_array($ip, self::expand_ip4_cidr( $ip_cidr[1] ) )) {
+							return true;
+						}
+					} elseif ( preg_match( '/include:(.+)$/', $section, $include ) ) {
+						return self::validate_ip_listed_in_spf( $include[1], $ip );
+					}
+				}
+			}
+		}
+
+		return false;
 	}
 
 	public static function dns_get_record( $lookup, $filter, $single_output = null ) {
