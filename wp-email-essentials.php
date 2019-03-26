@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.2.0
+Version: 2.2.1
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -427,14 +427,14 @@ class WP_Email_Essentials {
 			return NULL;
 		}
 		$ips = array();
-		echo "Testing $domain for $ip\n";
+		// echo "Testing $domain for $ip\n";
 
 		foreach ( $dns as $record ) {
 			$record['txt'] = strtolower( $record['txt'] );
 			if ( false !== strpos( $record['txt'], 'v=spf1' ) ) {
 				$sections = explode( ' ', $record['txt'] );
 				foreach ( $sections as $section ) {
-					echo "Section: $section\n";
+					// echo "Section: $section\n";
 					if ( $section == 'a' ) {
 						$m_ip = self::dns_get_record( $domain, DNS_A, true );
 						if ($m_ip == $ip) {
