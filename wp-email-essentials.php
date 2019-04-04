@@ -626,19 +626,29 @@ class WP_Email_Essentials {
 				list( $junk, $body ) = explode( $bodytag, $body );
 			}
 
+			// images to alt tags
+			// example; <img src="/logo.png" alt="company logo" /> becomes  company logo
+			$body = preg_replace( "/<img.+alt=([\"'])(.+)(\\1).+>/U", "\\2", $body );
+
 			// links to link-text+url
 			// example; <a href="http://nu.nl">Go to NU.nl</a> becomes:  Go to Nu.nl ( http://nu.nl )
-			$body = preg_replace( '/<a.+href=("|\')([^\\1]+)\\1>([^<]+)<\/a>/U', '\3 (\2)', $body );
+			$body = preg_replace( "/<a.+href=([\"'])(.+)(\\1).+>([^<]+)<\/a>/U", "\\4 (\\2)", $body );
 
-			// remove all HTML except line breaks
-			$body = strip_tags( $body, '<br>' );
+			// remove all HTML except line breaks and line-break-ish
+			$body = strip_tags( $body, '<br><tr><li>' );
 
 			// replace all forms of breaks, list items and table row endings to new-lines
 			$body = preg_replace( '/<br[\/ ]*>/Ui', "\n", $body );
-			$body = preg_replace( '/<\/( li|tr )>/Ui', '</\1>' . "\n", $body );
+			$body = preg_replace( '/<\/(li|tr)>/Ui', '</\1>' . "\n\n", $body );
+
+			// remove all HTML
+			$body = strip_tags( $body, '' );
 
 			// remove all carriage return symbols
 			$body = str_replace( "\r", "", $body );
+
+			// convert non-breaking-space to regular space
+			$body = strtr($body, array( '&nbsp;' => ' '));
 
 			// remove white-space at beginning and end of the lines
 			$body = explode( "\n", $body );
@@ -1093,7 +1103,7 @@ class WP_Email_Essentials {
 	}
 
 	public static function dummy_content() {
-		return '<h1>Sample Email Body</h1><p>Some råndôm text Lorem Ipsum is <b>bold simply dummy</b> text of the <strong>strong printing and typesetting</strong> industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><h2>A header-2</h2><p>Some more text</p><h3>A header-3</h3><ul><li>A list - unordered, item 1</li><li>Item 2</li></ul><h4>A header-4</h4><ol><li>A list - ordered, item 1</li><li>Item 2</li></ol>';
+		return '<h1>Sample Email Body</h1><p>Some <a href="https://google.com/?s=random">råndôm</a> text Lorem Ipsum is <b>bold simply dummy</b> text of the <strong>strong printing and typesetting</strong> industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><h2>A header-2</h2><p>Some more text</p><h3>A header-3</h3><ul><li>A list - unordered, item 1</li><li>Item 2</li></ul><h4>A header-4</h4><ol><li>A list - ordered, item 1</li><li>Item 2</li></ol>';
 	}
 
 	public static function cid_to_image( $html, $mailer ) {
