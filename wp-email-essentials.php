@@ -536,7 +536,7 @@ class WP_Email_Essentials {
 		/** @var phpMailer $mailer */
 		$config = self::get_config();
 
-		if ( $config['smtp']['timeout'] ) {
+		if ( isset($config['smtp']['timeout']) ) {
 			$mailer->Timeout = $config['smtp']['timeout'];
 		}
 
@@ -560,7 +560,7 @@ class WP_Email_Essentials {
 				} else {
 					$mailer->SMTPAutoTLS = false;
 				}
-				if ( true === WPES_ALLOW_SSL_SELF_SIGNED || substr( $config['smtp']['secure'], - 1, 1 ) == '-' ) {
+				if ( (defined('WPES_ALLOW_SSL_SELF_SIGNED') && true === WPES_ALLOW_SSL_SELF_SIGNED) || substr( $config['smtp']['secure'], - 1, 1 ) == '-' ) {
 					$mailer->SMTPOptions = array(
 						'ssl' => array(
 							'verify_peer'       => false,
