@@ -348,6 +348,10 @@ class WP_Email_Essentials {
 	}
 
 	public static function get_sending_ip() {
+		static $sending_ip;
+		if ($sending_ip) {
+			return $sending_ip;
+		}
 		$url = admin_url( 'admin-ajax.php' );
 		$ip  = wp_remote_retrieve_body( wp_remote_get( $url . '?action=wpes_get_ip' ) );
 		if ( ! preg_match( '/^[0-9A-Fa-f\.\:]$/', $ip ) ) {
@@ -372,7 +376,7 @@ class WP_Email_Essentials {
 			$ip = $_SERVER["SERVER_ADDR"];
 		}
 
-		return $ip;
+		return $sending_ip = $ip;
 	}
 
 	public static function gather_ips_from_spf( $domain ) {
