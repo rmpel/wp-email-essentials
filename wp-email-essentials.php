@@ -552,9 +552,11 @@ class WP_Email_Essentials {
 			}
 
 			if ( isset( $config['smtp']['username'] ) ) {
-				$mailer->SMTPAuth = true;
-				$mailer->Username = $config['smtp']['username'];
-				$mailer->Password = $config['smtp']['password'];
+				if ( trim( $config['smtp']['username'] ) ) {
+					$mailer->SMTPAuth = true;
+					$mailer->Username = $config['smtp']['username'];
+					$mailer->Password = $config['smtp']['password'];
+				}
 				if ( isset( $config['smtp']['secure'] ) && $config['smtp']['secure'] ) {
 					$mailer->SMTPSecure = trim( $config['smtp']['secure'], '-' );
 				} else {
