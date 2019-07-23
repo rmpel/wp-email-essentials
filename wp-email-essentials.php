@@ -35,8 +35,12 @@ class WP_Email_Essentials {
 		$config = self::get_config();
 		add_action( 'phpmailer_init', array( 'WP_Email_Essentials', 'action_phpmailer_init' ) );
 		if ( $config['is_html'] ) {
-			add_filter( 'wp_mail_content_type', function() { return "text/html"; } );
-			add_filter( 'wp_mail_charset', function() { return "UTF-8"; } );
+			add_filter( 'wp_mail_content_type', function () {
+				return "text/html";
+			} );
+			add_filter( 'wp_mail_charset', function () {
+				return "UTF-8";
+			} );
 		}
 
 		// set default from email and from name
@@ -161,13 +165,13 @@ class WP_Email_Essentials {
 
 		$header_index = array();
 		foreach ( $wp_mail['headers'] as $i => $header ) {
-			if (preg_match( '/([^:]+):(.*)$/U', $header, $match )) {
+			if ( preg_match( '/([^:]+):(.*)$/U', $header, $match ) ) {
 				$all_headers[ strtolower( trim( $match[1] ) ) ]  = $match[2];
 				$header_index[ strtolower( trim( $match[1] ) ) ] = $i;
 			}
 		}
 
-		if ( isset($all_headers['from']) ) {
+		if ( isset( $all_headers['from'] ) ) {
 			self::log( "" . __LINE__ . " headers has FROM: " . $all_headers['from'] . "" );
 			$from = self::rfc_decode( $all_headers['from'] );
 			self::log( "" . __LINE__ . " decoded:" );
@@ -349,7 +353,7 @@ class WP_Email_Essentials {
 
 	public static function get_sending_ip() {
 		static $sending_ip;
-		if ($sending_ip) {
+		if ( $sending_ip ) {
 			return $sending_ip;
 		}
 		$url = admin_url( 'admin-ajax.php' );
@@ -402,8 +406,7 @@ class WP_Email_Essentials {
 								$target = $mx_record['target'];
 								try {
 									$new_target = self::dns_get_record( $domain, DNS_A, true );
-								}
-								catch ( Exception $e ) {
+								} catch ( Exception $e ) {
 									$new_target = $target;
 								}
 								$ips[] = $new_target;
@@ -427,8 +430,8 @@ class WP_Email_Essentials {
 
 	public static function validate_ip_listed_in_spf( $domain, $ip ) {
 		$dns = self::dns_get_record( $domain, DNS_TXT );
-		if (!$dns) {
-			return NULL;
+		if ( ! $dns ) {
+			return null;
 		}
 		$ips = array();
 		// echo "Testing $domain for $ip\n";
@@ -441,7 +444,7 @@ class WP_Email_Essentials {
 					// echo "Section: $section\n";
 					if ( $section == 'a' ) {
 						$m_ip = self::dns_get_record( $domain, DNS_A, true );
-						if ($m_ip == $ip) {
+						if ( $m_ip == $ip ) {
 							return true;
 						}
 					} elseif ( $section == 'mx' ) {
@@ -450,20 +453,19 @@ class WP_Email_Essentials {
 							$target = $mx_record['target'];
 							try {
 								$new_target = self::dns_get_record( $domain, DNS_A, true );
-							}
-							catch ( Exception $e ) {
+							} catch ( Exception $e ) {
 								$new_target = $target;
 							}
-							if ($ip == $new_target) {
+							if ( $ip == $new_target ) {
 								return true;
 							}
 						}
 					} elseif ( preg_match( '/ip4:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$/', $section, $m_ip ) ) {
-						if ($ip == $m_ip[1]) {
+						if ( $ip == $m_ip[1] ) {
 							return true;
 						}
 					} elseif ( preg_match( '/ip4:([0-9\.]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
-						if (in_array($ip, self::expand_ip4_cidr( $ip_cidr[1] ) )) {
+						if ( in_array( $ip, self::expand_ip4_cidr( $ip_cidr[1] ) ) ) {
 							return true;
 						}
 					} elseif ( preg_match( '/include:(.+)$/', $section, $include ) ) {
@@ -536,7 +538,7 @@ class WP_Email_Essentials {
 		/** @var phpMailer $mailer */
 		$config = self::get_config();
 
-		if ( isset($config['smtp']['timeout']) ) {
+		if ( isset( $config['smtp']['timeout'] ) ) {
 			$mailer->Timeout = $config['smtp']['timeout'];
 		}
 
@@ -562,7 +564,7 @@ class WP_Email_Essentials {
 				} else {
 					$mailer->SMTPAutoTLS = false;
 				}
-				if ( (defined('WPES_ALLOW_SSL_SELF_SIGNED') && true === WPES_ALLOW_SSL_SELF_SIGNED) || substr( $config['smtp']['secure'], - 1, 1 ) == '-' ) {
+				if ( ( defined( 'WPES_ALLOW_SSL_SELF_SIGNED' ) && true === WPES_ALLOW_SSL_SELF_SIGNED ) || substr( $config['smtp']['secure'], - 1, 1 ) == '-' ) {
 					$mailer->SMTPOptions = array(
 						'ssl' => array(
 							'verify_peer'       => false,
@@ -654,7 +656,7 @@ class WP_Email_Essentials {
 			$body = str_replace( "\r", "", $body );
 
 			// convert non-breaking-space to regular space
-			$body = strtr($body, array( '&nbsp;' => ' '));
+			$body = strtr( $body, array( '&nbsp;' => ' ' ) );
 
 			// remove white-space at beginning and end of the lines
 			$body = explode( "\n", $body );
@@ -675,7 +677,7 @@ class WP_Email_Essentials {
 
 		}
 
-		if ( $_POST && isset($_POST['form_id']) && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == __( 'Send sample mail', 'wpes' ) ) {
+		if ( $_POST && isset( $_POST['form_id'] ) && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == __( 'Send sample mail', 'wpes' ) ) {
 			$mailer->Timeout   = 5;
 			$mailer->SMTPDebug = 2;
 		}
@@ -692,7 +694,7 @@ class WP_Email_Essentials {
 
 		// DEBUG output
 
-		if ( $_POST && isset($_POST['form_id']) && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == __( 'Print debug output of sample mail', 'wpes' ) ) {
+		if ( $_POST && isset( $_POST['form_id'] ) && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == __( 'Print debug output of sample mail', 'wpes' ) ) {
 			$mailer->SMTPDebug = true;
 			print '<h2>' . __( 'Dump of PHP Mailer object', 'wpes' ) . '</h2><pre>';
 			var_dumP( $mailer );
@@ -730,19 +732,54 @@ class WP_Email_Essentials {
 
 		// now check for HTML evelope
 		if ( false === strpos( $should_be_html, '<html' ) ) {
-			$should_be_html = '<html><head>' . apply_filters_ref_array( 'wpes_head', array(
-					'<title>' . $subject . '</title>',
-					&$mailer
-				) ) . '</head><body>' . apply_filters_ref_array( 'wpes_body', array(
-					$should_be_html,
-					&$mailer
-				) ) . '</body></html>';
+
+			$should_be_html = self::build_html( $mailer, $subject, $should_be_html );
 		}
-		$should_be_html = htmlspecialchars_decode( htmlentities( $should_be_html ) );
 
 		return $should_be_html;
 	}
 
+	public static function build_html( $mailer, $subject, $should_be_html ) {
+		$config = WP_Email_Essentials::get_config();
+
+		// at this stage we will convert raw HTML part to a full HTML page
+
+		// you can define a file  wpes-email-template.php  in your theme to define the filters.
+		locate_template( [ 'wpes-email-template.php' ], true );
+
+		$subject = apply_filters_ref_array( 'wpes_subject', array(
+			$subject,
+			&$mailer
+		) );
+
+		$css = apply_filters_ref_array( 'wpes_css', array(
+			'',
+			&$mailer
+		) );
+
+		$head = apply_filters_ref_array( 'wpes_head', array(
+			'<title>' . $subject . '</title><style type="text/css">' . $css . '</style>',
+			&$mailer
+		) );
+
+		$should_be_html = apply_filters_ref_array( 'wpes_body', array(
+			$should_be_html,
+			&$mailer
+		) );
+		$should_be_html = htmlspecialchars_decode( htmlentities( $should_be_html ) );
+
+		if ( $config['css_inliner'] ) {
+			require_once dirname( __FILE__ ) . '/lib/cssInliner.class.php';
+			$cssInliner     = new cssInliner( $should_be_html, $css );
+			$should_be_html = $cssInliner->convert();
+		}
+
+		$should_be_html = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>' . $head . '</head><body>' . $should_be_html . '</body></html>';
+
+		return $should_be_html;
+	}
 
 	public static function wp_mail_from( $from = null ) {
 		static $store;
@@ -808,7 +845,7 @@ class WP_Email_Essentials {
 
 		$values   = stripslashes_deep( $values );
 		$settings = self::get_config();
-		if ( isset($values['smtp-enabled']) && $values['smtp-enabled'] ) {
+		if ( isset( $values['smtp-enabled'] ) && $values['smtp-enabled'] ) {
 			$settings['smtp'] = array(
 				'secure'   => $values['secure'],
 				'host'     => $values['host'],
@@ -953,7 +990,7 @@ class WP_Email_Essentials {
 					$host    = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
 					$host    = preg_replace( '/^www[0-9]*\./', '', $host );
 					$defmail = WP_Email_Essentials::wp_mail_from( $_POST['settings']['from_email'] );
-					if ( 'default' == $_POST['settings']['make_from_valid'] && !self::i_am_allowed_to_send_in_name_of( $defmail ) ) {
+					if ( 'default' == $_POST['settings']['make_from_valid'] && ! self::i_am_allowed_to_send_in_name_of( $defmail ) ) {
 						$_POST['settings']['make_from_valid'] = 'noreply';
 					}
 					self::set_config( $_POST['settings'] );
@@ -963,7 +1000,7 @@ class WP_Email_Essentials {
 				case __( 'Send sample mail', 'wpes' ):
 					ob_start();
 					self::$debug = true;
-					$result      = wp_mail( get_option('admin_email', false),
+					$result      = wp_mail( get_option( 'admin_email', false ),
 						__( 'Test-email', 'wpes' ), self::dummy_content() );
 					self::$debug = ob_get_clean();
 					if ( $result ) {
@@ -978,28 +1015,16 @@ class WP_Email_Essentials {
 			require_once ABSPATH . WPINC . '/class-phpmailer.php';
 			$mailer          = new PHPMailer;
 			$config          = WP_Email_Essentials::get_config();
-			$css             = apply_filters_ref_array( 'wpes_css', array( '', &$mailer ) );
 			$subject         = __( 'Sample email subject', 'wpes' );
 			$mailer->Subject = $subject;
 			$body            = WP_Email_Essentials::dummy_content();
 			header( "Content-Type: text/html; charset=utf-8" );
-			?>
-			<html>
-		<head>
-			<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/><?php
-			print apply_filters_ref_array( 'wpes_head', array( '<title>' . $subject . '</title>', &$mailer ) );
-			?></head>
-		<body><?php
-		$bodyhtml = utf8_decode( apply_filters_ref_array( 'wpes_body', array( $body, &$mailer ) ) );
 
-		if ( $config['css_inliner'] ) {
-			require_once dirname( __FILE__ ) . '/lib/cssInliner.class.php';
-			$cssInliner = new cssInliner( $bodyhtml, $css );
-			$bodyhtml   = $cssInliner->convert();
-		}
-		$bodyhtml = WP_Email_Essentials::cid_to_image( $bodyhtml, $mailer );
-		print $bodyhtml;
-		?></body></html><?php
+			$html = self::build_html( $mailer, $subject, $body );
+
+			$html = WP_Email_Essentials::cid_to_image( $html, $mailer );
+			print $html;
+
 			exit;
 		}
 
@@ -1418,7 +1443,11 @@ class WP_Email_Essentials {
 
 	public static function log( $text ) {
 		// to enable logging, create a writable file "log" in the plugin dir
-		if (defined('WPES_DEBUG')) { print "LOG: $text\n"; return; }
+		if ( defined( 'WPES_DEBUG' ) ) {
+			print "LOG: $text\n";
+
+			return;
+		}
 
 		static $fp;
 		if ( file_exists( __DIR__ . '/log' ) && is_writable( __DIR__ . '/log' ) ) {
@@ -1482,18 +1511,18 @@ class WP_Email_Essentials {
 
 					var atdottify = function (rfc) {
 						var email = getEmail(rfc);
-						var newemail = email.replace('@', '-at-').replace(/\./g, '-dot-') + '@' + ( (document.location.host).replace(/^www\./, '') );
+						var newemail = email.replace('@', '-at-').replace(/\./g, '-dot-') + '@' + ((document.location.host).replace(/^www\./, ''));
 						return rfc.replace(email, newemail);
 					};
 
 					var noreplyify = function (rfc) {
 						var email = getEmail(rfc);
-						var newemail = 'noreply' + '@' + ( (document.location.host).replace(/^www\./, '') );
+						var newemail = 'noreply' + '@' + ((document.location.host).replace(/^www\./, ''));
 						return rfc.replace(email, newemail);
 					};
 
 					var defaultify = function (rfc) {
-						var host = ( (document.location.host).replace(/^www\./, '') );
+						var host = ((document.location.host).replace(/^www\./, ''));
 						var email = getEmail(rfc);
 						var newemail = <?php print json_encode( WP_Email_Essentials::wp_mail_from( $config['from_email'] ) ); ?>;
 						if ((new RegExp('@' + host)).test(newemail))
@@ -1629,7 +1658,7 @@ class WP_Email_Essentials_History {
 			}
 		}
 
-		add_action('init', function() {
+		add_action( 'init', function () {
 			global $wpdb;
 			if ( current_user_can( 'manage_options' ) && isset( $_GET['download_eml'] ) ) {
 				$eml = $wpdb->get_var( $wpdb->prepare( "SELECT eml FROM {$wpdb->prefix}wpes_hist WHERE id = %d LIMIT 1", $_GET['download_eml'] ) );
@@ -1641,7 +1670,7 @@ class WP_Email_Essentials_History {
 					exit;
 				}
 			}
-		});
+		} );
 	}
 
 	public static function shutdown() {
@@ -1737,9 +1766,9 @@ class WP_Email_Essentials_History {
 
 	public static function phpmailer_init( PHPMailer $phpmailer ) {
 		global $wpdb;
-		$data      = self::object_data( $phpmailer );
+		$data           = self::object_data( $phpmailer );
 		$data->Password = '********';
-		$data      = json_encode( $data, JSON_PRETTY_PRINT );
+		$data           = json_encode( $data, JSON_PRETTY_PRINT );
 //		$recipient = implode( ',', self::get_to_addresses( $phpmailer ) );
 //		$sender    = $phpmailer->Sender ?: $phpmailer->from_name . '<' . $phpmailer->from_email . '>';
 
@@ -1763,8 +1792,9 @@ class WP_Email_Essentials_History {
 		/** @var array $attachments the attachments */
 		extract( $data );
 
-		if (!is_array($headers))
+		if ( ! is_array( $headers ) ) {
 			$headers = explode( "\n", $headers );
+		}
 
 		$headers = array_map( 'trim', $headers );
 
@@ -2005,7 +2035,7 @@ CREATE TABLE IF NOT EXISTS {$table} (
 		}
 		$mail_data['attachments'] = array_combine( array_map( 'basename', $mail_data['attachments'] ), $mail_data['attachments'] );
 		foreach ( $mail_data['attachments'] as $filename => $path ) {
-			$mail_data['attachments'][ $filename ] = base64_encode( file_get_contents($path) );
+			$mail_data['attachments'][ $filename ] = base64_encode( file_get_contents( $path ) );
 		}
 
 		return $mail_data['attachments'];
@@ -2030,8 +2060,8 @@ CREATE TABLE IF NOT EXISTS {$table} (
 			}
 		}
 		foreach ( $mail_data['attachments'] as $filename => $data ) {
-			$data = base64_decode($data);
-			if (!is_file($data)) {
+			$data = base64_decode( $data );
+			if ( ! is_file( $data ) ) {
 				file_put_contents( "$tmp/$filename", $data );
 				$data = "$tmp/$filename";
 			}
