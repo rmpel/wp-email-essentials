@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.3.0
+Version: 2.4.0
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -41,6 +41,8 @@ class WP_Email_Essentials {
 			add_filter( 'wp_mail_charset', function () {
 				return "UTF-8";
 			} );
+			add_filter('wpcf7_mail_html_header', array('WP_Email_Essentials', 'wpcf7_mail_html_header'), ~PHP_INT_MAX, 2);
+			add_filter('wpcf7_mail_html_footer', array('WP_Email_Essentials', 'wpcf7_mail_html_footer'), ~PHP_INT_MAX, 2);
 		}
 
 		// set default from email and from name
@@ -779,6 +781,16 @@ class WP_Email_Essentials {
 <head>' . $head . '</head><body>' . $should_be_html . '</body></html>';
 
 		return $should_be_html;
+	}
+
+	// this is triggered when CF7 has option "send as html" on, but it interferes with the rest of WPES.
+	public static function wpcf7_mail_html_header($header, WPCF7_Mail $wpcf7_mail) {
+		return '';
+	}
+
+	// this is triggered when CF7 has option "send as html" on, but it interferes with the rest of WPES.
+	public static function wpcf7_mail_html_footer($footer, WPCF7_Mail $wpcf7_mail) {
+		return '';
 	}
 
 	public static function wp_mail_from( $from = null ) {
