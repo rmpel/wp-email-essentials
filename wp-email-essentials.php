@@ -41,8 +41,14 @@ class WP_Email_Essentials {
 			add_filter( 'wp_mail_charset', function () {
 				return "UTF-8";
 			} );
-			add_filter('wpcf7_mail_html_header', array('WP_Email_Essentials', 'wpcf7_mail_html_header'), ~PHP_INT_MAX, 2);
-			add_filter('wpcf7_mail_html_footer', array('WP_Email_Essentials', 'wpcf7_mail_html_footer'), ~PHP_INT_MAX, 2);
+			add_filter( 'wpcf7_mail_html_header', array(
+				'WP_Email_Essentials',
+				'wpcf7_mail_html_header'
+			), ~PHP_INT_MAX, 2 );
+			add_filter( 'wpcf7_mail_html_footer', array(
+				'WP_Email_Essentials',
+				'wpcf7_mail_html_footer'
+			), ~PHP_INT_MAX, 2 );
 		}
 
 		// set default from email and from name
@@ -784,12 +790,12 @@ class WP_Email_Essentials {
 	}
 
 	// this is triggered when CF7 has option "send as html" on, but it interferes with the rest of WPES.
-	public static function wpcf7_mail_html_header($header, WPCF7_Mail $wpcf7_mail) {
+	public static function wpcf7_mail_html_header( $header, WPCF7_Mail $wpcf7_mail ) {
 		return '';
 	}
 
 	// this is triggered when CF7 has option "send as html" on, but it interferes with the rest of WPES.
-	public static function wpcf7_mail_html_footer($footer, WPCF7_Mail $wpcf7_mail) {
+	public static function wpcf7_mail_html_footer( $footer, WPCF7_Mail $wpcf7_mail ) {
 		return '';
 	}
 
@@ -1479,7 +1485,7 @@ class WP_Email_Essentials {
 		if ( basename( $_SERVER['PHP_SELF'] ) == 'options-general.php' && ! @$_GET['page'] ) {
 			?>
 			<script>
-				jQuery("#admin_email,#new_admin_email").after('<p class="description"><?php print sprintf( __( 'You can configure alternative administrators <a href="%s">here</a>.', 'wpes' ), add_query_arg( array( 'page' => 'wpes-admins' ), admin_url( 'admin.php' ) ) ); ?></p>');
+                jQuery("#admin_email,#new_admin_email").after('<p class="description"><?php print sprintf( __( 'You can configure alternative administrators <a href="%s">here</a>.', 'wpes' ), add_query_arg( array( 'page' => 'wpes-admins' ), admin_url( 'admin.php' ) ) ); ?></p>');
 			</script>
 			<?php
 		}
@@ -1503,68 +1509,67 @@ class WP_Email_Essentials {
 		if ( basename( $_SERVER['PHP_SELF'] ) == 'admin.php' && @$_GET['page'] == 'wpcf7' ) {
 			?>
 			<script>
-				jQuery(document).ready(function () {
-					setTimeout(function () {
-						var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
-						if (i.length > 0) {
-							var t = <?php print json_encode( $text ); ?>,
-								e = i.siblings('.config-error');
+                jQuery(document).ready(function () {
+                    setTimeout(function () {
+                        var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
+                        if (i.length > 0) {
+                            var t = <?php print json_encode( $text ); ?>,
+                                e = i.siblings('.config-error');
 
-							if (e.length > 0) {
-								if (e.is('ul')) {
-									e.append('<li class="wpes-err-add">' + t + '</li>');
-								}
-								else {
-									e.html(e.html() + '<br /><span class="wpes-err-add">' + t + '</span>');
-								}
-							}
-						}
-					}, 1000);
+                            if (e.length > 0) {
+                                if (e.is('ul')) {
+                                    e.append('<li class="wpes-err-add">' + t + '</li>');
+                                } else {
+                                    e.html(e.html() + '<br /><span class="wpes-err-add">' + t + '</span>');
+                                }
+                            }
+                        }
+                    }, 1000);
 
-					var atdottify = function (rfc) {
-						var email = getEmail(rfc);
-						var newemail = email.replace('@', '-at-').replace(/\./g, '-dot-') + '@' + ((document.location.host).replace(/^www\./, ''));
-						return rfc.replace(email, newemail);
-					};
+                    var atdottify = function (rfc) {
+                        var email = getEmail(rfc);
+                        var newemail = email.replace('@', '-at-').replace(/\./g, '-dot-') + '@' + ((document.location.host).replace(/^www\./, ''));
+                        return rfc.replace(email, newemail);
+                    };
 
-					var noreplyify = function (rfc) {
-						var email = getEmail(rfc);
-						var newemail = 'noreply' + '@' + ((document.location.host).replace(/^www\./, ''));
-						return rfc.replace(email, newemail);
-					};
+                    var noreplyify = function (rfc) {
+                        var email = getEmail(rfc);
+                        var newemail = 'noreply' + '@' + ((document.location.host).replace(/^www\./, ''));
+                        return rfc.replace(email, newemail);
+                    };
 
-					var defaultify = function (rfc) {
-						var host = ((document.location.host).replace(/^www\./, ''));
-						var email = getEmail(rfc);
-						var newemail = <?php print json_encode( WP_Email_Essentials::wp_mail_from( $config['from_email'] ) ); ?>;
-						if ((new RegExp('@' + host)).test(newemail))
-							return rfc.replace(email, newemail);
-						else
-							return noreplyify(rfc);
-					};
+                    var defaultify = function (rfc) {
+                        var host = ((document.location.host).replace(/^www\./, ''));
+                        var email = getEmail(rfc);
+                        var newemail = <?php print json_encode( WP_Email_Essentials::wp_mail_from( $config['from_email'] ) ); ?>;
+                        if ((new RegExp('@' + host)).test(newemail))
+                            return rfc.replace(email, newemail);
+                        else
+                            return noreplyify(rfc);
+                    };
 
-					var getEmail = function (rfc) {
-						rfc = rfc.split('<');
-						if (rfc.length < 2) {
-							rfc.unshift('');
-						}
-						rfc = rfc[1].split('>');
-						return rfc[0];
-					};
+                    var getEmail = function (rfc) {
+                        rfc = rfc.split('<');
+                        if (rfc.length < 2) {
+                            rfc.unshift('');
+                        }
+                        rfc = rfc[1].split('>');
+                        return rfc[0];
+                    };
 
-					var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
-					i.bind('keyup', function () {
-						var e = jQuery(this).siblings('.config-error'), v = jQuery(this).val();
-						if (e.length) {
-							e.find('.wpes-err-add').find('em.default:nth(0)').text(noreplyify(v));
-							e.find('.wpes-err-add').find('em.noreply:nth(0)').text(noreplyify(v));
-							e.find('.wpes-err-add').find('em.at-:nth(0)').text(atdottify(v));
-							e.find('.wpes-err-add').find('em:nth(1)').text(v);
-						}
-					}).trigger('keyup');
+                    var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
+                    i.bind('keyup', function () {
+                        var e = jQuery(this).siblings('.config-error'), v = jQuery(this).val();
+                        if (e.length) {
+                            e.find('.wpes-err-add').find('em.default:nth(0)').text(noreplyify(v));
+                            e.find('.wpes-err-add').find('em.noreply:nth(0)').text(noreplyify(v));
+                            e.find('.wpes-err-add').find('em.at-:nth(0)').text(atdottify(v));
+                            e.find('.wpes-err-add').find('em:nth(1)').text(v);
+                        }
+                    }).trigger('keyup');
 
-					jQuery(".wpes-err-add em").addClass('quote');
-				});
+                    jQuery(".wpes-err-add em").addClass('quote');
+                });
 			</script>
 			<style>
 				.wpes-err-add {
@@ -1587,6 +1592,53 @@ class WP_Email_Essentials {
 	public static function ajax_get_ip() {
 		print $_SERVER["REMOTE_ADDR"];
 		exit;
+	}
+
+	/**
+	 * This function takes a css-string and compresses it, removing
+	 * unneccessary whitespace, colons, removing unneccessary px/em
+	 * declarations etc.
+	 *
+	 * @param string $css
+	 *
+	 * @return string compressed css content
+	 * @author Steffen Becker
+	 */
+	public static function minifyCss( $css ) {
+		// some of the following functions to minimize the css-output are directly taken
+		// from the awesome CSS JS Booster: https://github.com/Schepp/CSS-JS-Booster
+		// all credits to Christian Schaefer: http://twitter.com/derSchepp
+		// remove comments
+		$css = preg_replace( '!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css );
+		// backup values within single or double quotes
+		preg_match_all( '/(\'[^\']*?\'|"[^"]*?")/ims', $css, $hit, PREG_PATTERN_ORDER );
+		for ( $i = 0; $i < count( $hit[1] ); $i ++ ) {
+			$css = str_replace( $hit[1][ $i ], '##########' . $i . '##########', $css );
+		}
+// remove traling semicolon of selector's last property
+		$css = preg_replace( '/;[\s\r\n\t]*?}[\s\r\n\t]*/ims', "}\r\n", $css );
+// remove any whitespace between semicolon and property-name
+		$css = preg_replace( '/;[\s\r\n\t]*?([\r\n]?[^\s\r\n\t])/ims', ';$1', $css );
+// remove any whitespace surrounding property-colon
+		$css = preg_replace( '/[\s\r\n\t]*:[\s\r\n\t]*?([^\s\r\n\t])/ims', ':$1', $css );
+// remove any whitespace surrounding selector-comma
+		$css = preg_replace( '/[\s\r\n\t]*,[\s\r\n\t]*?([^\s\r\n\t])/ims', ',$1', $css );
+// remove any whitespace surrounding opening parenthesis
+		$css = preg_replace( '/[\s\r\n\t]*{[\s\r\n\t]*?([^\s\r\n\t])/ims', '{$1', $css );
+// remove any whitespace between numbers and units
+		$css = preg_replace( '/([\d\.]+)[\s\r\n\t]+(px|em|pt|%)/ims', '$1$2', $css );
+// shorten zero-values
+		$css = preg_replace( '/([^\d\.]0)(px|em|pt|%)/ims', '$1', $css );
+// constrain multiple whitespaces
+		$css = preg_replace( '/\p{Zs}+/ims', ' ', $css );
+// remove newlines
+		$css = str_replace( array( "\r\n", "\r", "\n" ), '', $css );
+// Restore backupped values within single or double quotes
+		for ( $i = 0; $i < count( $hit[1] ); $i ++ ) {
+			$css = str_replace( '##########' . $i . '##########', $hit[1][ $i ], $css );
+		}
+
+		return $css;
 	}
 }
 
