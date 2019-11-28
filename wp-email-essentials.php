@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://bitbucket.org/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 2.4.0
+Version: 2.5.0
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -1055,7 +1055,11 @@ class WP_Email_Essentials {
 				case __( 'Save settings', 'wpes' ):
 					$keys = $_POST['settings']['keys'];
 					$keys = array_filter( $keys, function ( $el ) {
-						return filter_var( $el, FILTER_VALIDATE_EMAIL );
+						$els = explode(',', $el);
+						$els = array_map(function($el) {
+							return filter_var( $el, FILTER_VALIDATE_EMAIL );
+						}, $els);
+						return implode(',', $els);
 					} );
 					update_option( 'mail_key_admins', $keys );
 					self::$message = __( 'Alternative Admins list saved.', 'wpes' );
@@ -1299,17 +1303,27 @@ class WP_Email_Essentials {
 		if ( $key = self::get_mail_key( $email['subject'] ) ) {
 			// we were able to determine a mailkey.
 			$admins = get_option( 'mail_key_admins', array() );
-			if ( @$admins[ $key ] ) {
-				$the_admin = self::rfc_decode( $admins[ $key ] );
-				if ( $the_admin['name'] == $the_admin['email'] && $to['name'] != $to['email'] ) {
-					// not rfc, just email, but the original TO has a real name
-					$the_admin['name'] = $to['name'];
+			if ( isset($admins[ $key ]) && $admins[ $key ] ) {
+				$the_admins = explode(',', $admins[ $key ]);
+				foreach ($the_admins as $i => $the_admin) {
+					$the_admin = self::rfc_decode( $the_admin );
+					if ($i === 0) {
+						if ( $the_admin['name'] == $the_admin['email'] && $to['name'] != $to['email'] ) {
+							// not rfc, just email, but the original TO has a real name
+							$the_admin['name'] = $to['name'];
+						}
+						$to = self::rfc_encode( $the_admin );
+					}
+					else {
+						// extra
+						$email['to'][] = self::rfc_encode( $the_admin );
+					}
 				}
-				$to = self::rfc_encode( $the_admin );
 
 				// var_dump($email, __LINE__);exit;
 				return $email;
 			}
+
 			// known key, but no email set
 			// we revert to the DEFAULT admin_email, and prevent matching against subjects
 			// var_dump($email, __LINE__);exit;
@@ -1323,12 +1337,21 @@ class WP_Email_Essentials {
 		// perhaps we have a regexp?
 		$admin = self::mail_subject_match( $email['subject'] );
 		if ( $admin ) {
-			$the_admin = self::rfc_decode( $admin );
-			if ( $the_admin['name'] == $the_admin['email'] && $to['name'] != $to['email'] ) {
-				// not rfc, just email, but the original TO has a real name
-				$the_admin['name'] = $to['name'];
+			$the_admins = explode(',', $admin);
+			foreach ($the_admins as $i => $the_admin) {
+				$the_admin = self::rfc_decode( $the_admin );
+				if ($i === 0) {
+					if ( $the_admin['name'] == $the_admin['email'] && $to['name'] != $to['email'] ) {
+						// not rfc, just email, but the original TO has a real name
+						$the_admin['name'] = $to['name'];
+					}
+					$to = self::rfc_encode( $the_admin );
+				}
+				else {
+					// extra
+					$email['to'][] = self::rfc_encode( $the_admin );
+				}
 			}
-			$to = self::rfc_encode( $the_admin );
 
 			// var_dump($email, __LINE__);exit;
 			return $email;
