@@ -75,6 +75,9 @@ class WP_Email_Essentials {
 
 		add_filter( 'comment_notification_headers', array( 'WP_Email_Essentials', 'correct_comment_from' ), 11, 2 );
 
+		add_filter( 'comment_moderation_recipients', array( 'WP_Email_Essentials', 'correct_moderation_to'), ~PHP_INT_MAX, 2);
+		add_filter( 'comment_notification_recipients', array( 'WP_Email_Essentials', 'correct_comment_to'), ~PHP_INT_MAX, 2);
+
 		// debug
 //		add_filter('comment_notification_notify_author', '__return_true');
 
@@ -1083,6 +1086,34 @@ class WP_Email_Essentials {
 					break;
 			}
 		}
+
+		add_submenu_page( 'wp-email-essentials', 'WP-Email-Essentials - Alternative Moderators', 'Alternative Moderators', 'manage_options', 'wpes-moderators', array(
+			'WP_Email_Essentials',
+			'admin_interface_moderators'
+		) );
+		if ( isset( $_GET['page'] ) && $_GET['page'] == 'wpes-moderators' && $_POST && isset( $_POST['form_id'] ) && $_POST['form_id'] == 'wpes-moderators' ) {
+			switch ( $_POST['op'] ) {
+				case __( 'Save settings', 'wpes' ):
+					foreach ($_POST['settings']['keys'] as $recipient => $_keys) foreach ($_keys as $post_type => $keys) {
+						$_POST['settings']['keys'][ $recipient ][ $post_type ] = array_filter( $keys, function ( $el ) {
+							$els = explode( ',', $el );
+							$els = array_map( function ( $el ) {
+								if (':blackhole:' === $el) {
+									return $el;
+								}
+								return filter_var( $el, FILTER_VALIDATE_EMAIL );
+							}, $els );
+
+							return implode( ',', $els );
+						} );
+					}
+					update_option( 'mail_key_moderators', $_POST['settings']['keys'] );
+					self::$message = __( 'Alternative Moderators list saved.', 'wpes' );
+
+
+					break;
+			}
+		}
 	}
 
 	static function admin_interface() {
@@ -1091,6 +1122,10 @@ class WP_Email_Essentials {
 
 	static function admin_interface_admins() {
 		include __DIR__ .'/admin-admins.php';
+	}
+
+	static function admin_interface_moderators() {
+		include __DIR__ .'/admin-moderators.php';
 	}
 
 	public static function test() {
@@ -1379,6 +1414,57 @@ class WP_Email_Essentials {
 		return $email;
 	}
 
+	public static function pingback_detected( $set = null ) {
+		static $static;
+		if (null !== $set) {
+			$static = $set;
+		}
+		return $static;
+	}
+
+	public static function correct_comment_to( $email, $comment_id ) {
+		$comment = get_comment($comment_id);
+
+		return self::correct_moderation_and_comments( $email, $comment, 'author');
+	}
+
+	public static function correct_moderation_to( $email, $comment_id ) {
+		$comment = get_comment($comment_id);
+
+		return self::correct_moderation_and_comments( $email, $comment, 'moderator');
+	}
+
+	public static function correct_moderation_and_comments( $email, $comment, $action ) {
+
+		$post_type = 'post';
+		// todo: future version; allow setting per post-type
+		// trace back the post-type using: commentID -> comment -> post -> post-type
+
+		$c = get_option('mail_key_moderators', array());
+		if (!$c ||!is_array($c)) {
+			return $email;
+		}
+
+		$type = $comment->comment_type;
+		if ('pingback' === $type || 'trackback' === $type) {
+			$type = 'pingback';
+		}
+		else {
+			$type = 'comment';
+		}
+
+		if (isset($c[$post_type][$action][$type]) && $c[$post_type][$action][$type]) {
+			// overrule ALL recipients
+			// we do this at PHP_INT_MIN, so any and all plugins can overrule this; that is THEIR choice.
+			$email = array( $c[$post_type][$action][$type] );
+			$email = array_filter($email, function($el){
+				return filter_var( $el, FILTER_VALIDATE_EMAIL );
+			});
+		}
+
+		return $email;
+	}
+
 	public static function get_mail_key( $subject ) {
 		// got a filter/action name?
 		$mail_key = self::current_mail_key();
@@ -1400,8 +1486,9 @@ class WP_Email_Essentials {
 		$wp_filters = array(
 			'automatic_updates_debug_email',
 			'auto_core_update_email',
-			'comment_moderation_recipients',
-			'comment_notification_recipients'
+//			'comment_moderation_recipients',
+//			'comment_notification_recipients',
+			'recovery_mode_email',
 		);
 
 		// unsupported until added, @see wp_mail_key.patch, matched by subject, @see self::mail_subject_database
@@ -1513,7 +1600,7 @@ class WP_Email_Essentials {
 		if ( basename( $_SERVER['PHP_SELF'] ) == 'options-general.php' && ! @$_GET['page'] ) {
 			?>
 			<script>
-                jQuery("#admin_email,#new_admin_email").after('<p class="description"><?php print sprintf( __( 'You can configure alternative administrators <a href="%s">here</a>.', 'wpes' ), add_query_arg( array( 'page' => 'wpes-admins' ), admin_url( 'admin.php' ) ) ); ?></p>');
+				jQuery("#admin_email,#new_admin_email").after('<p class="description"><?php print sprintf( __( 'You can configure alternative administrators <a href="%s">here</a>.', 'wpes' ), add_query_arg( array( 'page' => 'wpes-admins' ), admin_url( 'admin.php' ) ) ); ?></p>');
 			</script>
 			<?php
 		}
@@ -1537,67 +1624,67 @@ class WP_Email_Essentials {
 		if ( basename( $_SERVER['PHP_SELF'] ) == 'admin.php' && @$_GET['page'] == 'wpcf7' ) {
 			?>
 			<script>
-                jQuery(document).ready(function () {
-                    setTimeout(function () {
-                        var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
-                        if (i.length > 0) {
-                            var t = <?php print json_encode( $text ); ?>,
-                                e = i.siblings('.config-error');
+				jQuery(document).ready(function () {
+					setTimeout(function () {
+						var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
+						if (i.length > 0) {
+							var t = <?php print json_encode( $text ); ?>,
+								e = i.siblings('.config-error');
 
-                            if (e.length > 0) {
-                                if (e.is('ul')) {
-                                    e.append('<li class="wpes-err-add">' + t + '</li>');
-                                } else {
-                                    e.html(e.html() + '<br /><span class="wpes-err-add">' + t + '</span>');
-                                }
-                            }
-                        }
-                    }, 1000);
+							if (e.length > 0) {
+								if (e.is('ul')) {
+									e.append('<li class="wpes-err-add">' + t + '</li>');
+								} else {
+									e.html(e.html() + '<br /><span class="wpes-err-add">' + t + '</span>');
+								}
+							}
+						}
+					}, 1000);
 
-                    var atdottify = function (rfc) {
-                        var email = getEmail(rfc);
-                        var newemail = email.replace('@', '-at-').replace(/\./g, '-dot-') + '@' + ((document.location.host).replace(/^www\./, ''));
-                        return rfc.replace(email, newemail);
-                    };
+					var atdottify = function (rfc) {
+						var email = getEmail(rfc);
+						var newemail = email.replace('@', '-at-').replace(/\./g, '-dot-') + '@' + ((document.location.host).replace(/^www\./, ''));
+						return rfc.replace(email, newemail);
+					};
 
-                    var noreplyify = function (rfc) {
-                        var email = getEmail(rfc);
-                        var newemail = 'noreply' + '@' + ((document.location.host).replace(/^www\./, ''));
-                        return rfc.replace(email, newemail);
-                    };
+					var noreplyify = function (rfc) {
+						var email = getEmail(rfc);
+						var newemail = 'noreply' + '@' + ((document.location.host).replace(/^www\./, ''));
+						return rfc.replace(email, newemail);
+					};
 
-                    var defaultify = function (rfc) {
-                        var host = ((document.location.host).replace(/^www\./, ''));
-                        var email = getEmail(rfc);
-                        var newemail = <?php print json_encode( WP_Email_Essentials::wp_mail_from( $config['from_email'] ) ); ?>;
-                        if ((new RegExp('@' + host)).test(newemail))
-                            return rfc.replace(email, newemail);
-                        else
-                            return noreplyify(rfc);
-                    };
+					var defaultify = function (rfc) {
+						var host = ((document.location.host).replace(/^www\./, ''));
+						var email = getEmail(rfc);
+						var newemail = <?php print json_encode( WP_Email_Essentials::wp_mail_from( $config['from_email'] ) ); ?>;
+						if ((new RegExp('@' + host)).test(newemail))
+							return rfc.replace(email, newemail);
+						else
+							return noreplyify(rfc);
+					};
 
-                    var getEmail = function (rfc) {
-                        rfc = rfc.split('<');
-                        if (rfc.length < 2) {
-                            rfc.unshift('');
-                        }
-                        rfc = rfc[1].split('>');
-                        return rfc[0];
-                    };
+					var getEmail = function (rfc) {
+						rfc = rfc.split('<');
+						if (rfc.length < 2) {
+							rfc.unshift('');
+						}
+						rfc = rfc[1].split('>');
+						return rfc[0];
+					};
 
-                    var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
-                    i.bind('keyup', function () {
-                        var e = jQuery(this).siblings('.config-error'), v = jQuery(this).val();
-                        if (e.length) {
-                            e.find('.wpes-err-add').find('em.default:nth(0)').text(noreplyify(v));
-                            e.find('.wpes-err-add').find('em.noreply:nth(0)').text(noreplyify(v));
-                            e.find('.wpes-err-add').find('em.at-:nth(0)').text(atdottify(v));
-                            e.find('.wpes-err-add').find('em:nth(1)').text(v);
-                        }
-                    }).trigger('keyup');
+					var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
+					i.bind('keyup', function () {
+						var e = jQuery(this).siblings('.config-error'), v = jQuery(this).val();
+						if (e.length) {
+							e.find('.wpes-err-add').find('em.default:nth(0)').text(noreplyify(v));
+							e.find('.wpes-err-add').find('em.noreply:nth(0)').text(noreplyify(v));
+							e.find('.wpes-err-add').find('em.at-:nth(0)').text(atdottify(v));
+							e.find('.wpes-err-add').find('em:nth(1)').text(v);
+						}
+					}).trigger('keyup');
 
-                    jQuery(".wpes-err-add em").addClass('quote');
-                });
+					jQuery(".wpes-err-add em").addClass('quote');
+				});
 			</script>
 			<style>
 				.wpes-err-add {
