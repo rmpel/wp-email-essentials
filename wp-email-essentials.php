@@ -16,6 +16,9 @@ if ( ! class_exists( 'CIDR' ) ) {
 	require_once __DIR__ . '/lib/class.cidr.php';
 }
 
+use Clearsite\Tools\IP;
+require_once __DIR__ . '/lib/class.ip.php';
+
 class WP_Email_Essentials {
 	static $message;
 	static $error;
@@ -391,50 +394,50 @@ class WP_Email_Essentials {
 		return $sending_ip = $ip;
 	}
 
-	public static function gather_ips_from_spf( $domain ) {
-		static $seen;
-		if ( ! $seen ) {
-			$seen = array();
-		}
-		if ( ! isset( $seen[ $domain ] ) ) {
-			$seen[ $domain ] = array();
-
-			$dns = self::dns_get_record( $domain, DNS_TXT );
-			$ips = array();
-			foreach ( $dns as $record ) {
-				$record['txt'] = strtolower( $record['txt'] );
-				if ( false !== strpos( $record['txt'], 'v=spf1' ) ) {
-					$sections = explode( ' ', $record['txt'] );
-					foreach ( $sections as $section ) {
-						if ( $section == 'a' ) {
-							$ips[] = self::dns_get_record( $domain, DNS_A, true );
-						} elseif ( $section == 'mx' ) {
-							$mx = self::dns_get_record( $domain, DNS_MX );
-							foreach ( $mx as $mx_record ) {
-								$target = $mx_record['target'];
-								try {
-									$new_target = self::dns_get_record( $domain, DNS_A, true );
-								} catch ( Exception $e ) {
-									$new_target = $target;
-								}
-								$ips[] = $new_target;
-							}
-						} elseif ( preg_match( '/ip4:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$/', $section, $ip ) ) {
-							$ips[] = $ip[1];
-						} elseif ( preg_match( '/ip4:([0-9\.]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
-							$ips = array_merge( $ips, self::expand_ip4_cidr( $ip_cidr[1] ) );
-						} elseif ( preg_match( '/include:(.+)$/', $section, $include ) ) {
-							$ips = array_merge( $ips, self::gather_ips_from_spf( $include[1] ) );
-						}
-					}
-				}
-			}
-
-			$seen[ $domain ] = &$ips;
-		}
-
-		return $seen[ $domain ];
-	}
+//	public static function gather_ips_from_spf( $domain ) {
+//		static $seen;
+//		if ( ! $seen ) {
+//			$seen = array();
+//		}
+//		if ( ! isset( $seen[ $domain ] ) ) {
+//			$seen[ $domain ] = array();
+//
+//			$dns = self::dns_get_record( $domain, DNS_TXT );
+//			$ips = array();
+//			foreach ( $dns as $record ) {
+//				$record['txt'] = strtolower( $record['txt'] );
+//				if ( false !== strpos( $record['txt'], 'v=spf1' ) ) {
+//					$sections = explode( ' ', $record['txt'] );
+//					foreach ( $sections as $section ) {
+//						if ( $section == 'a' ) {
+//							$ips[] = self::dns_get_record( $domain, DNS_A, true );
+//						} elseif ( $section == 'mx' ) {
+//							$mx = self::dns_get_record( $domain, DNS_MX );
+//							foreach ( $mx as $mx_record ) {
+//								$target = $mx_record['target'];
+//								try {
+//									$new_target = self::dns_get_record( $domain, DNS_A, true );
+//								} catch ( Exception $e ) {
+//									$new_target = $target;
+//								}
+//								$ips[] = $new_target;
+//							}
+//						} elseif ( preg_match( '/ip4:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$/', $section, $ip ) ) {
+//							$ips[] = $ip[1];
+//						} elseif ( preg_match( '/ip4:([0-9\.]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
+//							$ips = array_merge( $ips, self::expand_ip4_cidr( $ip_cidr[1] ) );
+//						} elseif ( preg_match( '/include:(.+)$/', $section, $include ) ) {
+//							$ips = array_merge( $ips, self::gather_ips_from_spf( $include[1] ) );
+//						}
+//					}
+//				}
+//			}
+//
+//			$seen[ $domain ] = &$ips;
+//		}
+//
+//		return $seen[ $domain ];
+//	}
 
 	public static function validate_ip_listed_in_spf( $domain, $ip ) {
 		$dns = self::dns_get_record( $domain, DNS_TXT );
@@ -452,7 +455,7 @@ class WP_Email_Essentials {
 					// echo "Section: $section\n";
 					if ( $section == 'a' ) {
 						$m_ip = self::dns_get_record( $domain, DNS_A, true );
-						if ( $m_ip == $ip ) {
+						if ( IP::a_4_is_4($m_ip, $ip ) ) {
 							return true;
 						}
 					} elseif ( $section == 'mx' ) {
@@ -464,16 +467,16 @@ class WP_Email_Essentials {
 							} catch ( Exception $e ) {
 								$new_target = $target;
 							}
-							if ( $ip == $new_target ) {
+							if ( IP::a_4_is_4($ip, $new_target) ) {
 								return true;
 							}
 						}
 					} elseif ( preg_match( '/ip4:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$/', $section, $m_ip ) ) {
-						if ( $ip == $m_ip[1] ) {
+						if ( IP::a_4_is_4($ip, $m_ip[1]) ) {
 							return true;
 						}
 					} elseif ( preg_match( '/ip4:([0-9\.]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
-						if ( in_array( $ip, self::expand_ip4_cidr( $ip_cidr[1] ) ) ) {
+						if ( IP::ip4_match_cidr($ip, $ip_cidr[1]) ) {
 							return true;
 						}
 					} elseif ( preg_match( '/include:(.+)$/', $section, $include ) ) {
@@ -514,33 +517,33 @@ class WP_Email_Essentials {
 		return ( preg_match( '/@' . $host . '$/', $email ) );
 	}
 
-	private static function expand_ip4_cidr( $ip_cidr ) {
-		return self::ip4_range_to_list( CIDR::cidrToRange( $ip_cidr ) );
-	}
+//	private static function expand_ip4_cidr( $ip_cidr ) {
+//		return self::ip4_range_to_list( CIDR::cidrToRange( $ip_cidr ) );
+//	}
 
-	private static function expand_ip4_mask( $ip_mask ) {
-		list( $base, $mask ) = explode( '/', $ip_mask );
+//	private static function expand_ip4_mask( $ip_mask ) {
+//		list( $base, $mask ) = explode( '/', $ip_mask );
+//
+//		return self::expand_ip4_cidr( $base . '/' . CIDR::maskToCIDR( $mask ) );
+//	}
 
-		return self::expand_ip4_cidr( $base . '/' . CIDR::maskToCIDR( $mask ) );
-	}
-
-	private static function ip4_range_to_list( $range ) {
-		$list     = array();
-		$first_ip = ip2long( $range[0] );
-		$last_ip  = ip2long( $range[1] );
-
-		while ( $first_ip <= $last_ip ) {
-			$real_ip = long2ip( $first_ip );
-
-			if ( ! preg_match( '/\.0$/', $real_ip ) ) { // Don't include IPs that end in .0
-				$list[] = $real_ip;
-			}
-
-			$first_ip ++;
-		}
-
-		return $list;
-	}
+//	private static function ip4_range_to_list( $range ) {
+//		$list     = array();
+//		$first_ip = ip2long( $range[0] );
+//		$last_ip  = ip2long( $range[1] );
+//
+//		while ( $first_ip <= $last_ip ) {
+//			$real_ip = long2ip( $first_ip );
+//
+//			if ( ! preg_match( '/\.0$/', $real_ip ) ) { // Don't include IPs that end in .0
+//				$list[] = $real_ip;
+//			}
+//
+//			$first_ip ++;
+//		}
+//
+//		return $list;
+//	}
 
 	public static function action_phpmailer_init( &$mailer ) {
 		/** @var phpMailer $mailer */
@@ -1083,11 +1086,11 @@ class WP_Email_Essentials {
 	}
 
 	static function admin_interface() {
-		include 'admin-interface.php';
+		include __DIR__ .'/admin-interface.php';
 	}
 
 	static function admin_interface_admins() {
-		include 'admin-admins.php';
+		include __DIR__ .'/admin-admins.php';
 	}
 
 	public static function test() {
@@ -1290,6 +1293,8 @@ class WP_Email_Essentials {
 			}
 		}
 		if ( $found_mail_item_number == - 1 ) {
+			// not going to an admin.
+
 			// var_dump($email, __LINE__);exit;
 			return $email;
 		}
