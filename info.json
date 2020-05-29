@@ -1,7 +1,7 @@
 {
   "Plugin Name": "WordPress Email Essentials",
   "Description": "A must-have plugin for WordPress to get your outgoing e-mails straightened out.",
-  "Plugin URI": "https:\/\/bitbucket.org\/rmpel\/wp-email-essentials",
+  "Plugin URI": "https:\/\/github.com\/clearsite\/wp-email-essentials",
   "Author": "Remon Pel",
   "Author URI": "http:\/\/remonpel.nl",
   "License": "GPL2",
@@ -9,31 +9,31 @@
   "Domain Path": "Domain Path",
   "Compat": {
     "3.6": {
-      "2.5.0": 0
+      "3.0.0": 0
     },
     "3.7": {
-      "2.5.0": 0
+      "3.0.0": 0
     },
     "3.8": {
-      "2.5.0": 50
+      "3.0.0": 50
     },
     "3.9": {
-      "2.5.0": 50
+      "3.0.0": 50
     },
     "4": {
-      "2.5.0": 100
+      "3.0.0": 100
     },
     "4.8.3": {
-      "2.5.0": 100
+      "3.0.0": 100
     },
     "4.9.9": {
-      "2.5.0": 100
+      "3.0.0": 100
     },
     "5": {
-      "2.5.0": 100
+      "3.0.0": 100
     },
-    "5.4": {
-      "2.6.0": 100
+    "5.4.1": {
+      "3.0.0": 100
     }
   },
   "Dist Cleanup": [
