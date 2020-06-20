@@ -302,6 +302,9 @@ class WP_Email_Essentials {
 			return false; // invalid email
 		}
 		$sending_server = self::get_sending_ip();
+		// we assume here that everything NOT IP4 is IP6. This will do for now, but ...
+		// todo: actual ip6 check!
+		$ip = preg_match("/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/", trim($sending_server)) ? 'ip4' : 'ip6';
 
 		if ( ! isset( $lookup[ $sending_domain ] ) ) {
 			$dns = self::dns_get_record( $sending_domain, DNS_TXT );
@@ -330,7 +333,8 @@ class WP_Email_Essentials {
 			$position = false !== $position ? $position : ( false !== array_search( 'a', $spf ) ? array_search( 'a', $spf ) + 1 : false );
 			$position = false !== $position ? $position : ( false !== array_search( 'include:', $spf ) ? array_search( 'include:', $spf ) - 1 : false );
 			$position = false !== $position ? $position : ( false !== array_search( 'v=spf1', $spf ) ? array_search( 'v=spf1', $spf ) + 1 : false );
-			array_splice( $spf, $position, 0, 'ip4:' . $sending_server );
+
+			array_splice( $spf, $position, 0, $ip . ':' . $sending_server );
 			$spf = str_replace( 'include: ', 'include:', implode( ' ', $spf ) );
 		}
 
@@ -345,8 +349,8 @@ class WP_Email_Essentials {
 				$color = "red";
 			} else {
 				$color = "green";
-			};
-			$spf = str_replace( 'ip4:' . $sending_server, '<strong style="color:' . $color . ';">' . 'ip4:' . $sending_server . '</strong>', $spf );
+			}
+			$spf = str_replace( $ip . ':' . $sending_server, '<strong style="color:' . $color . ';">' . $ip . ':' . $sending_server . '</strong>', $spf );
 		}
 
 		return $spf;
@@ -464,21 +468,41 @@ class WP_Email_Essentials {
 				foreach ( $sections as $section ) {
 					// echo "Section: $section\n";
 					if ( $section == 'a' ) {
-						$m_ip = self::dns_get_record( $domain, DNS_A, true );
-						if ( IP::a_4_is_4( $m_ip, $ip ) ) {
-							return true;
+						if (IP::is_4($ip)) {
+							$m_ip = self::dns_get_record( $domain, DNS_A, true );
+							if ( IP::a_4_is_4( $m_ip, $ip ) ) {
+								return true;
+							}
+						}
+						if (IP::is_6($ip)) {
+							$m_ip = self::dns_get_record( $domain, DNS_AAAA, true );
+							if ( IP::a_6_is_6( $m_ip, $ip ) ) {
+								return true;
+							}
 						}
 					} elseif ( $section == 'mx' ) {
 						$mx = self::dns_get_record( $domain, DNS_MX );
 						foreach ( $mx as $mx_record ) {
 							$target = $mx_record['target'];
-							try {
-								$new_target = self::dns_get_record( $domain, DNS_A, true );
-							} catch ( Exception $e ) {
-								$new_target = $target;
+							if (IP::is_4($ip)) {
+								try {
+									$new_target = self::dns_get_record( $domain, DNS_A, true );
+								} catch ( Exception $e ) {
+									$new_target = $target;
+								}
+								if ( IP::a_4_is_4( $ip, $new_target ) ) {
+									return true;
+								}
 							}
-							if ( IP::a_4_is_4( $ip, $new_target ) ) {
-								return true;
+							if (IP::is_6($ip)) {
+								try {
+									$new_target = self::dns_get_record( $domain, DNS_AAAA, true );
+								} catch ( Exception $e ) {
+									$new_target = $target;
+								}
+								if ( IP::a_6_is_6( $ip, $new_target ) ) {
+									return true;
+								}
 							}
 						}
 					} elseif ( preg_match( '/ip4:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$/', $section, $m_ip ) ) {
@@ -487,6 +511,14 @@ class WP_Email_Essentials {
 						}
 					} elseif ( preg_match( '/ip4:([0-9\.]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
 						if ( IP::ip4_match_cidr( $ip, $ip_cidr[1] ) ) {
+							return true;
+						}
+					} elseif ( preg_match( '/ip6:([0-9A-Fa-f:]+)$/', $section, $m_ip ) ) {
+						if ( IP::is_6($m_ip[1]) && IP::a_6_is_6( $ip, $m_ip[1] ) ) {
+							return true;
+						}
+					} elseif ( preg_match( '/ip6:([0-9A-Fa-f:]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
+						if ( IP::ip6_match_cidr( $ip, $ip_cidr[1] ) ) {
 							return true;
 						}
 					} elseif ( preg_match( '/include:(.+)$/', $section, $include ) ) {
