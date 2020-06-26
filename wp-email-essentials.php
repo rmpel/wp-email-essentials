@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://github.com/clearsite/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 3.0.0
+Version: 3.0.1
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -522,7 +522,9 @@ class WP_Email_Essentials {
 							return true;
 						}
 					} elseif ( preg_match( '/include:(.+)$/', $section, $include ) ) {
-						return self::validate_ip_listed_in_spf( $include[1], $ip );
+						if (self::validate_ip_listed_in_spf( $include[1], $ip )) {
+							return true;
+						}
 					}
 				}
 			}
