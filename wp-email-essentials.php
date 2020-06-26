@@ -466,16 +466,23 @@ class WP_Email_Essentials {
 			if ( false !== strpos( $record['txt'], 'v=spf1' ) ) {
 				$sections = explode( ' ', $record['txt'] );
 				foreach ( $sections as $section ) {
+					if ( preg_match('/(a|aaaa|mx):(.+)/', $section, $mx_match)) {
+						// here we only expand the record, the actual check is done later
+						foreach (self::dns_get_record($mx_match[2], DNS_MX) as $item) {
+							$sections[] = "a/" . $item['target'];
+						}
+					}
 					// echo "Section: $section\n";
-					if ( $section == 'a' ) {
+					if ( $section == 'a' || $section == 'aaaa' || substr($section, 0, 2) === 'a/' ) {
+						list ($_, $_domain) = explode("/", "$section/$domain");
 						if (IP::is_4($ip)) {
-							$m_ip = self::dns_get_record( $domain, DNS_A, true );
+							$m_ip = self::dns_get_record( $_domain, DNS_A, true );
 							if ( IP::a_4_is_4( $m_ip, $ip ) ) {
 								return true;
 							}
 						}
 						if (IP::is_6($ip)) {
-							$m_ip = self::dns_get_record( $domain, DNS_AAAA, true );
+							$m_ip = self::dns_get_record( $_domain, DNS_AAAA, true );
 							if ( IP::a_6_is_6( $m_ip, $ip ) ) {
 								return true;
 							}
