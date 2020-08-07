@@ -19,6 +19,7 @@ if ( ! class_exists( 'CIDR' ) ) {
 use Clearsite\Tools\IP;
 
 require_once __DIR__ . '/lib/class.ip.php';
+require_once __DIR__ . '/lib/class.wpes-phpmailer.php';
 
 class WP_Email_Essentials {
 	static $message;
@@ -597,7 +598,7 @@ class WP_Email_Essentials {
 //	}
 
 	public static function action_phpmailer_init( &$mailer ) {
-		/** @var phpMailer $mailer */
+		/** @var WPES_PHPMailer $mailer */
 		$config = self::get_config();
 
 		if ( isset( $config['smtp']['timeout'] ) ) {
@@ -1072,8 +1073,7 @@ class WP_Email_Essentials {
 			}
 		}
 		if ( isset( $_GET['page'] ) && $_GET['page'] == 'wp-email-essentials' && isset( $_GET['iframe'] ) && $_GET['iframe'] == 'content' ) {
-			require_once ABSPATH . WPINC . '/class-phpmailer.php';
-			$mailer          = new PHPMailer;
+			$mailer          = new WPES_PHPMailer;
 			$config          = WP_Email_Essentials::get_config();
 			$subject         = __( 'Sample email subject', 'wpes' );
 			$mailer->Subject = $subject;
@@ -2361,11 +2361,4 @@ class WP_Email_Essentials_Queue {
 
 // add_filter('wp_mail', array('WP_Email_Essentials_Queue', 'wp_mail'), PHP_INT_MAX - 2000); // run before actual mail_send
 
-require_once ABSPATH . '/wp-includes/class-phpmailer.php';
-
-class WP_Email_Essentials_Fake_Sender extends PHPMailer {
-	function Send() {
-		return true;
-	}
-}
 

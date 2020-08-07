@@ -466,8 +466,7 @@ $c = WP_Email_Essentials::get_config();
 </div>
 <table width="90%">
 	<?php
-	require_once ABSPATH . WPINC . '/class-phpmailer.php';
-	$mailer  = new PHPMailer;
+	$mailer = new WPES_PHPMailer();
 	$config  = WP_Email_Essentials::get_config();
 	$css     = apply_filters_ref_array( 'wpes_css', array( '', &$mailer ) );
 	$subject = __( 'Sample email subject', 'wpes' );
