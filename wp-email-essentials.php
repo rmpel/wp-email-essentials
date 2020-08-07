@@ -889,7 +889,7 @@ class WP_Email_Essentials {
 		if ( ! $raw ) {
 			$settings = apply_filters( 'wpes_settings', $settings );
 
-			$settings['certificate_folder'] = $settings['certfolder'];
+			$settings['certificate_folder'] = isset($settings['certfolder']) ? $settings['certfolder'] : '';
 			if ( '/' !== substr( $settings['certificate_folder'], 0, 1 ) ) {
 				$settings['certificate_folder'] = rtrim( ABSPATH, '/' ) . '/' . $settings['certificate_folder'];
 			}
@@ -1644,6 +1644,7 @@ class WP_Email_Essentials {
 		}
 
 		$config = self::get_config();
+		if (!isset($config['make_from_valid'])) $config['make_from_valid'] = '';
 		switch ( $config['make_from_valid'] ) {
 			case 'noreply':
 				$text = sprintf( __( 'But <strong>please do not worry</strong>! <a href="%s" target="_blank">WP-Email-Essentials</a> will set <em class="noreply">noreply@%s</em> as sender and set <em>this email address</em> as Reply-To header.', 'wpes' ), admin_url( 'tools.php' ) . '?page=wp-email-essentials', $host );
