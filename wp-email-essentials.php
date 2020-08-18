@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://github.com/clearsite/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 3.1.0
+Version: 3.1.1
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -1906,7 +1906,7 @@ class WP_Email_Essentials_History {
 		include 'admin-emails.php';
 	}
 
-	public static function get_to_addresses( PHPMailer $phpmailer ) {
+	public static function get_to_addresses( $phpmailer ) {
 		if ( method_exists( $phpmailer, 'getToAddresses' ) ) {
 			return $phpmailer->getToAddresses();
 		}
@@ -1981,7 +1981,7 @@ class WP_Email_Essentials_History {
 	}
 
 
-	public static function phpmailer_init( PHPMailer $phpmailer ) {
+	public static function phpmailer_init( $phpmailer ) {
 		global $wpdb;
 		$data           = self::object_data( $phpmailer );
 		$data->Password = '********';
