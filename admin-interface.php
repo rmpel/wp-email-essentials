@@ -263,15 +263,24 @@ $c = WP_Email_Essentials::get_config();
                 </th>
                 <td colspan="3">
 					<?php _e( 'E-mails sent as different domain will probably be marked as spam. Fix the sender-address to always match the sending domain and send original From address as Reply-To: header?', 'wpes' ); ?>
-                    <select name="settings[make_from_valid]" id="make_from_valid">
-                        <option value=""><?php _e( 'No, send with possibly-invalid sender as is. (might cause your mails to be marked as spam!)', 'wpes' ); ?></option>
+                    <?php
+					$config = WP_Email_Essentials::get_config();
+
+					$host = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
+					$host = preg_replace( '/^www[0-9]*\./', '', $host );
+					?>
+					<select name="settings[make_from_valid_when]">
+						<option value="when_sender_invalid" <?php if ( 'when_sender_invalid' == $c['make_from_valid_when'] ) {
+							print 'selected="selected"';
+						} ?>><?php _e( 'When sender email domain/SPF does not match', 'wpes' ); ?></option>
+						<option value="when_sender_not_as_set" <?php if ( 'when_sender_not_as_set' == $c['make_from_valid_when'] ) {
+							print 'selected="selected"';
+						} ?>><?php _e( 'When sender email is not equal to above', 'wpes' ); ?></option>
+					</select>
+					<select name="settings[make_from_valid]" id="make_from_valid">
+                        <option value=""><?php _e( 'Keep the possibly-invalid sender as is. (might cause your mails to be marked as spam!)', 'wpes' ); ?></option>
                         <option disabled>────────────────────────────────────────────────────────────</option>
                         <option value="-at-" <?php
-
-						$config = WP_Email_Essentials::get_config();
-
-						$host = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
-						$host = preg_replace( '/^www[0-9]*\./', '', $host );
 
 						if ( '-at-' == $c['make_from_valid'] ) {
 							print 'selected="selected"';

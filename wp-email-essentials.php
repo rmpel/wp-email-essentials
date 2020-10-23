@@ -6,7 +6,7 @@ Description: A must-have plugin for WordPress to get your outgoing e-mails strai
 Plugin URI: https://github.com/clearsite/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 3.1.1
+Version: 3.1.2
 License: GPL2
 Text Domain: Text Domain
 Domain Path: Domain Path
@@ -359,8 +359,13 @@ class WP_Email_Essentials {
 
 	public static function i_am_allowed_to_send_in_name_of( $email ) {
 		$config = WP_Email_Essentials::get_config();
+
+		if ('when_sender_not_as_set' == $config['make_from_valid_when']) {
+			return $config['from_email'] === $email;
+		}
+
 		if ( ! $config['spf_lookup_enabled'] ) {
-			// we tried and faile dless than a day ago
+			// we tried and failed less than a day ago
 			// do not try again
 			return self::this_email_matches_website_domain( $email );
 		}
@@ -612,7 +617,7 @@ class WP_Email_Essentials {
 			if ( $port > 0 ) {
 				$mailer->Port = $port;
 			}
-			if ( $config['smtp']['port'] ) {
+			if ( !empty($config['smtp']['port']) ) {
 				$mailer->Port = $config['smtp']['port'];
 			}
 
@@ -627,7 +632,7 @@ class WP_Email_Essentials {
 				} else {
 					$mailer->SMTPAutoTLS = false;
 				}
-				if ( ( defined( 'WPES_ALLOW_SSL_SELF_SIGNED' ) && true === WPES_ALLOW_SSL_SELF_SIGNED ) || substr( $config['smtp']['secure'], - 1, 1 ) == '-' ) {
+				if ( ( defined( 'WPES_ALLOW_SSL_SELF_SIGNED' ) && true === WPES_ALLOW_SSL_SELF_SIGNED ) || substr( isset($config['smtp']['secure']) ? $config['smtp']['secure'] : '', - 1, 1 ) == '-' ) {
 					$mailer->SMTPOptions = array(
 							'ssl' => array(
 									'verify_peer'       => false,
@@ -882,6 +887,7 @@ class WP_Email_Essentials {
 				'content_precode'    => false,
 				'do_shortcodes'      => false,
 				'enable_history'     => false,
+				'make_from_valid_when'     => 'when_sender_invalid',
 		);
 
 		$defaults = apply_filters( 'wpes_defaults', $defaults );
@@ -944,6 +950,7 @@ class WP_Email_Essentials {
 		$settings['enable_smime']    = array_key_exists( 'enable_smime', $values ) && $values['enable_smime'] ? "1" : "0";
 		$settings['certfolder']      = array_key_exists( 'certfolder', $values ) && $values['certfolder'] ? $values['certfolder'] : '';
 		$settings['make_from_valid'] = array_key_exists( 'make_from_valid', $values ) && $values['make_from_valid'] ? $values['make_from_valid'] : "";
+		$settings['make_from_valid_when'] = array_key_exists( 'make_from_valid_when', $values ) && $values['make_from_valid_when'] ? $values['make_from_valid_when'] : "when_sender_invalid";
 		$settings['errors_to']       = array_key_exists( 'errors_to', $values ) && $values['errors_to'] ? $values['errors_to'] : '';
 		update_option( 'wp-email-essentials', $settings );
 	}
