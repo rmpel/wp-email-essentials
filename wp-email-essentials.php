@@ -752,7 +752,7 @@ class WP_Email_Essentials {
 			list( $crt, $key, $pass, $selector ) = $id;
 			$mailer->DKIM_domain = $id;
 			$mailer->DKIM_private = $key;
-			$mailer->DKIM_selector = $selector;
+			$mailer->DKIM_selector = $selector; // FQDN? just selector? . '_domainkey.';
 			$mailer->DKIM_passphrase = $pass;
 			$mailer->DKIM_identity = $from;
 		}
@@ -964,6 +964,8 @@ class WP_Email_Essentials {
 
 		$settings['enable_smime']    = array_key_exists( 'enable_smime', $values ) && $values['enable_smime'] ? "1" : "0";
 		$settings['certfolder']      = array_key_exists( 'certfolder', $values ) && $values['certfolder'] ? $values['certfolder'] : '';
+		$settings['enable_dkim']    = array_key_exists( 'enable_dkim', $values ) && $values['enable_dkim'] ? "1" : "0";
+		$settings['dkimfolder']      = array_key_exists( 'dkimfolder', $values ) && $values['dkimfolder'] ? $values['dkimfolder'] : '';
 		$settings['make_from_valid'] = array_key_exists( 'make_from_valid', $values ) && $values['make_from_valid'] ? $values['make_from_valid'] : "";
 		$settings['make_from_valid_when'] = array_key_exists( 'make_from_valid_when', $values ) && $values['make_from_valid_when'] ? $values['make_from_valid_when'] : "when_sender_invalid";
 		$settings['errors_to']       = array_key_exists( 'errors_to', $values ) && $values['errors_to'] ? $values['errors_to'] : '';
@@ -1339,6 +1341,29 @@ class WP_Email_Essentials {
 			self::set_config( $rawset, true );
 		}
 
+		// dkimfolder == setting, dkim_certificate_folder == real path;
+		if ( $config['enable_dkim'] && isset( $config['dkimfolder'] ) && $config['dkimfolder'] ) {
+			if ( is_writable( $config['dkim_certificate_folder'] ) && ! get_option( 'suppress_dkim_writable' ) ) {
+				$class   = "error";
+				$message = __( 'The S/MIME certificate folder is writable. This is Extremely insecure. Please reconfigure, make sure the folder is not writable by Apache. If your server is running suPHP, you cannot make the folder read-only for apache. Please contact your hosting provider and ask for a more secure hosting package, one not based on suPHP.', 'wpes' );
+				echo "<div class='$class'><p>$message</p></div>";
+			}
+
+			if ( false !== strpos( realpath( $config['dkim_certificate_folder'] ), realpath( ABSPATH ) ) ) {
+				$class   = "error";
+				$message = sprintf( __( 'The S/MIME certificate folder is inside the webspace. This is Extremely insecure. Please reconfigure, make sure the folder is outside the website-root %s.', 'wpes' ), ABSPATH );
+				echo "<div class='$class'><p>$message</p></div>";
+			}
+		}
+
+		// default mail identity existance
+		if ( $config['enable_dkim'] && $onpage && ! self::get_dkim_identity( $from ) ) {
+			$rawset               = self::get_config( true );
+			$set                  = $rawset['dkimfolder'];
+			$rawset['dkimfolder'] = $set;
+			self::set_config( $rawset, true );
+		}
+
 	}
 
 	public static function list_smime_identities() {
@@ -1380,10 +1405,10 @@ class WP_Email_Essentials {
 			foreach ( $files as $file ) {
 				if ( is_file( $file ) && is_file( preg_replace( '/\.crt$/', '.key', $file ) ) ) {
 					$ids[ basename( preg_replace( '/\.crt$/', '', $file ) ) ] = array(
-						$file,
-						preg_replace( '/\.crt$/', '.key', $file ),
-						trim( @file_get_contents( preg_replace( '/\.crt$/', '.pass', $file ) ) ),
-						trim( @file_get_contents( preg_replace( '/\.crt$/', '.selector', $file ) ) ),
+							$file,
+							preg_replace( '/\.crt$/', '.key', $file ),
+							trim( @file_get_contents( preg_replace( '/\.crt$/', '.pass', $file ) ) ),
+							trim( @file_get_contents( preg_replace( '/\.crt$/', '.selector', $file ) ) ),
 					);
 				}
 			}
@@ -1723,7 +1748,7 @@ class WP_Email_Essentials {
 						var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
 						if (i.length > 0) {
 							var t = <?php print json_encode( $text ); ?>,
-									e = i.siblings('.config-error');
+								e = i.siblings('.config-error');
 
 							if (e.length > 0) {
 								if (e.is('ul')) {
