@@ -17,7 +17,7 @@ $c = WP_Email_Essentials::get_config();
 		print '<div class="error"><p>' . WP_Email_Essentials::$error . '</p></div>';
 	} ?>
 
-	<?php if ( false !== strpos( $c['smtp']['host'], ':' ) ) {
+	<?php if ( $c['smtp'] && false !== strpos( $c['smtp']['host'], ':' ) ) {
 		list ( $host, $port ) = explode( ':', $c['smtp']['host'] );
 		if ( is_numeric( $port ) ) {
 			$c['smtp']['port'] = $port;
@@ -91,14 +91,14 @@ $c = WP_Email_Essentials::get_config();
                     <label for="smtp-hostname"><?php _e( 'Hostname or -ip', 'wpes' ); ?></label>
                 </th>
                 <td width="25%">
-                    <input type="text" class="widefat" name="settings[host]" value="<?php print $c['smtp']['host']; ?>"
+                    <input type="text" class="widefat" name="settings[host]" value="<?php print $c['smtp'] ? $c['smtp']['host'] : ''; ?>"
                            id="smtp-hostname"/>
                 </td>
                 <th width="25%">
                     <label for="smtp-port"><?php _e( 'SMTP Port', 'wpes' ); ?></label>
                 </th>
                 <td width="25%">
-                    <input type="text" class="widefat" name="settings[port]" value="<?php print $c['smtp']['port']; ?>"
+                    <input type="text" class="widefat" name="settings[port]" value="<?php print $c['smtp'] ? $c['smtp']['port'] : ''; ?>"
                            id="smtp-port"/>
                 </td>
             </tr>
@@ -108,7 +108,7 @@ $c = WP_Email_Essentials::get_config();
                 </th>
                 <td>
                     <input type="text" class="widefat" name="settings[username]"
-                           value="<?php print $c['smtp']['username']; ?>"
+                           value="<?php print $c['smtp'] ? $c['smtp']['username'] : ''; ?>"
                            id="smtp-username"/>
                 </td>
                 <th>
@@ -116,7 +116,7 @@ $c = WP_Email_Essentials::get_config();
                 </th>
                 <td>
                     <input type="password" class="widefat" name="settings[password]"
-                           value="<?php print str_repeat( '*', strlen( $c['smtp']['password'] ) ); ?>"
+                           value="<?php print $c['smtp'] ? str_repeat( '*', strlen( $c['smtp']['password'] ) ) : ''; ?>"
                            id="smtp-password"/>
                 </td>
             </tr>
@@ -130,22 +130,22 @@ $c = WP_Email_Essentials::get_config();
                         <option disabled>───────────────────────</option>
                         <option disabled><?php _e( 'Use encrypted connection', 'wpes' ); ?>
                             - <?php _e( 'strict SSL verify', 'wpes' ); ?></option>
-                        <option value="ssl" <?php if ( 'ssl' == $c['smtp']['secure'] ) {
+                        <option value="ssl" <?php if ( $c['smtp'] && 'ssl' == $c['smtp']['secure'] ) {
 							print 'selected="selected"';
 						} ?>><?php _e( 'SSL', 'wpes' ); ?>
                         </option>
-                        <option value="tls" <?php if ( 'tls' == $c['smtp']['secure'] ) {
+                        <option value="tls" <?php if ( $c['smtp'] && 'tls' == $c['smtp']['secure'] ) {
 							print 'selected="selected"';
 						} ?>><?php _e( 'StartTLS', 'wpes' ); ?>
                         </option>
                         <option disabled>───────────────────────</option>
                         <option disabled><?php _e( 'Use encrypted connection', 'wpes' ); ?>
                             - <?php _e( 'allow self-signed SSL', 'wpes' ); ?></option>
-                        <option value="ssl-" <?php if ( 'ssl-' == $c['smtp']['secure'] ) {
+                        <option value="ssl-" <?php if ( $c['smtp'] && 'ssl-' == $c['smtp']['secure'] ) {
 							print 'selected="selected"';
 						} ?>><?php _e( 'SSL', 'wpes' ); ?>
                         </option>
-                        <option value="tls-" <?php if ( 'tls-' == $c['smtp']['secure'] ) {
+                        <option value="tls-" <?php if ( $c['smtp'] && 'tls-' == $c['smtp']['secure'] ) {
 							print 'selected="selected"';
 						} ?>><?php _e( 'StartTLS', 'wpes' ); ?>
                         </option>
@@ -430,6 +430,68 @@ $c = WP_Email_Essentials::get_config();
                     </td>
                 </tr>
 			<?php } ?>
+			<tr>
+				<td colspan="4">
+					<h3><?php _e( 'Digital E-mail Signing (DKIM)', 'wpes' ); ?>:</h3>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="4">
+					<input type="checkbox" name="settings[enable_dkim]" value="1"
+						   <?php print ( isset( $c['enable_dkim'] ) && $c['enable_dkim'] ? 'checked="checked" ' : '' ); ?>id="enable-dkim"/><label
+							for="enable-dkim"><?php _e( 'Sign emails with DKIM certificate', 'wpes' ); ?></label>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<label for="dkimfolder"><?php _e( 'DKIM Certificate/Private-Key path', 'wpes' ); ?></label>
+				</td>
+				<td colspan="3">
+					<input type="text" class="widefat" name="settings[dkimfolder]"
+						   value="<?php print esc_attr( $c['dkimfolder'] ); ?>" id="dkimfolder"/>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="4">
+					<strong><?php print sprintf( __( 'It is highly advised to pick a folder path <u>outside</u> your website, for example: <code>%s/.dkim/</code> to prevent stealing your identity.', 'wpes' ), dirname( ABSPATH ) ); ?></strong><br/>
+					<?php _e( 'You can also type a relative path (any path not starting with a / is a relative path), this will be evaluated against ABSPATH (the root of your wordpress).', 'wpes' ); ?>
+					<br/>
+					<?php _e( 'The naming convention is: certificate: <code>domain.tld.crt</code>, private key: <code>domain.tld.key</code>, DKIM Selector: <code>domain.tld.selector</code>, (optional) passphrase: <code>domain.tld.pass</code>.', 'wpes' ); ?>
+				</td>
+			</tr>
+			<?php if ( isset( $c['dkimfolder'] ) ) {
+				$ids                = array();
+				$dkim_certificate_folder = $c['dkim_certificate_folder'];
+				if ( is_dir( $dkim_certificate_folder ) ) {
+					$files = glob( $dkim_certificate_folder . '/*.crt' );
+					$ids   = WP_Email_Essentials::list_dkim_identities();
+					$ids   = array_keys( $ids );
+				} else {
+					?>
+					<tr>
+					<td colspan="4" style="color:red;">
+						<strong><?php print sprintf( __( 'Set folder <code>%s</code> not found.', 'wpes' ), $c['dkimfolder'] );
+							if ( $dkim_certificate_folder !== $c['dkimfolder'] ) {
+								print ' ' . sprintf( __( 'Expanded path: <code>%s</code>', 'wpes' ), $dkim_certificate_folder );
+							}
+							print ' ' . sprintf( __( 'Evaluated path: <code>%s</code>', 'wpes' ), realpath( $dkim_certificate_folder ) ); ?>
+					</td>
+					</tr><?php
+				}
+				if ( $ids ) {
+					?>
+					<tr>
+					<td colspan="4">
+						<?php print sprintf( __( 'Found DKIM certificates for the following sender-domains: <code>%s</code>', 'wpes' ), implode( '</code>, <code>', $ids ) ); ?>
+					</td>
+					</tr><?php
+				}
+			} ?>
+			<tr>
+				<th colspan="4">
+					<hr/>
+				</th>
+			</tr>
             <tr>
                 <th colspan="4">
                     <input type="submit" name="op" value="<?php print esc_attr__( 'Save settings', 'wpes' ); ?>"

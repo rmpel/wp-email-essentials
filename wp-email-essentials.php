@@ -747,6 +747,16 @@ class WP_Email_Essentials {
 			$mailer->sign( $crt, $key, $pass );
 		}
 
+		// DKIM Signing
+		if ( $config['enable_dkim'] && $id = self::get_dkim_identity( $from ) ) {
+			list( $crt, $key, $pass, $selector ) = $id;
+			$mailer->DKIM_domain = $id;
+			$mailer->DKIM_private = $key;
+			$mailer->DKIM_selector = $selector;
+			$mailer->DKIM_passphrase = $pass;
+			$mailer->DKIM_identity = $from;
+		}
+
 		// DEBUG output
 
 		if ( $_POST && isset( $_POST['form_id'] ) && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == __( 'Print debug output of sample mail', 'wpes' ) ) {
@@ -883,7 +893,7 @@ class WP_Email_Essentials {
 				'css_inliner'        => false,
 				'enable_smime'       => false,
 				'spf_lookup_enabled' => false,
-				'errors_to'          => 'postmaster@clearsite.nl',
+				'errors_to'          => get_bloginfo( 'admin_email' ),
 				'content_precode'    => false,
 				'do_shortcodes'      => false,
 				'enable_history'     => false,
@@ -899,6 +909,11 @@ class WP_Email_Essentials {
 			$settings['certificate_folder'] = isset($settings['certfolder']) ? $settings['certfolder'] : '';
 			if ( '/' !== substr( $settings['certificate_folder'], 0, 1 ) ) {
 				$settings['certificate_folder'] = rtrim( ABSPATH, '/' ) . '/' . $settings['certificate_folder'];
+			}
+
+			$settings['dkim_certificate_folder'] = isset($settings['dkimfolder']) ? $settings['dkimfolder'] : '';
+			if ( '/' !== substr( $settings['dkim_certificate_folder'], 0, 1 ) ) {
+				$settings['dkim_certificate_folder'] = rtrim( ABSPATH, '/' ) . '/' . $settings['dkim_certificate_folder'];
 			}
 		}
 
@@ -1350,6 +1365,39 @@ class WP_Email_Essentials {
 		$ids = self::list_smime_identities();
 		if ( isset( $ids[ $email ] ) ) {
 			return $ids[ $email ];
+		}
+
+		return false;
+	}
+
+
+	public static function list_dkim_identities() {
+		$c                  = self::get_config();
+		$ids                = array();
+		$certificate_folder = $c['certificate_folder'];
+		if ( is_dir( $certificate_folder ) ) {
+			$files = glob( $certificate_folder . '/*.crt' );
+			foreach ( $files as $file ) {
+				if ( is_file( $file ) && is_file( preg_replace( '/\.crt$/', '.key', $file ) ) ) {
+					$ids[ basename( preg_replace( '/\.crt$/', '', $file ) ) ] = array(
+						$file,
+						preg_replace( '/\.crt$/', '.key', $file ),
+						trim( @file_get_contents( preg_replace( '/\.crt$/', '.pass', $file ) ) ),
+						trim( @file_get_contents( preg_replace( '/\.crt$/', '.selector', $file ) ) ),
+					);
+				}
+			}
+		}
+
+		return $ids;
+	}
+
+	public static function get_dkim_identity( $email ) {
+		$ids = self::list_dkim_identities();
+		$domain = explode('@', '@'.$email);
+		$domain = end($domain);
+		if ( isset( $ids[ $domain ] ) ) {
+			return $ids[ $domain ];
 		}
 
 		return false;
