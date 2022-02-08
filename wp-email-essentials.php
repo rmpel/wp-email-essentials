@@ -1342,7 +1342,7 @@ class WP_Email_Essentials {
 		}
 
 		// dkimfolder == setting, dkim_certificate_folder == real path;
-		if ( $config['enable_dkim'] && isset( $config['dkimfolder'] ) && $config['dkimfolder'] ) {
+		if ( !empty($config['enable_dkim']) && $config['enable_dkim'] && isset( $config['dkimfolder'] ) && $config['dkimfolder'] ) {
 			if ( is_writable( $config['dkim_certificate_folder'] ) && ! get_option( 'suppress_dkim_writable' ) ) {
 				$class   = "error";
 				$message = __( 'The S/MIME certificate folder is writable. This is Extremely insecure. Please reconfigure, make sure the folder is not writable by Apache. If your server is running suPHP, you cannot make the folder read-only for apache. Please contact your hosting provider and ask for a more secure hosting package, one not based on suPHP.', 'wpes' );
@@ -1357,7 +1357,7 @@ class WP_Email_Essentials {
 		}
 
 		// default mail identity existance
-		if ( $config['enable_dkim'] && $onpage && ! self::get_dkim_identity( $from ) ) {
+		if ( !empty($config['enable_dkim']) && $config['enable_dkim'] && $onpage && ! self::get_dkim_identity( $from ) ) {
 			$rawset               = self::get_config( true );
 			$set                  = $rawset['dkimfolder'];
 			$rawset['dkimfolder'] = $set;
