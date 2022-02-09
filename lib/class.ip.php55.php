@@ -1,6 +1,6 @@
 <?php
 
-namespace Clearsite\Tools;
+namespace RMPel\Tools;
 
 class IP_55 extends IP_54 {
 	// using a generator slightly improves memory consumption

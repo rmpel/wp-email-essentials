@@ -1,6 +1,6 @@
 <?php
 
-namespace Clearsite\Tools;
+namespace RMPel\Tools;
 
 // not optimal, but these classes are small
 require __DIR__ .'/class.ip.php54.php';

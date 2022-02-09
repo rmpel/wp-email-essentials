@@ -4,19 +4,17 @@
 Plugin Name: WordPress Email Essentials
 Description: A must-have plugin for WordPress to get your outgoing e-mails straightened out.
 Plugin URI: https://github.com/clearsite/wp-email-essentials
+Upstream URI: https://github.com/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 3.2.0
-License: GPL2
-Text Domain: Text Domain
-Domain Path: Domain Path
+Version: 3.2.1
 */
 
 if ( ! class_exists( 'CIDR' ) ) {
 	require_once __DIR__ . '/lib/class.cidr.php';
 }
 
-use Clearsite\Tools\IP;
+use RMPel\Tools\IP;
 
 require_once __DIR__ . '/lib/class.ip.php';
 require_once __DIR__ . '/lib/class.wpes-phpmailer.php';
@@ -393,7 +391,7 @@ class WP_Email_Essentials {
 			$ip = false;
 		}
 		if ( ! $ip ) {
-			$ip = wp_remote_retrieve_body( wp_remote_get( 'https://ip.clearsite.nl' ) );
+			$ip = wp_remote_retrieve_body( wp_remote_get( 'https://ip.remonpel.nl' ) );
 			if ( $ip == '0.0.0.0' ) {
 				$ip = false;
 			}
@@ -1063,7 +1061,7 @@ class WP_Email_Essentials {
 	}
 
 	public static function admin_menu() {
-		add_menu_page( 'WP-Email-Essentials', 'CLS Email-Essent', 'manage_options', 'wp-email-essentials', array(
+		add_menu_page( 'WP-Email-Essentials', 'Email Essentials', 'manage_options', 'wp-email-essentials', array(
 				'WP_Email_Essentials',
 				'admin_interface'
 		), 'dashicons-email-alt' );
@@ -1345,13 +1343,13 @@ class WP_Email_Essentials {
 		if ( !empty($config['enable_dkim']) && $config['enable_dkim'] && isset( $config['dkimfolder'] ) && $config['dkimfolder'] ) {
 			if ( is_writable( $config['dkim_certificate_folder'] ) && ! get_option( 'suppress_dkim_writable' ) ) {
 				$class   = "error";
-				$message = __( 'The S/MIME certificate folder is writable. This is Extremely insecure. Please reconfigure, make sure the folder is not writable by Apache. If your server is running suPHP, you cannot make the folder read-only for apache. Please contact your hosting provider and ask for a more secure hosting package, one not based on suPHP.', 'wpes' );
+				$message = __( 'The DKIM certificate folder is writable. This is Extremely insecure. Please reconfigure, make sure the folder is not writable by Apache. If your server is running suPHP, you cannot make the folder read-only for apache. Please contact your hosting provider and ask for a more secure hosting package, one not based on suPHP.', 'wpes' );
 				echo "<div class='$class'><p>$message</p></div>";
 			}
 
 			if ( false !== strpos( realpath( $config['dkim_certificate_folder'] ), realpath( ABSPATH ) ) ) {
 				$class   = "error";
-				$message = sprintf( __( 'The S/MIME certificate folder is inside the webspace. This is Extremely insecure. Please reconfigure, make sure the folder is outside the website-root %s.', 'wpes' ), ABSPATH );
+				$message = sprintf( __( 'The DKIM certificate folder is inside the webspace. This is Extremely insecure. Please reconfigure, make sure the folder is outside the website-root %s.', 'wpes' ), ABSPATH );
 				echo "<div class='$class'><p>$message</p></div>";
 			}
 		}

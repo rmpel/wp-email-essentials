@@ -1,6 +1,6 @@
 <?php
 
-namespace Clearsite\Tools;
+namespace RMPel\Tools;
 
 class IP_54 {
 	// this is the "normal" way of doing it.
