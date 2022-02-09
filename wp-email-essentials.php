@@ -7,7 +7,7 @@ Plugin URI: https://github.com/clearsite/wp-email-essentials
 Upstream URI: https://github.com/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 3.2.2
+Version: 3.2.3
 */
 
 if ( ! class_exists( 'CIDR' ) ) {
@@ -1397,7 +1397,7 @@ class WP_Email_Essentials {
 	public static function list_dkim_identities() {
 		$c                  = self::get_config();
 		$ids                = array();
-		$certificate_folder = $c['certificate_folder'];
+		$certificate_folder = $c['dkim_certificate_folder'];
 		if ( is_dir( $certificate_folder ) ) {
 			$files = glob( $certificate_folder . '/*.crt' );
 			foreach ( $files as $file ) {
