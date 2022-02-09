@@ -7,7 +7,7 @@ Plugin URI: https://github.com/clearsite/wp-email-essentials
 Upstream URI: https://github.com/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 3.2.1
+Version: 3.2.2
 */
 
 if ( ! class_exists( 'CIDR' ) ) {
@@ -950,7 +950,7 @@ class WP_Email_Essentials {
 		}
 		$settings['from_name']          = array_key_exists( 'from_name', $values ) && $values['from_name'] ? $values['from_name'] : $settings['from_name'];
 		$settings['from_email']         = array_key_exists( 'from_email', $values ) && $values['from_email'] ? $values['from_email'] : $settings['from_email'];
-		$settings['timeout']            = array_key_exists( 'timeout', $values ) && $values['timeout'] ? true : false;
+		$settings['timeout']            = array_key_exists( 'timeout', $values ) && $values['timeout'] ? $values['timeout'] : 5;
 		$settings['is_html']            = array_key_exists( 'is_html', $values ) && $values['is_html'] ? true : false;
 		$settings['css_inliner']        = array_key_exists( 'css_inliner', $values ) && $values['css_inliner'] ? true : false;
 		$settings['content_precode']    = array_key_exists( 'content_precode', $values ) && $values['content_precode'] ? $values['content_precode'] : false;
