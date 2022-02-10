@@ -7,7 +7,7 @@ Plugin URI: https://github.com/clearsite/wp-email-essentials
 Upstream URI: https://github.com/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 3.2.3
+Version: 3.2.4
 */
 
 if ( ! class_exists( 'CIDR' ) ) {
@@ -747,8 +747,8 @@ class WP_Email_Essentials {
 
 		// DKIM Signing
 		if ( $config['enable_dkim'] && $id = self::get_dkim_identity( $from ) ) {
-			list( $crt, $key, $pass, $selector ) = $id;
-			$mailer->DKIM_domain = $id;
+			list( $crt, $key, $pass, $selector, $domain ) = $id;
+			$mailer->DKIM_domain = $domain;
 			$mailer->DKIM_private = $key;
 			$mailer->DKIM_selector = $selector; // FQDN? just selector? . '_domainkey.';
 			$mailer->DKIM_passphrase = $pass;
@@ -1402,11 +1402,13 @@ class WP_Email_Essentials {
 			$files = glob( $certificate_folder . '/*.crt' );
 			foreach ( $files as $file ) {
 				if ( is_file( $file ) && is_file( preg_replace( '/\.crt$/', '.key', $file ) ) ) {
-					$ids[ basename( preg_replace( '/\.crt$/', '', $file ) ) ] = array(
+					$domain = basename( preg_replace( '/\.crt$/', '', $file ) );
+					$ids[ $domain ] = array(
 							$file,
 							preg_replace( '/\.crt$/', '.key', $file ),
 							trim( @file_get_contents( preg_replace( '/\.crt$/', '.pass', $file ) ) ),
 							trim( @file_get_contents( preg_replace( '/\.crt$/', '.selector', $file ) ) ),
+							$domain
 					);
 				}
 			}
