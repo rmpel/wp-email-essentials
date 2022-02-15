@@ -890,6 +890,7 @@ class WP_Email_Essentials {
 				'alt_body'           => false,
 				'css_inliner'        => false,
 				'enable_smime'       => false,
+				'enable_dkim'        => false,
 				'spf_lookup_enabled' => false,
 				'errors_to'          => get_bloginfo( 'admin_email' ),
 				'content_precode'    => false,
