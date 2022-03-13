@@ -7,7 +7,7 @@ Plugin URI: https://github.com/clearsite/wp-email-essentials
 Upstream URI: https://github.com/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 3.2.5
+Version: 3.2.6
 */
 
 if ( ! class_exists( 'CIDR' ) ) {
@@ -2066,6 +2066,7 @@ class WP_Email_Essentials_History {
 		global $wpdb;
 		$data           = self::object_data( $phpmailer );
 		$data->Password = '********';
+		$data->DKIM_passphrase = '********';
 		$data           = json_encode( $data, JSON_PRETTY_PRINT );
 //		$recipient = implode( ',', self::get_to_addresses( $phpmailer ) );
 //		$sender    = $phpmailer->Sender ?: $phpmailer->from_name . '<' . $phpmailer->from_email . '>';
