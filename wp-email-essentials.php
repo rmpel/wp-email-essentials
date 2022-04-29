@@ -7,7 +7,7 @@ Plugin URI: https://github.com/clearsite/wp-email-essentials
 Upstream URI: https://github.com/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 3.2.6
+Version: 3.2.7
 */
 
 if ( ! class_exists( 'CIDR' ) ) {
@@ -548,20 +548,42 @@ class WP_Email_Essentials {
 		$transient_name = "dns_{$lookup}__TYPE{$filter}__cache";
 		$transient      = get_site_transient( $transient_name );
 		if ( ! $transient ) {
-			$transient = dns_get_record( $lookup, $filter );
-			$ttl       = count( $transient ) > 0 && is_array( $transient[0] && isset( $transient[0]['ttl'] ) ) ? $transient[0]['ttl'] : 3600;
+			$transient = self::via_ajax_dns_get_record( $lookup, $filter );
+			$ttl       = is_array( $transient) && count( $transient ) > 0 && is_array( $transient[0] && isset( $transient[0]['ttl'] ) ) ? $transient[0]['ttl'] : 3600;
 			set_site_transient( $transient_name, $transient, $ttl );
 		}
 		if ( $single_output ) { // todo: most records are repeatable, should return array, calling code should proces array
 			if ( $filter == DNS_A ) {
 				return $transient[0]['ip'];
 			}
-			if ( $filter == DNS_A6 ) {
+			if ( $filter == DNS_A6 || $filter == DNS_AAAA ) {
 				return $transient[0]['ipv6'];
 			}
 		}
 
 		return $transient;
+	}
+
+	private static function via_ajax_dns_get_record( $query, $type ) {
+		$r = wp_remote_post( admin_url('admin-ajax.php?action=wpes_dns_get_record'), [ 'body' => compact('query', 'type') ] );
+		if (is_wp_error($r)) { return false; }
+		return json_decode( wp_remote_retrieve_body($r), true )['records'];
+	}
+
+	public static function wp_ajax_wpes_dns_get_record() {
+		$atts = shortcode_atts([ 'query' => '', 'type' => DNS_ALL ], $_REQUEST);
+		set_time_limit(1); // this is the whole reason we're doing ajax!
+		$success = false;
+		header("Content-Type: application/json");
+		$records = dns_get_record( $atts['query'], $atts['type'] );
+		$success = true;
+		print json_encode(compact('success', 'records' ) );
+		exit;
+		register_shutdown_function(function() use ($success) {
+			if (!$success) {
+				print json_encode(['success' => false]);
+			}
+		});
 	}
 
 	public static function this_email_matches_website_domain( $email ) {
@@ -1882,6 +1904,7 @@ add_action( 'admin_notices', array( $wp_email_essentials, 'adminNotices' ) );
 add_filter( 'wp_mail', array( 'WP_Email_Essentials', 'alternative_to' ) );
 
 add_action( 'wp_ajax_nopriv_wpes_get_ip', array( 'WP_Email_Essentials', 'ajax_get_ip' ) );
+add_action( 'wp_ajax_nopriv_wpes_dns_get_record', array( 'WP_Email_Essentials', 'wp_ajax_wpes_dns_get_record' ) );
 
 class WP_Email_Essentials_History {
 	public static function getInstance() {
