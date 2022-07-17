@@ -476,7 +476,7 @@ $c = WP_Email_Essentials::get_config();
 			<tr>
 				<td colspan="4">
 					Finally, register the domain key in the DNS<br />
-					<code>DKIM-SELECTOR-FOR-THIS-KEY._domainkey.domain.tld. IN A TXT "v=DKIM1; k=rsa; p=FULL-CONTENT-OF-domain.tld.crt"</code><br />
+					<code>DKIM-SELECTOR-FOR-THIS-KEY._domainkey.domain.tld. IN TXT "v=DKIM1; k=rsa; p=FULL-CONTENT-OF-domain.tld.crt"</code><br />
 					remove linebreaks and ignore the ---BEGIN KEY and END KEY lines
 				</td>
 			</tr>
