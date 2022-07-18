@@ -179,7 +179,16 @@ $start = $page * $limit;
 	if ($start > $total) {
 		$start = 0;
 	}
+	$pages = ceil($total / $limit);
+	$next_page = $page + 1;
+	$prev_page = $page - 1;
+	if ($prev_page < 0) $prev_page = false;
+	if ($next_page > $pages - 1) $next_page = false;
 	?>
+	<div class="pager">
+		<span><?php if ( false !== $prev_page ) { ?><a href="<?php print esc_attr( add_query_arg('_page', $prev_page)); ?>">&lt; Previous page</a> <?php } ?></span>
+		<span><?php if ( false !== $next_page ) { ?><a href="<?php print esc_attr( add_query_arg('_page', $next_page)); ?>">&lt; Next page</a> <?php } ?></span>
+	</div>
 	<div id="mail-viewer">
 		<div class="top-panel">
 			<ul id="mail-index">
@@ -234,6 +243,7 @@ $start = $page * $limit;
 			} ?>
 		</div><!-- /mdv -->
 	</div><!-- /mv -->
+	<p>*) A sender with an asterisk is rewritten to the site default sender and used as Reply-To address.</p>
 	<script>
 		jQuery(document).ready(function ($) {
 			$(".email-item").bind('click', function (e) {
