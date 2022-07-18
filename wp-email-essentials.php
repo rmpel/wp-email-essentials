@@ -145,16 +145,16 @@ class WP_Email_Essentials {
 		$u            = wp_get_current_user();
 		$mail_headers = array_map( 'trim', explode( "\n", $mail_headers ) );
 		foreach ( $mail_headers as $i => $header ) {
-			if ( preg_match( '/^([Ff][Rr][Oo][Mm]|[Rr][Ee][Pp][Ll][Yy]\-[Tt][Oo]):[ \t]*(.+)$/', $header, $m ) ) {
+			if ( preg_match( '/^(From|Reply-To):[ \t]*(.+)$/i', $header, $m ) ) {
 				$email = $m[2];
 				$email = self::rfc_decode( $email );
-				if ( $email['email'] == $email['name'] ) {
+				if ( $email['email'] === $email['name'] ) {
 					$email['name'] = $u->ID ? $u->display_name : ( $email['name'] ?: __( 'anonymous' ) );
 				}
-				if ( $u->ID && $u->user_login == $email['name'] ) {
+				if ( $u->ID && $u->user_login === $email['name'] ) {
 					$email['name'] = $u->display_name;
 				}
-				if ( $u->ID && $email['email'] == self::get_wordpress_default_emailaddress() ) {
+				if ( $u->ID && $email['email'] === self::get_wordpress_default_emailaddress() ) {
 					$email['email'] = $u->user_email;
 				}
 				$mail_headers[ $i ] = $m[1] . ': ' . self::rfc_encode( $email );
@@ -428,7 +428,7 @@ class WP_Email_Essentials {
 		}
 		$url = admin_url( 'admin-ajax.php' );
 		$ip  = wp_remote_retrieve_body( wp_remote_get( $url . '?action=wpes_get_ip' ) );
-		if ( ! preg_match( '/^[0-9A-Fa-f\.\:]$/', $ip ) ) {
+		if ( ! preg_match( '/^[0-9A-Fa-f.:]$/', $ip ) ) {
 			$ip = false;
 		}
 		if ( ! $ip ) {
@@ -561,7 +561,7 @@ class WP_Email_Essentials {
 						if ( IP::a_4_is_4( $ip, $m_ip[1] ) ) {
 							return true;
 						}
-					} elseif ( preg_match( '/ip4:([0-9\.]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
+					} elseif ( preg_match( '/ip4:([0-9.]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
 						if ( IP::ip4_match_cidr( $ip, $ip_cidr[1] ) ) {
 							return true;
 						}
