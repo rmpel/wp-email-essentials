@@ -25,7 +25,6 @@ class WP_Email_Essentials {
 	static $debug;
 	const encodings = 'utf-8,utf-16,utf-32,latin-1,iso-8859-1';
 
-
 	function __construct() {
 		self::init();
 	}
@@ -45,12 +44,12 @@ class WP_Email_Essentials {
 				return "UTF-8";
 			} );
 			add_filter( 'wpcf7_mail_html_header', array(
-					'WP_Email_Essentials',
-					'wpcf7_mail_html_header'
+				'WP_Email_Essentials',
+				'wpcf7_mail_html_header'
 			), ~PHP_INT_MAX, 2 );
 			add_filter( 'wpcf7_mail_html_footer', array(
-					'WP_Email_Essentials',
-					'wpcf7_mail_html_footer'
+				'WP_Email_Essentials',
+				'wpcf7_mail_html_footer'
 			), ~PHP_INT_MAX, 2 );
 		}
 
@@ -76,12 +75,12 @@ class WP_Email_Essentials {
 		add_filter( 'comment_notification_headers', array( 'WP_Email_Essentials', 'correct_comment_from' ), 11, 2 );
 
 		add_filter( 'comment_moderation_recipients', array(
-				'WP_Email_Essentials',
-				'correct_moderation_to'
+			'WP_Email_Essentials',
+			'correct_moderation_to'
 		), ~PHP_INT_MAX, 2 );
 		add_filter( 'comment_notification_recipients', array(
-				'WP_Email_Essentials',
-				'correct_comment_to'
+			'WP_Email_Essentials',
+			'correct_comment_to'
 		), ~PHP_INT_MAX, 2 );
 
 		// debug
@@ -133,9 +132,9 @@ class WP_Email_Essentials {
 
 	public static function server_remote_addr( $return_htaccess_variable = false ) {
 		$possibilities = array(
-				'HTTP_CF_CONNECTING_IP' => 'HTTP:CF-CONNECTING-IP',
-				'HTTP_X_FORWARDED_FOR'  => 'HTTP:X-FORWARDED-FOR',
-				'REMOTE_ADDR'           => false,
+			'HTTP_CF_CONNECTING_IP' => 'HTTP:CF-CONNECTING-IP',
+			'HTTP_X_FORWARDED_FOR'  => 'HTTP:X-FORWARDED-FOR',
+			'REMOTE_ADDR'           => false,
 		);
 		foreach ( $possibilities as $option => $htaccess_variable ) {
 			if ( isset( $_SERVER[ $option ] ) && trim( $_SERVER[ $option ] ) ) {
@@ -303,7 +302,7 @@ class WP_Email_Essentials {
 		$sending_server = self::get_sending_ip();
 		// we assume here that everything NOT IP4 is IP6. This will do for now, but ...
 		// todo: actual ip6 check!
-		$ip = preg_match("/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/", trim($sending_server)) ? 'ip4' : 'ip6';
+		$ip = preg_match( "/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/", trim( $sending_server ) ) ? 'ip4' : 'ip6';
 
 		if ( ! isset( $lookup[ $sending_domain ] ) ) {
 			$dns = self::dns_get_record( $sending_domain, DNS_TXT );
@@ -358,7 +357,7 @@ class WP_Email_Essentials {
 	public static function i_am_allowed_to_send_in_name_of( $email ) {
 		$config = WP_Email_Essentials::get_config();
 
-		if ('when_sender_not_as_set' == $config['make_from_valid_when']) {
+		if ( 'when_sender_not_as_set' == $config['make_from_valid_when'] ) {
 			return $config['from_email'] === $email;
 		}
 
@@ -398,9 +397,9 @@ class WP_Email_Essentials {
 		}
 		if ( ! $ip ) {
 			$ip = wp_remote_retrieve_body( wp_remote_get( 'http://watismijnip.nl', array(
-					'httpversion' => '1.1',
-					'referer'     => $_SERVER['HTTP_REFERER'],
-					'user-agent'  => $_SERVER['HTTP_USER_AGENT'],
+				'httpversion' => '1.1',
+				'referer'     => $_SERVER['HTTP_REFERER'],
+				'user-agent'  => $_SERVER['HTTP_USER_AGENT'],
 			) ) );
 			preg_match( '/Uw IP-Adres: <b>([.:0-9A-Fa-f]+)/', $ip, $part );
 			$ip = $part[1];
@@ -470,22 +469,22 @@ class WP_Email_Essentials {
 			if ( false !== strpos( $record['txt'], 'v=spf1' ) ) {
 				$sections = explode( ' ', $record['txt'] );
 				foreach ( $sections as $section ) {
-					if ( preg_match('/(a|aaaa|mx):(.+)/', $section, $mx_match)) {
+					if ( preg_match( '/(a|aaaa|mx):(.+)/', $section, $mx_match ) ) {
 						// here we only expand the record, the actual check is done later
-						foreach (self::dns_get_record($mx_match[2], DNS_MX) as $item) {
+						foreach ( self::dns_get_record( $mx_match[2], DNS_MX ) as $item ) {
 							$sections[] = "a/" . $item['target'];
 						}
 					}
 					// echo "Section: $section\n";
-					if ( $section == 'a' || $section == 'aaaa' || substr($section, 0, 2) === 'a/' ) {
-						list ($_, $_domain) = explode("/", "$section/$domain");
-						if (IP::is_4($ip)) {
+					if ( $section == 'a' || $section == 'aaaa' || substr( $section, 0, 2 ) === 'a/' ) {
+						list ( $_, $_domain ) = explode( "/", "$section/$domain" );
+						if ( IP::is_4( $ip ) ) {
 							$m_ip = self::dns_get_record( $_domain, DNS_A, true );
 							if ( IP::a_4_is_4( $m_ip, $ip ) ) {
 								return true;
 							}
 						}
-						if (IP::is_6($ip)) {
+						if ( IP::is_6( $ip ) ) {
 							$m_ip = self::dns_get_record( $_domain, DNS_AAAA, true );
 							if ( IP::a_6_is_6( $m_ip, $ip ) ) {
 								return true;
@@ -495,7 +494,7 @@ class WP_Email_Essentials {
 						$mx = self::dns_get_record( $domain, DNS_MX );
 						foreach ( $mx as $mx_record ) {
 							$target = $mx_record['target'];
-							if (IP::is_4($ip)) {
+							if ( IP::is_4( $ip ) ) {
 								try {
 									$new_target = self::dns_get_record( $domain, DNS_A, true );
 								} catch ( Exception $e ) {
@@ -505,7 +504,7 @@ class WP_Email_Essentials {
 									return true;
 								}
 							}
-							if (IP::is_6($ip)) {
+							if ( IP::is_6( $ip ) ) {
 								try {
 									$new_target = self::dns_get_record( $domain, DNS_AAAA, true );
 								} catch ( Exception $e ) {
@@ -525,7 +524,7 @@ class WP_Email_Essentials {
 							return true;
 						}
 					} elseif ( preg_match( '/ip6:([0-9A-Fa-f:]+)$/', $section, $m_ip ) ) {
-						if ( IP::is_6($m_ip[1]) && IP::a_6_is_6( $ip, $m_ip[1] ) ) {
+						if ( IP::is_6( $m_ip[1] ) && IP::a_6_is_6( $ip, $m_ip[1] ) ) {
 							return true;
 						}
 					} elseif ( preg_match( '/ip6:([0-9A-Fa-f:]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
@@ -533,7 +532,7 @@ class WP_Email_Essentials {
 							return true;
 						}
 					} elseif ( preg_match( '/include:(.+)$/', $section, $include ) ) {
-						if (self::validate_ip_listed_in_spf( $include[1], $ip )) {
+						if ( self::validate_ip_listed_in_spf( $include[1], $ip ) ) {
 							return true;
 						}
 					}
@@ -559,6 +558,7 @@ class WP_Email_Essentials {
 			if ( $filter == DNS_A6 ) {
 				return $transient[0]['ipv6'];
 			}
+			return $transient[0] ?? [];
 		}
 
 		return $transient;
@@ -615,7 +615,7 @@ class WP_Email_Essentials {
 			if ( $port > 0 ) {
 				$mailer->Port = $port;
 			}
-			if ( !empty($config['smtp']['port']) ) {
+			if ( ! empty( $config['smtp']['port'] ) ) {
 				$mailer->Port = $config['smtp']['port'];
 			}
 
@@ -630,13 +630,13 @@ class WP_Email_Essentials {
 				} else {
 					$mailer->SMTPAutoTLS = false;
 				}
-				if ( ( defined( 'WPES_ALLOW_SSL_SELF_SIGNED' ) && true === WPES_ALLOW_SSL_SELF_SIGNED ) || substr( isset($config['smtp']['secure']) ? $config['smtp']['secure'] : '', - 1, 1 ) == '-' ) {
+				if ( ( defined( 'WPES_ALLOW_SSL_SELF_SIGNED' ) && true === WPES_ALLOW_SSL_SELF_SIGNED ) || substr( isset( $config['smtp']['secure'] ) ? $config['smtp']['secure'] : '', - 1, 1 ) == '-' ) {
 					$mailer->SMTPOptions = array(
-							'ssl' => array(
-									'verify_peer'       => false,
-									'verify_peer_name'  => false,
-									'allow_self_signed' => true
-							)
+						'ssl' => array(
+							'verify_peer'       => false,
+							'verify_peer_name'  => false,
+							'allow_self_signed' => true
+						)
 					);
 				}
 			}
@@ -748,11 +748,11 @@ class WP_Email_Essentials {
 		// DKIM Signing
 		if ( $config['enable_dkim'] && $id = self::get_dkim_identity( $from ) ) {
 			list( $crt, $key, $pass, $selector, $domain ) = $id;
-			$mailer->DKIM_domain = $domain;
-			$mailer->DKIM_private = $key;
-			$mailer->DKIM_selector = $selector; // FQDN? just selector? . '_domainkey.';
+			$mailer->DKIM_domain     = $domain;
+			$mailer->DKIM_private    = $key;
+			$mailer->DKIM_selector   = $selector; // FQDN? just selector? . '_domainkey.';
 			$mailer->DKIM_passphrase = $pass;
-			$mailer->DKIM_identity = $from;
+			$mailer->DKIM_identity   = $from;
 		}
 
 		// DEBUG output
@@ -811,23 +811,23 @@ class WP_Email_Essentials {
 		locate_template( [ 'wpes-email-template.php' ], true );
 
 		$subject = apply_filters_ref_array( 'wpes_subject', array(
-				$subject,
-				&$mailer
+			$subject,
+			&$mailer
 		) );
 
 		$css = apply_filters_ref_array( 'wpes_css', array(
-				'',
-				&$mailer
+			'',
+			&$mailer
 		) );
 
 		$head = apply_filters_ref_array( 'wpes_head', array(
-				'<title>' . $subject . '</title><style type="text/css">' . $css . '</style>',
-				&$mailer
+			'<title>' . $subject . '</title><style type="text/css">' . $css . '</style>',
+			&$mailer
 		) );
 
 		$should_be_html = apply_filters_ref_array( 'wpes_body', array(
-				$should_be_html,
-				&$mailer
+			$should_be_html,
+			&$mailer
 		) );
 		$should_be_html = htmlspecialchars_decode( htmlentities( $should_be_html ) );
 
@@ -883,20 +883,20 @@ class WP_Email_Essentials {
 
 	public static function get_config( $raw = false ) {
 		$defaults = array(
-				'smtp'               => false,
-				'from_email'         => get_bloginfo( 'admin_email' ),
-				'from_name'          => self::get_hostname_by_blogurl(),
-				'is_html'            => false,
-				'alt_body'           => false,
-				'css_inliner'        => false,
-				'enable_smime'       => false,
-				'enable_dkim'        => false,
-				'spf_lookup_enabled' => false,
-				'errors_to'          => get_bloginfo( 'admin_email' ),
-				'content_precode'    => false,
-				'do_shortcodes'      => false,
-				'enable_history'     => false,
-				'make_from_valid_when'     => 'when_sender_invalid',
+			'smtp'                 => false,
+			'from_email'           => get_bloginfo( 'admin_email' ),
+			'from_name'            => self::get_hostname_by_blogurl(),
+			'is_html'              => false,
+			'alt_body'             => false,
+			'css_inliner'          => false,
+			'enable_smime'         => false,
+			'enable_dkim'          => false,
+			'spf_lookup_enabled'   => false,
+			'errors_to'            => get_bloginfo( 'admin_email' ),
+			'content_precode'      => false,
+			'do_shortcodes'        => false,
+			'enable_history'       => false,
+			'make_from_valid_when' => 'when_sender_invalid',
 		);
 
 		$defaults = apply_filters( 'wpes_defaults', $defaults );
@@ -905,12 +905,12 @@ class WP_Email_Essentials {
 		if ( ! $raw ) {
 			$settings = apply_filters( 'wpes_settings', $settings );
 
-			$settings['certificate_folder'] = isset($settings['certfolder']) ? $settings['certfolder'] : '';
+			$settings['certificate_folder'] = isset( $settings['certfolder'] ) ? $settings['certfolder'] : '';
 			if ( '/' !== substr( $settings['certificate_folder'], 0, 1 ) ) {
 				$settings['certificate_folder'] = rtrim( ABSPATH, '/' ) . '/' . $settings['certificate_folder'];
 			}
 
-			$settings['dkim_certificate_folder'] = isset($settings['dkimfolder']) ? $settings['dkimfolder'] : '';
+			$settings['dkim_certificate_folder'] = isset( $settings['dkimfolder'] ) ? $settings['dkimfolder'] : '';
 			if ( '/' !== substr( $settings['dkim_certificate_folder'], 0, 1 ) ) {
 				$settings['dkim_certificate_folder'] = rtrim( ABSPATH, '/' ) . '/' . $settings['dkim_certificate_folder'];
 			}
@@ -928,11 +928,11 @@ class WP_Email_Essentials {
 		$settings = self::get_config();
 		if ( isset( $values['smtp-enabled'] ) && $values['smtp-enabled'] ) {
 			$settings['smtp'] = array(
-					'secure'   => $values['secure'],
-					'host'     => $values['host'],
-					'port'     => $values['port'],
-					'username' => $values['username'],
-					'password' => ( $values['password'] == str_repeat( '*', strlen( $values['password'] ) ) && $settings['smtp'] ) ? $settings['smtp']['password'] : $values['password'],
+				'secure'   => $values['secure'],
+				'host'     => $values['host'],
+				'port'     => $values['port'],
+				'username' => $values['username'],
+				'password' => ( $values['password'] == str_repeat( '*', strlen( $values['password'] ) ) && $settings['smtp'] ) ? $settings['smtp']['password'] : $values['password'],
 			);
 
 			if ( false !== strpos( $settings['smtp']['host'], ':' ) ) {
@@ -961,13 +961,13 @@ class WP_Email_Essentials {
 		$settings['spf_lookup_enabled'] = array_key_exists( 'spf_lookup_enabled', $values ) && $values['spf_lookup_enabled'] ? true : false;
 		$settings['enable_history']     = array_key_exists( 'enable_history', $values ) && $values['enable_history'] ? true : false;
 
-		$settings['enable_smime']    = array_key_exists( 'enable_smime', $values ) && $values['enable_smime'] ? "1" : "0";
-		$settings['certfolder']      = array_key_exists( 'certfolder', $values ) && $values['certfolder'] ? $values['certfolder'] : '';
-		$settings['enable_dkim']    = array_key_exists( 'enable_dkim', $values ) && $values['enable_dkim'] ? "1" : "0";
-		$settings['dkimfolder']      = array_key_exists( 'dkimfolder', $values ) && $values['dkimfolder'] ? $values['dkimfolder'] : '';
-		$settings['make_from_valid'] = array_key_exists( 'make_from_valid', $values ) && $values['make_from_valid'] ? $values['make_from_valid'] : "";
+		$settings['enable_smime']         = array_key_exists( 'enable_smime', $values ) && $values['enable_smime'] ? "1" : "0";
+		$settings['certfolder']           = array_key_exists( 'certfolder', $values ) && $values['certfolder'] ? $values['certfolder'] : '';
+		$settings['enable_dkim']          = array_key_exists( 'enable_dkim', $values ) && $values['enable_dkim'] ? "1" : "0";
+		$settings['dkimfolder']           = array_key_exists( 'dkimfolder', $values ) && $values['dkimfolder'] ? $values['dkimfolder'] : '';
+		$settings['make_from_valid']      = array_key_exists( 'make_from_valid', $values ) && $values['make_from_valid'] ? $values['make_from_valid'] : "";
 		$settings['make_from_valid_when'] = array_key_exists( 'make_from_valid_when', $values ) && $values['make_from_valid_when'] ? $values['make_from_valid_when'] : "when_sender_invalid";
-		$settings['errors_to']       = array_key_exists( 'errors_to', $values ) && $values['errors_to'] ? $values['errors_to'] : '';
+		$settings['errors_to']            = array_key_exists( 'errors_to', $values ) && $values['errors_to'] ? $values['errors_to'] : '';
 		update_option( 'wp-email-essentials', $settings );
 	}
 
@@ -1063,8 +1063,8 @@ class WP_Email_Essentials {
 
 	public static function admin_menu() {
 		add_menu_page( 'WP-Email-Essentials', 'Email Essentials', 'manage_options', 'wp-email-essentials', array(
-				'WP_Email_Essentials',
-				'admin_interface'
+			'WP_Email_Essentials',
+			'admin_interface'
 		), 'dashicons-email-alt' );
 
 		if ( isset( $_GET['page'] ) && $_GET['page'] == 'wp-email-essentials' && $_POST && isset( $_POST['form_id'] ) && $_POST['form_id'] == 'wp-email-essentials' ) {
@@ -1085,7 +1085,7 @@ class WP_Email_Essentials {
 					ob_start();
 					self::$debug = true;
 					$result      = wp_mail( get_option( 'admin_email', false ),
-							__( 'Test-email', 'wpes' ), self::dummy_content(), ['X-Priority: 1'] );
+						__( 'Test-email', 'wpes' ), self::dummy_content(), [ 'X-Priority: 1' ] );
 					self::$debug = ob_get_clean();
 					if ( $result ) {
 						self::$message = sprintf( __( 'Mail sent to %s', 'wpes' ), get_option( 'admin_email', false ) );
@@ -1112,8 +1112,8 @@ class WP_Email_Essentials {
 		}
 
 		add_submenu_page( 'wp-email-essentials', 'WP-Email-Essentials - Alternative Admins', 'Alternative admins', 'manage_options', 'wpes-admins', array(
-				'WP_Email_Essentials',
-				'admin_interface_admins'
+			'WP_Email_Essentials',
+			'admin_interface_admins'
 		) );
 		if ( isset( $_GET['page'] ) && $_GET['page'] == 'wpes-admins' && $_POST && isset( $_POST['form_id'] ) && $_POST['form_id'] == 'wpes-admins' ) {
 			switch ( $_POST['op'] ) {
@@ -1148,8 +1148,8 @@ class WP_Email_Essentials {
 		}
 
 		add_submenu_page( 'wp-email-essentials', 'WP-Email-Essentials - Alternative Moderators', 'Alternative Moderators', 'manage_options', 'wpes-moderators', array(
-				'WP_Email_Essentials',
-				'admin_interface_moderators'
+			'WP_Email_Essentials',
+			'admin_interface_moderators'
 		) );
 		if ( isset( $_GET['page'] ) && $_GET['page'] == 'wpes-moderators' && $_POST && isset( $_POST['form_id'] ) && $_POST['form_id'] == 'wpes-moderators' ) {
 			switch ( $_POST['op'] ) {
@@ -1180,7 +1180,66 @@ class WP_Email_Essentials {
 	}
 
 	static function admin_interface() {
+		$dkim_list = [];
+
+		$config     = self::get_config();
+		$from_email = $config['from_email'];
+		$from_host  = explode( '@', $from_email )[1] ?? null;
+		if ( $from_host ) {
+			$dkim_list[ $from_host ] = [
+				'host'       => $from_host,
+				'domainkey'  => '',
+				'passphrase' => '',
+				'pub'        => '',
+				'pub_'       => ''
+			];
+		}
+
+		if ( ! empty( $_REQUEST['wpes_action'] ) ) {
+			if ( 'generate_dkim' === $_REQUEST['wpes_action'] ) {
+				$generated = self::action_generate_dkim( $_REQUEST['host'] );
+				if (!$generated) {
+
+				}
+				wp_safe_redirect(remove_query_arg(['wpes_trigger', 'wpes_action', 'host']));
+			}
+		}
+
+		if ( isset( $config['dkimfolder'] ) ) {
+			$ids   = self::list_dkim_identities();
+			foreach ( $ids as $host => $data ) {
+				list( $pub_file, $key_file, $passphrase, $selector ) = $data;
+				$dkim_list[ $host ]         = [
+					'host'       => $host,
+					'domainkey'  => $selector,
+					'passphrase' => $passphrase,
+					'pub'        => $pub_file,
+					'verified'   => self::verify_dkim( $host, $selector, $pub_file ),
+				];
+				$dkim_list[ $host ]['pub_'] = self::pub_key_to_dns( $dkim_list[ $host ]['pub'] );
+			}
+		}
+
 		include __DIR__ . '/admin-interface.php';
+	}
+
+	public static function pub_key_to_dns( $public_key_file ) {
+		$public_key     = file( $public_key_file, FILE_IGNORE_NEW_LINES );
+		$public_key_dns = array_diff( $public_key, [ '', '-----BEGIN PUBLIC KEY-----', '-----END PUBLIC KEY-----' ] );
+
+		return implode( '', $public_key_dns );
+	}
+
+	public static function verify_dkim( $host, $selector, $public_key_file ) {
+		$record = self::dns_get_record( "$selector._domainkey.$host", DNS_TXT, true );
+
+		if ( ! $record || empty( $record['txt'] ) ) {
+			return false;
+		}
+		$public_key_should_be = self::pub_key_to_dns( $public_key_file );
+		$public_key_is        = explode( 'p=', $record['txt'] ?: 'p=' )[1];
+
+		return $public_key_is == $public_key_should_be;
 	}
 
 	static function admin_interface_admins() {
@@ -1320,7 +1379,7 @@ class WP_Email_Essentials {
 			echo "<div class='$class'><p>$message</p></div>";
 		}
 
-		// default mail identity existance
+		// default mail identity existence
 		if ( $config['enable_smime'] && $onpage && ! self::get_smime_identity( $from ) ) {
 			$rawset               = self::get_config( true );
 			$set                  = $rawset['certfolder'];
@@ -1340,23 +1399,8 @@ class WP_Email_Essentials {
 			self::set_config( $rawset, true );
 		}
 
-		// dkimfolder == setting, dkim_certificate_folder == real path;
-		if ( !empty($config['enable_dkim']) && $config['enable_dkim'] && isset( $config['dkimfolder'] ) && $config['dkimfolder'] ) {
-			if ( is_writable( $config['dkim_certificate_folder'] ) && ! get_option( 'suppress_dkim_writable' ) ) {
-				$class   = "error";
-				$message = __( 'The DKIM certificate folder is writable. This is Extremely insecure. Please reconfigure, make sure the folder is not writable by Apache. If your server is running suPHP, you cannot make the folder read-only for apache. Please contact your hosting provider and ask for a more secure hosting package, one not based on suPHP.', 'wpes' );
-				echo "<div class='$class'><p>$message</p></div>";
-			}
-
-			if ( false !== strpos( realpath( $config['dkim_certificate_folder'] ), realpath( ABSPATH ) ) ) {
-				$class   = "error";
-				$message = sprintf( __( 'The DKIM certificate folder is inside the webspace. This is Extremely insecure. Please reconfigure, make sure the folder is outside the website-root %s.', 'wpes' ), ABSPATH );
-				echo "<div class='$class'><p>$message</p></div>";
-			}
-		}
-
 		// default mail identity existance
-		if ( !empty($config['enable_dkim']) && $config['enable_dkim'] && $onpage && ! self::get_dkim_identity( $from ) ) {
+		if ( ! empty( $config['enable_dkim'] ) && $config['enable_dkim'] && $onpage && ! self::get_dkim_identity( $from ) ) {
 			$rawset               = self::get_config( true );
 			$set                  = $rawset['dkimfolder'];
 			$rawset['dkimfolder'] = $set;
@@ -1374,9 +1418,9 @@ class WP_Email_Essentials {
 			foreach ( $files as $file ) {
 				if ( is_file( $file ) && is_file( preg_replace( '/\.crt$/', '.key', $file ) ) ) {
 					$ids[ basename( preg_replace( '/\.crt$/', '', $file ) ) ] = array(
-							$file,
-							preg_replace( '/\.crt$/', '.key', $file ),
-							trim( @file_get_contents( preg_replace( '/\.crt$/', '.pass', $file ) ) )
+						$file,
+						preg_replace( '/\.crt$/', '.key', $file ),
+						trim( @file_get_contents( preg_replace( '/\.crt$/', '.pass', $file ) ) )
 					);
 				}
 			}
@@ -1403,13 +1447,13 @@ class WP_Email_Essentials {
 			$files = glob( $certificate_folder . '/*.crt' );
 			foreach ( $files as $file ) {
 				if ( is_file( $file ) && is_file( preg_replace( '/\.crt$/', '.key', $file ) ) ) {
-					$domain = basename( preg_replace( '/\.crt$/', '', $file ) );
+					$domain         = basename( preg_replace( '/\.crt$/', '', $file ) );
 					$ids[ $domain ] = array(
-							$file,
-							preg_replace( '/\.crt$/', '.key', $file ),
-							trim( @file_get_contents( preg_replace( '/\.crt$/', '.pass', $file ) ) ),
-							trim( @file_get_contents( preg_replace( '/\.crt$/', '.selector', $file ) ) ),
-							$domain
+						$file,
+						preg_replace( '/\.crt$/', '.key', $file ),
+						trim( @file_get_contents( preg_replace( '/\.crt$/', '.pass', $file ) ) ),
+						trim( @file_get_contents( preg_replace( '/\.crt$/', '.selector', $file ) ) ),
+						$domain
 					);
 				}
 			}
@@ -1419,9 +1463,9 @@ class WP_Email_Essentials {
 	}
 
 	public static function get_dkim_identity( $email ) {
-		$ids = self::list_dkim_identities();
-		$domain = explode('@', '@'.$email);
-		$domain = end($domain);
+		$ids    = self::list_dkim_identities();
+		$domain = explode( '@', '@' . $email );
+		$domain = end( $domain );
 		if ( isset( $ids[ $domain ] ) ) {
 			return $ids[ $domain ];
 		}
@@ -1603,19 +1647,19 @@ class WP_Email_Essentials {
 	public static function mail_key_database() {
 		// supported;
 		$wp_filters = array(
-				'automatic_updates_debug_email',
-				'auto_core_update_email',
+			'automatic_updates_debug_email',
+			'auto_core_update_email',
 //			'comment_moderation_recipients',
 //			'comment_notification_recipients',
-				'recovery_mode_email',
+			'recovery_mode_email',
 		);
 
 		// unsupported until added, @see wp_mail_key.patch, matched by subject, @see self::mail_subject_database
 		$unsupported_wp_filters = array(
-				'new_user_registration_admin_email',
-				'password_lost_changed_email',
-				'password_reset_email',
-				'password_changed_email'
+			'new_user_registration_admin_email',
+			'password_lost_changed_email',
+			'password_reset_email',
+			'password_changed_email'
 		);
 
 		return array_merge( $wp_filters, $unsupported_wp_filters );
@@ -1627,10 +1671,10 @@ class WP_Email_Essentials {
 		// FULL TEXT LOOKUP
 		$keys = array(
 			// wp, do NOT use own text-domain here, this construction is here because these are WP translated strings
-				sprintf( __( '[%s] New User Registration' ), $blogname ) => 'new_user_registration_admin_email',
-				sprintf( __( '[%s] Password Reset' ), $blogname )        => 'password_reset_email', // wp 4.5 +
-				sprintf( __( '[%s] Password Changed' ), $blogname )      => 'password_changed_email', // wp 4.5 +
-				sprintf( __( '[%s] Password Lost/Changed' ), $blogname ) => 'password_lost_changed_email', // wp < 4.5
+			sprintf( __( '[%s] New User Registration' ), $blogname ) => 'new_user_registration_admin_email',
+			sprintf( __( '[%s] Password Reset' ), $blogname )        => 'password_reset_email', // wp 4.5 +
+			sprintf( __( '[%s] Password Changed' ), $blogname )      => 'password_changed_email', // wp 4.5 +
+			sprintf( __( '[%s] Password Lost/Changed' ), $blogname ) => 'password_lost_changed_email', // wp < 4.5
 		);
 
 		$key = isset( $keys[ $lookup ] ) ? $keys[ $lookup ] : '';
@@ -1725,7 +1769,9 @@ class WP_Email_Essentials {
 		}
 
 		$config = self::get_config();
-		if (!isset($config['make_from_valid'])) $config['make_from_valid'] = '';
+		if ( ! isset( $config['make_from_valid'] ) ) {
+			$config['make_from_valid'] = '';
+		}
 		switch ( $config['make_from_valid'] ) {
 			case 'noreply':
 				$text = sprintf( __( 'But <strong>please do not worry</strong>! <a href="%s" target="_blank">WP-Email-Essentials</a> will set <em class="noreply">noreply@%s</em> as sender and set <em>this email address</em> as Reply-To header.', 'wpes' ), admin_url( 'tools.php' ) . '?page=wp-email-essentials', $host );
@@ -1807,19 +1853,19 @@ class WP_Email_Essentials {
 				});
 			</script>
 			<style>
-				.wpes-err-add {
+							.wpes-err-add {
 
-				}
+							}
 
-				.wpes-err-add em {
-					font-style: inherit;
-				}
+							.wpes-err-add em {
+								font-style: inherit;
+							}
 
-				.wpes-err-add em.quote {
-					background: lightgray;
-					font-family: monospace;
-					font-weight: bold;
-				}
+							.wpes-err-add em.quote {
+								background: lightgray;
+								font-family: monospace;
+								font-weight: bold;
+							}
 			</style><?php
 		}
 	}
@@ -1850,30 +1896,68 @@ class WP_Email_Essentials {
 		for ( $i = 0; $i < count( $hit[1] ); $i ++ ) {
 			$css = str_replace( $hit[1][ $i ], '##########' . $i . '##########', $css );
 		}
-// remove traling semicolon of selector's last property
+		// remove trailing semicolon of selector's last property
 		$css = preg_replace( '/;[\s\r\n\t]*?}[\s\r\n\t]*/ims', "}\r\n", $css );
-// remove any whitespace between semicolon and property-name
+		// remove any whitespace between semicolon and property-name
 		$css = preg_replace( '/;[\s\r\n\t]*?([\r\n]?[^\s\r\n\t])/ims', ';$1', $css );
-// remove any whitespace surrounding property-colon
+		// remove any whitespace surrounding property-colon
 		$css = preg_replace( '/[\s\r\n\t]*:[\s\r\n\t]*?([^\s\r\n\t])/ims', ':$1', $css );
-// remove any whitespace surrounding selector-comma
+		// remove any whitespace surrounding selector-comma
 		$css = preg_replace( '/[\s\r\n\t]*,[\s\r\n\t]*?([^\s\r\n\t])/ims', ',$1', $css );
-// remove any whitespace surrounding opening parenthesis
+		// remove any whitespace surrounding opening parenthesis
 		$css = preg_replace( '/[\s\r\n\t]*{[\s\r\n\t]*?([^\s\r\n\t])/ims', '{$1', $css );
-// remove any whitespace between numbers and units
+		// remove any whitespace between numbers and units
 		$css = preg_replace( '/([\d\.]+)[\s\r\n\t]+(px|em|pt|%)/ims', '$1$2', $css );
-// shorten zero-values
+		// shorten zero-values
 		$css = preg_replace( '/([^\d\.]0)(px|em|pt|%)/ims', '$1', $css );
-// constrain multiple whitespaces
+		// constrain multiple whitespaces
 		$css = preg_replace( '/\p{Zs}+/ims', ' ', $css );
-// remove newlines
+		// remove newlines
 		$css = str_replace( array( "\r\n", "\r", "\n" ), '', $css );
-// Restore backupped values within single or double quotes
+		// Restore backupped values within single or double quotes
 		for ( $i = 0; $i < count( $hit[1] ); $i ++ ) {
 			$css = str_replace( '##########' . $i . '##########', $hit[1][ $i ], $css );
 		}
 
 		return $css;
+	}
+
+	public static function action_generate_dkim( $host ) {
+		$config = self::get_config();
+		$dkim_certificate_folder = $config['dkim_certificate_folder'];
+		if ( is_dir( $dkim_certificate_folder ) && is_writable( $dkim_certificate_folder ) && !is_file("$dkim_certificate_folder/$host.crt")) {
+			$selector = 'website-' . substr(md5(random_bytes(32)), rand(0,24), 7);
+
+			$key = openssl_pkey_new(array(
+				'config' => __DIR__ .'/openssl.cnf',
+				"private_key_bits" => 2048,
+				"private_key_type" => OPENSSL_KEYTYPE_RSA,
+			));
+			var_dump($key);exit;
+
+			if ($key) {
+				// Public key.
+				$public_key = openssl_pkey_get_details( $key )['key'];
+				file_put_contents( "$dkim_certificate_folder/$host.crt", $public_key );
+
+				// Private key.
+				openssl_pkey_export( $key, $private_key );
+				file_put_contents( "$dkim_certificate_folder/$host.key", $private_key );
+
+				// Selector.
+				file_put_contents( "$dkim_certificate_folder/$host.selector", $selector );
+
+				return true;
+			}
+		}
+	}
+
+	public static function action_remove_dkim( $host ) {
+		$config = self::get_config();
+		$dkim_certificate_folder = $config['dkim_certificate_folder'];
+		if ( is_dir( $dkim_certificate_folder ) && is_writable( $dkim_certificate_folder ) && !is_file("$dkim_certificate_folder/$host.crt")) {
+			// not yet implemented.
+		}
 	}
 }
 
@@ -1978,8 +2062,8 @@ class WP_Email_Essentials_History {
 
 	public static function admin_menu() {
 		add_submenu_page( 'wp-email-essentials', 'WP-Email-Essentials - Email History', 'Email History', 'manage_options', 'wpes-emails', array(
-				'WP_Email_Essentials_History',
-				'admin_interface'
+			'WP_Email_Essentials_History',
+			'admin_interface'
 		) );
 	}
 
@@ -2064,10 +2148,10 @@ class WP_Email_Essentials_History {
 
 	public static function phpmailer_init( $phpmailer ) {
 		global $wpdb;
-		$data           = self::object_data( $phpmailer );
-		$data->Password = '********';
+		$data                  = self::object_data( $phpmailer );
+		$data->Password        = '********';
 		$data->DKIM_passphrase = '********';
-		$data           = json_encode( $data, JSON_PRETTY_PRINT );
+		$data                  = json_encode( $data, JSON_PRETTY_PRINT );
 //		$recipient = implode( ',', self::get_to_addresses( $phpmailer ) );
 //		$sender    = $phpmailer->Sender ?: $phpmailer->from_name . '<' . $phpmailer->from_email . '>';
 
@@ -2121,18 +2205,16 @@ class WP_Email_Essentials_History {
 		//  'to', 'subject', 'message', 'headers', 'attachments'
 		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = 2, errinfo = CONCAT(%s, errinfo) WHERE ID = %d LIMIT 1", $errormsg . "\n", self::last_insert() ) );
 	}
-
-
 }
 
 WP_Email_Essentials_History::getInstance();
 
 class WP_Email_Essentials_Queue {
-	const FRESH = 0;
+	const FRESH   = 0;
 	const SENDING = 1;
-	const SENT = 2;
-	const STALE = 3;
-	const BLOCK = 9;
+	const SENT    = 2;
+	const STALE   = 3;
+	const BLOCK   = 9;
 
 	public static function getInstance() {
 		static $me;
@@ -2219,19 +2301,19 @@ class WP_Email_Essentials_Queue {
 			$queue_item = array_map( 'serialize', $queue_item );
 
 			$queue_item = array_merge( array(
-					'dt'     => date( 'Y-m-d H:i:s' ),
-					'ip'     => self::server_remote_addr(),
-					'status' => $throttle ? self::BLOCK : self::FRESH
+				'dt'     => date( 'Y-m-d H:i:s' ),
+				'ip'     => self::server_remote_addr(),
+				'status' => $throttle ? self::BLOCK : self::FRESH
 			), $queue_item );
 
 			$wpdb->insert( "{$wpdb->prefix}wpes_queue", $queue_item, array(
-					'%s',
-					'%s',
-					'%s',
-					'%s',
-					'%s',
-					'%s',
-					'%s'
+				'%s',
+				'%s',
+				'%s',
+				'%s',
+				'%s',
+				'%s',
+				'%s'
 			) );
 
 			// do not send mail, but to prevent errors, keep the array in same
@@ -2309,9 +2391,9 @@ class WP_Email_Essentials_Queue {
 
 	public static function server_remote_addr( $return_htaccess_variable = false ) {
 		$possibilities = array(
-				'HTTP_CF_CONNECTING_IP' => 'HTTP:CF-CONNECTING-IP',
-				'HTTP_X_FORWARDED_FOR'  => 'HTTP:X-FORWARDED-FOR',
-				'REMOTE_ADDR'           => false,
+			'HTTP_CF_CONNECTING_IP' => 'HTTP:CF-CONNECTING-IP',
+			'HTTP_X_FORWARDED_FOR'  => 'HTTP:X-FORWARDED-FOR',
+			'REMOTE_ADDR'           => false,
 		);
 		foreach ( $possibilities as $option => $htaccess_variable ) {
 			if ( isset( $_SERVER[ $option ] ) && trim( $_SERVER[ $option ] ) ) {

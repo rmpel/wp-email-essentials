@@ -4,6 +4,13 @@ if ( ! current_user_can( 'manage_options' ) ) {
 }
 global $current_user;
 $c = WP_Email_Essentials::get_config();
+
+$openssl_capable = function_exists( 'random_bytes' ) && function_exists( 'openssl_pkey_new' );
+$button_url      = add_query_arg( 'wpes_trigger', 'button' );
+$button_generate = '<a class="button-secondary" href="' . $button_url . '&wpes_action=generate_dkim&host=%s">' . __( 'Generate DKIM', 'wpes' ) . '</a>';
+$button_reverify = '<a class="button-secondary" href="' . $button_url . '&wpes_action=verify_dkim&host=%s">' . __( 'Re-check DKIM', 'wpes' ) . '</a>';
+$button_verify   = '<a class="button-secondary" href="' . $button_url . '&wpes_action=verify_dkim&host=%s">' . __( 'Verify DKIM', 'wpes' ) . '</a>';
+
 ?>
 <div class="wrap">
 	<div class="icon32 icon32-posts-group" id="icon-edit">
@@ -43,7 +50,8 @@ $c = WP_Email_Essentials::get_config();
 			</tr>
 			<tr>
 				<th colspan="4">
-					<?php _e( '<strong>Warning: </strong> Storing e-mails in your database is a BAD idea and illegal in most countries. Use this for DEBUGGING only!', 'wpes' ); ?><br/>
+					<?php _e( '<strong>Warning: </strong> Storing e-mails in your database is a BAD idea and illegal in most countries. Use this for DEBUGGING only!', 'wpes' ); ?>
+					<br/>
 					<?php _e( 'Disabling this feature will delete the mail-store.', 'wpes' ); ?>
 					<?php _e( '<strong style="color: darkred">If you insist on storing emails, please note that you need to implement the appropriate protocols for compliance with GDPR. The responsibility lies with the owner of the website, not the creator or hosting company.</strong>', 'wpes' ); ?>
 				</th>
@@ -65,9 +73,9 @@ $c = WP_Email_Essentials::get_config();
 				<td colspan="3">
 					<select id="timeout" name="settings[timeout]">
 						<?php $timeouts = array(
-								60  => __( '1 minute', 'wpes' ),
-								300 => __( '5 minutes (default)', 'wpes' ),
-								600 => __( '10 minutes (for very slow hosts)', 'wpes' ),
+							60  => __( '1 minute', 'wpes' ),
+							300 => __( '5 minutes (default)', 'wpes' ),
+							600 => __( '10 minutes (for very slow hosts)', 'wpes' ),
 						);
 						if ( ! isset( $c['timeout'] ) || ! $c['timeout'] ) {
 							$c['timeout'] = 300;
@@ -83,7 +91,7 @@ $c = WP_Email_Essentials::get_config();
 				<th colspan="4">
 					<input type="checkbox" name="settings[smtp-enabled]" value="1"
 						   <?php print ( isset( $c['smtp'] ) && $c['smtp'] ? 'checked="checked" ' : '' ); ?>id="smtp-enabled"/><label
-							for="smtp-enabled"><?php _e( 'Enable sending mail over SMTP?', 'wpes' ); ?></label>
+						for="smtp-enabled"><?php _e( 'Enable sending mail over SMTP?', 'wpes' ); ?></label>
 				</th>
 			</tr>
 			<tr>
@@ -91,14 +99,16 @@ $c = WP_Email_Essentials::get_config();
 					<label for="smtp-hostname"><?php _e( 'Hostname or -ip', 'wpes' ); ?></label>
 				</th>
 				<td width="25%">
-					<input type="text" class="widefat" name="settings[host]" value="<?php print $c['smtp'] ? $c['smtp']['host'] : ''; ?>"
+					<input type="text" class="widefat" name="settings[host]"
+						   value="<?php print $c['smtp'] ? $c['smtp']['host'] : ''; ?>"
 						   id="smtp-hostname"/>
 				</td>
 				<th width="25%">
 					<label for="smtp-port"><?php _e( 'SMTP Port', 'wpes' ); ?></label>
 				</th>
 				<td width="25%">
-					<input type="text" class="widefat" name="settings[port]" value="<?php print $c['smtp'] ? $c['smtp']['port'] : ''; ?>"
+					<input type="text" class="widefat" name="settings[port]"
+						   value="<?php print $c['smtp'] ? $c['smtp']['port'] : ''; ?>"
 						   id="smtp-port"/>
 				</td>
 			</tr>
@@ -161,12 +171,13 @@ $c = WP_Email_Essentials::get_config();
 				<th colspan="4">
 					<input type="checkbox" name="settings[SingleTo]" value="1"
 						   <?php print ( isset( $c['SingleTo'] ) && $c['SingleTo'] ? 'checked="checked" ' : '' ); ?>id="smtp-singleto"/><label
-							for="smtp-singleto"><?php _e( 'Split mail with more than one Recepient into separate mails?', 'wpes' ); ?></label>
+						for="smtp-singleto"><?php _e( 'Split mail with more than one Recepient into separate mails?', 'wpes' ); ?></label>
 				</th>
 			</tr>
 			<tr>
 				<td colspan="4">
-					<strong style="color:darkred"><?php _e( 'Under GDPR, from May 25th, 2018, using a no-reply@ (or any variation of a not-responded-to email address) is prohibited. Please make sure the default sender address is valid and used in the setting below.', 'wpes' ); ?></strong>
+					<strong
+						style="color:darkred"><?php _e( 'Under GDPR, from May 25th, 2018, using a no-reply@ (or any variation of a not-responded-to email address) is prohibited. Please make sure the default sender address is valid and used in the setting below.', 'wpes' ); ?></strong>
 				</td>
 			</tr>
 			<tr>
@@ -195,7 +206,8 @@ $c = WP_Email_Essentials::get_config();
 				</th>
 				<td colspan="3"><?php _e( 'SPF Records are checked', 'wpes' ); ?>
 					: <?php _e( 'you are NOT allowed to send mail with this domain.', 'wpes' ); ?><br/>
-					<?php _e( 'If you really need to use this sender e-mail address, you need to change the SPF record to include the sending-IP of this server', 'wpes' ); ?>;<br/>
+					<?php _e( 'If you really need to use this sender e-mail address, you need to change the SPF record to include the sending-IP of this server', 'wpes' ); ?>
+					;<br/>
 					<?php _e( 'Old', 'wpes' ); ?>:
 					<code><?php print WP_Email_Essentials::get_spf( $c['from_email'], false, true ); ?></code><br/>
 					<?php _e( 'New', 'wpes' ); ?>:
@@ -217,7 +229,8 @@ $c = WP_Email_Essentials::get_config();
 			<tr>
 			<th>
 			</th>
-			<td colspan="3"><?php _e( 'You are NOT allowed to send mail with this domain; it should match the domainname of the website.', 'wpes' ); ?><br/>
+			<td colspan="3"><?php _e( 'You are NOT allowed to send mail with this domain; it should match the domainname of the website.', 'wpes' ); ?>
+				<br/>
 				<?php _e( 'If you really need to use this sender e-mail address, you need to switch to SPF-record checking and make sure the SPF for this domain matches this server.', 'wpes' ); ?>
 			</td>
 			</tr><?php } // ! i_am_allowed, domain variant ?>
@@ -270,15 +283,18 @@ $c = WP_Email_Essentials::get_config();
 					$host = preg_replace( '/^www[0-9]*\./', '', $host );
 					?>
 					<select name="settings[make_from_valid_when]">
-						<option value="when_sender_invalid" <?php if ( 'when_sender_invalid' == $c['make_from_valid_when'] ) {
+						<option
+							value="when_sender_invalid" <?php if ( 'when_sender_invalid' == $c['make_from_valid_when'] ) {
 							print 'selected="selected"';
 						} ?>><?php _e( 'When sender email domain/SPF does not match', 'wpes' ); ?></option>
-						<option value="when_sender_not_as_set" <?php if ( 'when_sender_not_as_set' == $c['make_from_valid_when'] ) {
+						<option
+							value="when_sender_not_as_set" <?php if ( 'when_sender_not_as_set' == $c['make_from_valid_when'] ) {
 							print 'selected="selected"';
 						} ?>><?php _e( 'When sender email is not equal to above', 'wpes' ); ?></option>
 					</select>
 					<select name="settings[make_from_valid]" id="make_from_valid">
-						<option value=""><?php _e( 'Keep the possibly-invalid sender as is. (might cause your mails to be marked as spam!)', 'wpes' ); ?></option>
+						<option
+							value=""><?php _e( 'Keep the possibly-invalid sender as is. (might cause your mails to be marked as spam!)', 'wpes' ); ?></option>
 						<option disabled>────────────────────────────────────────────────────────────</option>
 						<option value="-at-" <?php
 
@@ -313,20 +329,21 @@ $c = WP_Email_Essentials::get_config();
 				<th colspan="4">
 					<input type="checkbox" name="settings[is_html]" value="1"
 						   <?php print ( isset( $c['is_html'] ) && $c['is_html'] ? 'checked="checked" ' : '' ); ?>id="smtp-is_html"/><label
-							for="smtp-is_html"><?php _e( 'Send as HTML? (Will convert non-html body to html-ish body)', 'wpes' ); ?></label>
+						for="smtp-is_html"><?php _e( 'Send as HTML? (Will convert non-html body to html-ish body)', 'wpes' ); ?></label>
 				</th>
 			</tr>
 			<tr>
 				<th colspan="4">
 					<input type="checkbox" name="settings[css_inliner]" value="1"
 						   <?php print ( isset( $c['css_inliner'] ) && $c['css_inliner'] ? 'checked="checked" ' : '' ); ?>id="smtp-css_inliner"/><label
-							for="smtp-css_inliner"><?php _e( 'Convert CSS to Inline Styles (for Outlook Online, Yahoo Mail, Google Mail, Hotmail)', 'wpes' ); ?></label>
+						for="smtp-css_inliner"><?php _e( 'Convert CSS to Inline Styles (for Outlook Online, Yahoo Mail, Google Mail, Hotmail)', 'wpes' ); ?></label>
 				</th>
 			</tr>
 			<tr>
 				<th><?php _e( 'Content pre-coding (for lack of a better word)', 'wpes' ); ?></th>
 				<td colspan="3">
-					<label for="content-precoding"><?php _e( 'Some servers have f*cked-up content-encoding settings, resulting in wrongly encoded diacritics. If you expect a character like &eacute; and all you get is something like &euro;&tilde;&Itilde;, experiment with this setting.', 'wpes' ); ?></label><br/>
+					<label
+						for="content-precoding"><?php _e( 'Some servers have f*cked-up content-encoding settings, resulting in wrongly encoded diacritics. If you expect a character like &eacute; and all you get is something like &euro;&tilde;&Itilde;, experiment with this setting.', 'wpes' ); ?></label><br/>
 					<select id="content-precoding" name="settings[content_precode]">
 						<?php
 						$encoding_table         = explode( ',', '0,auto,' . WP_Email_Essentials::encodings );
@@ -344,14 +361,14 @@ $c = WP_Email_Essentials::get_config();
 				<th colspan="4">
 					<input type="checkbox" name="settings[alt_body]" value="1"
 						   <?php print  ( isset( $c['alt_body'] ) && $c['alt_body'] ? 'checked="checked" ' : '' ); ?>id="smtp-alt_body"/><label
-							for="smtp-alt_body"><?php _e( 'Derive plain-text alternative? (Will derive text-ish body from html body as AltBody)', 'wpes' ); ?></label>
+						for="smtp-alt_body"><?php _e( 'Derive plain-text alternative? (Will derive text-ish body from html body as AltBody)', 'wpes' ); ?></label>
 				</th>
 			</tr>
 			<tr>
 				<th colspan="4">
 					<input type="checkbox" name="settings[do_shortcodes]" value="1"
 						   <?php print  ( isset( $c['do_shortcodes'] ) && $c['do_shortcodes'] ? 'checked="checked" ' : '' ); ?>id="do_shortcodes"/><label
-							for="do_shortcodes"><?php _e( 'Process the body with <code>do_shortcode()</code>', 'wpes' ); ?></label>
+						for="do_shortcodes"><?php _e( 'Process the body with <code>do_shortcode()</code>', 'wpes' ); ?></label>
 				</th>
 			</tr>
 			<tr>
@@ -370,7 +387,7 @@ $c = WP_Email_Essentials::get_config();
 					<td colspan="4">
 						<input type="checkbox" name="settings[enable_smime]" value="1"
 							   <?php print ( isset( $c['enable_smime'] ) && $c['enable_smime'] ? 'checked="checked" ' : '' ); ?>id="enable-smime"/><label
-								for="enable-smime"><?php _e( 'Sign emails with S/MIME certificate', 'wpes' ); ?></label>
+							for="enable-smime"><?php _e( 'Sign emails with S/MIME certificate', 'wpes' ); ?></label>
 					</td>
 				</tr>
 				<tr>
@@ -439,7 +456,7 @@ $c = WP_Email_Essentials::get_config();
 				<td colspan="4">
 					<input type="checkbox" name="settings[enable_dkim]" value="1"
 						   <?php print ( isset( $c['enable_dkim'] ) && $c['enable_dkim'] ? 'checked="checked" ' : '' ); ?>id="enable-dkim"/><label
-							for="enable-dkim"><?php _e( 'Sign emails with DKIM certificate', 'wpes' ); ?></label>
+						for="enable-dkim"><?php _e( 'Sign emails with DKIM certificate', 'wpes' ); ?></label>
 				</td>
 			</tr>
 			<tr>
@@ -459,40 +476,83 @@ $c = WP_Email_Essentials::get_config();
 					<?php _e( 'The naming convention is: certificate: <code>domain.tld.crt</code>, private key: <code>domain.tld.key</code>, DKIM Selector: <code>domain.tld.selector</code>, (optional) passphrase: <code>domain.tld.pass</code>.', 'wpes' ); ?>
 				</td>
 			</tr>
-			<tr>
+			<?php
+			if ( $openssl_capable ) {
+				?>
 				<td colspan="4">
-					To generate DKIM keys, use: <br />
-					<code>openssl genrsa -aes256 -passout pass:"YOUR-PASSWORD" -out domain.tld.key 2048</code><br />
-					<code>openssl rsa -in domain.tld.key -pubout > domain.tld.crt</code><br />
-					<code>echo "YOUR-PASSWORD" > domain.tld.pass</code><br />
-					<code>echo "DKIM-SELECTOR-FOR-THIS-KEY" > domain.tld.selector</code>
+					The PHP functions to generate a key are not present, please use the following steps to generate them
+					yourself;
 				</td>
-			</tr>
+				<tr>
+					<td colspan="4">
+						To generate DKIM keys, use: <br/>
+						<ol>
+							<li><code>openssl genrsa -aes256 -passout pass:"YOUR-PASSWORD" -out domain.tld.key
+									2048</code></li>
+							<li><code>openssl rsa -in domain.tld.key -pubout > domain.tld.crt</code></li>
+							<li><code>echo "YOUR-PASSWORD" > domain.tld.pass</code></li>
+							<li><code>echo "DKIM-SELECTOR-FOR-THIS-KEY" > domain.tld.selector</code></li>
+						</ol>
+					</td>
+				</tr>
+				<tr>
+					<td colspan="4">
+						Upload these files to the specified path on the server and again; this should not be publicly
+						queriable!!!
+					</td>
+				</tr>
+				<?php
+			}
+
+			/** @global string $from_host The domainname used for the From email address */
+			/** @global array $dkim_list List of configured DKIM identities */
+			if ( empty( $dkim_list[ $from_host ]['pub_'] ) ) {
+				?>
+				<tr>
+					<td colspan="4"><strong>You currently have no DKIM key for the currently used domain
+							(<code><?php print $from_host; ?></code>). Generate it below.</td>
+				</tr>
+				<?php
+			} else { ?>
+				<tr>
+					<td colspan="3">Register the domain key in the DNS</td>
+					<td>Status</td>
+				</tr>
+			<?php }
+
+			foreach ( $dkim_list as $host => $entry ) {
+				?>
+				<tr data-host="<?php print esc_attr( $entry['host'] ); ?>">
+					<td colspan="3"><textarea style="width: 100%; white-space: nowrap;" rows="1">
+						<?php
+						print sprintf(
+							'%s._domainkey.%s IN TXT "v=DKIM1; k=rsa; p=%s"',
+							$entry['domainkey'] ?: 'the-domain-key',
+							$entry['host'] ?: 'domain.tld',
+							$entry['pub_'] ?: 'the-public-key-content'
+						);
+						?></textarea>
+					</td>
+					<td>
+						<?php
+						if ( $entry['pub_'] ) {
+							print ( $entry['verified'] ? _x( 'Verified', 'DKIM Selector and key are verified', 'wpes' ) : sprintf( $button_verify, $host ) );
+						} else {
+							print sprintf($button_generate, $host);
+						}
+						?>
+					</td>
+				</tr>
+			<?php } ?>
 			<tr>
 				<td colspan="4">
-					upload these files to the specified path on the server and again; this should not be publicly queriable!!!
-				</td>
-			</tr>
-			<tr>
-				<td colspan="4">
-					Finally, register the domain key in the DNS<br />
-					<code>DKIM-SELECTOR-FOR-THIS-KEY._domainkey.domain.tld. IN TXT "v=DKIM1; k=rsa; p=FULL-CONTENT-OF-domain.tld.crt"</code><br />
-					remove linebreaks and ignore the ---BEGIN KEY and END KEY lines
-				</td>
-			</tr>
-			<tr>
-				<td colspan="4">
-					test your settings with <a href="https://www.dmarcanalyzer.com/dkim/dkim-check/" target="_blank">DMARC Analyser</a> (unaffiliated)
+					test your settings with <a href="https://www.dmarcanalyzer.com/dkim/dkim-check/" target="_blank">DMARC
+						Analyser</a> (unaffiliated)
 				</td>
 			</tr>
 			<?php if ( isset( $c['dkimfolder'] ) ) {
-				$ids                = array();
 				$dkim_certificate_folder = $c['dkim_certificate_folder'];
-				if ( is_dir( $dkim_certificate_folder ) ) {
-					$files = glob( $dkim_certificate_folder . '/*.crt' );
-					$ids   = WP_Email_Essentials::list_dkim_identities();
-					$ids   = array_keys( $ids );
-				} else {
+				if ( ! is_dir( $dkim_certificate_folder ) ) {
 					?>
 					<tr>
 					<td colspan="4" style="color:red;">
@@ -501,14 +561,6 @@ $c = WP_Email_Essentials::get_config();
 								print ' ' . sprintf( __( 'Expanded path: <code>%s</code>', 'wpes' ), $dkim_certificate_folder );
 							}
 							print ' ' . sprintf( __( 'Evaluated path: <code>%s</code>', 'wpes' ), realpath( $dkim_certificate_folder ) ); ?>
-					</td>
-					</tr><?php
-				}
-				if ( $ids ) {
-					?>
-					<tr>
-					<td colspan="4">
-						<?php print sprintf( __( 'Found DKIM certificates for the following sender-domains: <code>%s</code>', 'wpes' ), implode( '</code>, <code>', $ids ) ); ?>
 					</td>
 					</tr><?php
 				}
@@ -563,7 +615,7 @@ $c = WP_Email_Essentials::get_config();
 </div>
 <table width="90%">
 	<?php
-	$mailer = new WPES_PHPMailer();
+	$mailer  = new WPES_PHPMailer();
 	$config  = WP_Email_Essentials::get_config();
 	$css     = apply_filters_ref_array( 'wpes_css', array( '', &$mailer ) );
 	$subject = __( 'Sample email subject', 'wpes' );
