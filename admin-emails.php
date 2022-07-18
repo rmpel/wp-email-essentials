@@ -168,12 +168,16 @@ $start = $page * $limit;
 
 	</style>
 	<h2>WP-Email-Essentials - Email history</h2>
-	<?php if ( WP_Email_Essentials::$message ) {
+	<?php
+	if ( WP_Email_Essentials::$message ) {
 		print '<div class="updated"><p>' . WP_Email_Essentials::$message . '</p></div>';
-	} ?>
-	<?php if ( WP_Email_Essentials::$error ) {
+	}
+	?>
+	<?php
+	if ( WP_Email_Essentials::$error ) {
 		print '<div class="error"><p>' . WP_Email_Essentials::$error . '</p></div>';
-	} ?>
+	}
+	?>
 	<?php
 	$total = $wpdb->get_var( "SELECT COUNT(ID) as thecount FROM {$wpdb->prefix}wpes_hist" );
 	if ( $start > $total ) {
@@ -190,10 +194,18 @@ $start = $page * $limit;
 	}
 	?>
 	<div class="pager">
-		<span><?php if ( false !== $prev_page ) { ?><a
+		<span>
+		<?php
+		if ( false !== $prev_page ) {
+			?>
+			<a
 				href="<?php print esc_attr( add_query_arg( '_page', $prev_page ) ); ?>">
 					&lt; Previous page</a> <?php } ?></span>
-		<span><?php if ( false !== $next_page ) { ?><a
+		<span>
+		<?php
+		if ( false !== $next_page ) {
+			?>
+			<a
 				href="<?php print esc_attr( add_query_arg( '_page', $next_page ) ); ?>">
 					&lt; Next page</a> <?php } ?></span>
 	</div>
@@ -217,18 +229,25 @@ $start = $page * $limit;
 				);
 				foreach ( $list as $item ) {
 					?>
-				<li class="email-item" id="email-<?php print $item->ID; ?>">
-					<span class="eml"><?php if ( $item->eml ) {
-							print '<a href="' . add_query_arg( 'download_eml', $item->ID ) . '" class="dashicons dashicons-download"></a>';
-						} ?></span>
-					<span class="thedatetime"><?php print esc_html( $item->thedatetime ); ?>&nbsp;</span>
-					<span class="recipient"><?php print esc_html( $item->recipient ); ?>&nbsp;</span>
-					<span class="sender"><?php print esc_html( $item->sender ); ?>&nbsp;</span>
-					<span class="subject"><?php print esc_html( $item->subject ); ?>&nbsp;</span>
-					<span
-						class="status"><?php print $stati[ $item->status ]; ?> <?php print $item->errinfo; ?>&nbsp;</span>
-					</li><?php
-				} ?></ul>
+					<li class="email-item" id="email-<?php print $item->ID; ?>">
+					<span class="eml">
+					<?php
+					if ( $item->eml ) {
+						print '<a href="' . add_query_arg( 'download_eml', $item->ID ) . '" class="dashicons dashicons-download"></a>';
+					}
+					?>
+						</span>
+						<span class="thedatetime"><?php print esc_html( $item->thedatetime ); ?>&nbsp;</span>
+						<span class="recipient"><?php print esc_html( $item->recipient ); ?>&nbsp;</span>
+						<span class="sender"><?php print esc_html( $item->sender ); ?>&nbsp;</span>
+						<span class="subject"><?php print esc_html( $item->subject ); ?>&nbsp;</span>
+						<span
+							class="status"><?php print $stati[ $item->status ]; ?> <?php print $item->errinfo; ?>&nbsp;</span>
+					</li>
+					<?php
+				}
+				?>
+			</ul>
 		</div>
 		<div id="mail-data-viewer">
 			<?php
@@ -247,16 +266,17 @@ $start = $page * $limit;
 			<div class="email-data" id="email-data-<?php print $item->ID; ?>">
 				<span class="headers"><pre><?php print esc_html( $item->headers ); ?></pre></span>
 				<span class="alt_body"><pre><?php print nl2br( $item->alt_body ); ?></pre></span>
-				<span class="body"><iframe class="autofit" width="100%" height="100%" border="0" frameborder="0"
-										   src="data:text/html;headers=<?php print urlencode( 'Content-Security-Policy: script-src none;' ); ?>;base64,<?php print base64_encode( str_ireplace( array(
-											   'onload',
-											   '<script',
-											   '</script>'
-										   ), array(
-											   'nonload',
-											   '[SCRIPT',
-											   '[/SCRIPT]'
-										   ), WP_Email_Essentials::maybe_convert_to_html( $item->body, $item->subject, $mailer ) ) ); ?>"></iframe></span>
+				<span class="body"><iframe
+						class="autofit" width="100%" height="100%" border="0" frameborder="0"
+						src="data:text/html;headers=<?php print urlencode( 'Content-Security-Policy: script-src none;' ); ?>;base64,<?php print base64_encode( str_ireplace( array(
+							'onload',
+							'<script',
+							'</script>'
+						), array(
+							'nonload',
+							'[SCRIPT',
+							'[/SCRIPT]'
+						), WP_Email_Essentials::maybe_convert_to_html( $item->body, $item->subject, $mailer ) ) ); ?>"></iframe></span>
 				<span class="debug"><pre><?php print esc_html( $item->debug ); ?></pre></span>
 				</div><?php
 			} ?>

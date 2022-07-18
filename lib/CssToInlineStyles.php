@@ -115,7 +115,7 @@ class CssToInlineStyles {
 			// E#myid, Matches any E element with id-attribute equal to "myid"
 			'/(\w+)+\#([\w\-]+)/',
 			// #myid, Matches any element with id-attribute equal to "myid"
-			'/\#([\w\-]+)/'
+			'/\#([\w\-]+)/',
 		);
 
 		// the xPath-equivalent
@@ -139,7 +139,7 @@ class CssToInlineStyles {
 			// E#myid, Matches any E element with id-attribute equal to "myid"
 			'\1[ @id = "\2" ]',
 			// #myid, Matches any element with id-attribute equal to "myid"
-			'*[ @id = "\1" ]'
+			'*[ @id = "\1" ]',
 		);
 
 		// return
@@ -275,8 +275,8 @@ class CssToInlineStyles {
 				foreach ( $elements as $element ) {
 					// no styles stored?
 					if ( $element->attributes->getNamedItem(
-							'data-css-to-inline-styles-original-styles'
-						) == null ) {
+						'data-css-to-inline-styles-original-styles'
+					) == null ) {
 						// init var
 						$originalStyle = '';
 						if ( $element->attributes->getNamedItem( 'style' ) !== null ) {
@@ -447,7 +447,8 @@ class CssToInlineStyles {
 					// set attribute
 					if ( $propertiesString != '' ) {
 						$element->setAttribute(
-							'style', $propertiesString
+							'style',
+							$propertiesString
 						);
 					}
 				}
@@ -577,8 +578,8 @@ class CssToInlineStyles {
 
 				// calculate specifity
 				$ruleSet['specifity'] = $this->calculateCSSSpecifity(
-						$selector
-					) + $i;
+					$selector
+				) + $i;
 
 				// add into global rules
 				$this->cssRules[] = $ruleSet;

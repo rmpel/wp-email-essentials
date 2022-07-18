@@ -66,9 +66,12 @@ class IP_54 {
 		}
 
 		// padding
-		$parts = array_map( function ( $part ) {
-			return substr( "0000" . strtolower( $part ), - 4, 4 );
-		}, $parts );
+		$parts = array_map(
+			function ( $part ) {
+				return substr( '0000' . strtolower( $part ), - 4, 4 );
+			},
+			$parts
+		);
 
 		return $parts;
 	}
@@ -131,8 +134,8 @@ class IP_54 {
 		$binaryip = $inet_to_bits( $ip );
 
 		list( $net, $maskbits ) = explode( '/', $cidr );
-		$net       = inet_pton( $net );
-		$binarynet = $inet_to_bits( $net );
+		$net                    = inet_pton( $net );
+		$binarynet              = $inet_to_bits( $net );
 
 		$ip_net_bits = substr( $binaryip, 0, $maskbits );
 		$net_bits    = substr( $binarynet, 0, $maskbits );

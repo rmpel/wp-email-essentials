@@ -5,7 +5,10 @@ if ( ! current_user_can( 'manage_options' ) ) {
 global $current_user;
 $c          = get_option( 'mail_key_moderators', array() );
 $keys       = array( 'pingback', 'comment' );
-$recipients = array( 'author' => 'notification', 'moderator' => 'moderation request' );
+$recipients = array(
+	'author'    => 'notification',
+	'moderator' => 'moderation request',
+);
 if ( ! get_option( 'moderation_notify' ) ) {
 	// moderations disabled, so only show notification.
 	unset( $recipients['moderator'] );
@@ -16,12 +19,16 @@ if ( ! get_option( 'moderation_notify' ) ) {
 		<br/>
 	</div>
 	<h2>WP-Email-Essentials - <?php _e( 'Alternative Moderators', 'wpes' ); ?></h2>
-	<?php if ( WP_Email_Essentials::$message ) {
+	<?php
+	if ( WP_Email_Essentials::$message ) {
 		print '<div class="updated"><p>' . WP_Email_Essentials::$message . '</p></div>';
-	} ?>
-	<?php if ( WP_Email_Essentials::$error ) {
+	}
+	?>
+	<?php
+	if ( WP_Email_Essentials::$error ) {
 		print '<div class="error"><p>' . WP_Email_Essentials::$error . '</p></div>';
-	} ?>
+	}
+	?>
 	<form id="outpost" method='POST' action="">
 		<input type="hidden" name="form_id" value="wpes-moderators"/>
 		<table>
@@ -30,7 +37,8 @@ if ( ! get_option( 'moderation_notify' ) ) {
 			<th><?php _e( 'Send to', 'wpes' ); ?></th>
 			</thead>
 			<tbody>
-			<?php foreach ( $recipients as $recipient => $action ) {
+			<?php
+			foreach ( $recipients as $recipient => $action ) {
 				foreach ( $keys as $key ) {
 					foreach ( array( 'post' ) as $post_type ) {
 						if ( ! isset( $c[ $post_type ][ $recipient ][ $key ] ) ) {
@@ -45,15 +53,17 @@ if ( ! get_option( 'moderation_notify' ) ) {
 							</td>
 							<td>
 								<input type="text"
-									   name="settings[keys][<?php print $post_type; ?>][<?php print $recipient; ?>][<?php print $key ?>]"
+									   name="settings[keys][<?php print $post_type; ?>][<?php print $recipient; ?>][<?php print $key; ?>]"
 									   placeholder="default: owner of <?php print $post_type; ?>"
 									   value="<?php print $c[ $post_type ][ $recipient ][ $key ]; ?>"
 									   id="key-<?php print $post_type; ?>-<?php print $recipient; ?>-<?php print $key; ?>"/>
 							</td>
 						</tr>
-					<?php }
+						<?php
+					}
 				}
-			} ?>
+			}
+			?>
 
 			<tr>
 				<td colspan="2">
@@ -67,7 +77,7 @@ if ( ! get_option( 'moderation_notify' ) ) {
 	<p><code>:blackhole:</code> is allowed to disable sending the email.</p>
 	<p>Moderation for pingbacks and comments
 		is: <?php print ( get_option( 'moderation_notify' ) ? 'enabled' : 'disabled' ); ?>. <a
-			href="<?php print admin_url( 'options-discussion.php' ) ?>#comment_order">Change this setting</a>.</p>
+			href="<?php print admin_url( 'options-discussion.php' ); ?>#comment_order">Change this setting</a>.</p>
 </div>
 <style>
 	#outpost input[type=text] {

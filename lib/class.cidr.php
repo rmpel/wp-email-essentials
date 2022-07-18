@@ -4,6 +4,7 @@
  *
  * Utility Functions for IPv4 ip addresses.
  * Supports PHP 5.3+ (32 & 64 bit)
+ *
  * @author   Jonavon Wilcox <jowilcox@vt.edu>
  * @revision Carlos Guimarães <cvsguimaraes@gmail.com>
  * @version  Wed Mar  12 13:00:00 EDT 2014
@@ -96,14 +97,13 @@ class CIDR {
 	 * a-netmask-is-valid--as2-
 	 * @access public
 	 * @static
-	 *
 	 */
 	public static function validNetMask( $netmask ) {
 		$netmask = ip2long( $netmask );
 		if ( $netmask === false ) {
 			return false;
 		}
-		$neg = ( ( ~(int) $netmask ) & 0xFFFFFFFF );
+		$neg = ( ( ~ (int) $netmask ) & 0xFFFFFFFF );
 
 		return ( ( $neg + 1 ) & $neg ) === 0;
 	}
@@ -238,7 +238,7 @@ class CIDR {
 			$maxdiff     = 32 - intval( log( $end - $start + 1 ) / log( 2 ) );
 			$size        = ( $maxsize > $maxdiff ) ? $maxsize : $maxdiff;
 			$listCIDRs[] = long2ip( $start ) . "/$size";
-			$start       += pow( 2, ( 32 - $size ) );
+			$start      += pow( 2, ( 32 - $size ) );
 		}
 
 		return $listCIDRs;

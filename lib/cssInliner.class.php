@@ -1,6 +1,6 @@
 <?php
 
-require_once( dirname( __FILE__ ) . '/CssToInlineStyles.php' );
+require_once dirname( __FILE__ ) . '/CssToInlineStyles.php';
 
 class cssInliner {
 	var $CssToInlineStyles;
