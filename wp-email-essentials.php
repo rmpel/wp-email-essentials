@@ -1331,13 +1331,12 @@ class WP_Email_Essentials {
 			return;
 		}
 
-
 		// certfolder == setting, certificate_folder == real path;
 		if ( $config['enable_smime'] && isset( $config['certfolder'] ) && $config['certfolder'] ) {
 			if ( is_writable( $config['certificate_folder'] ) && ! get_option( 'suppress_smime_writable' ) ) {
 				$class   = "error";
 				$message = __( 'The S/MIME certificate folder is writable. This is Extremely insecure. Please reconfigure, make sure the folder is not writable by Apache. If your server is running suPHP, you cannot make the folder read-only for apache. Please contact your hosting provider and ask for a more secure hosting package, one not based on suPHP.', 'wpes' );
-				echo "<div class='$class'><p>$message</p></div>";
+				// echo "<div class='$class'><p>$message</p></div>";
 			}
 
 			if ( false !== strpos( realpath( $config['certificate_folder'] ), realpath( self::root_path() ) ) ) {
@@ -1386,7 +1385,7 @@ class WP_Email_Essentials {
 			if ( is_writable( $config['dkim_certificate_folder'] ) && ! get_option( 'suppress_dkim_writable' ) ) {
 				$class   = "error";
 				$message = __( 'The DKIM certificate folder is writable. This is Extremely insecure. Please reconfigure, make sure the folder is not writable by Apache. If your server is running suPHP, you cannot make the folder read-only for apache. Please contact your hosting provider and ask for a more secure hosting package, one not based on suPHP.', 'wpes' );
-//				echo "<div class='$class'><p>$message</p></div>";
+				// echo "<div class='$class'><p>$message</p></div>";
 			}
 
 			if ( false !== strpos( realpath( $config['dkim_certificate_folder'] ), realpath( self::root_path() ) ) ) {
