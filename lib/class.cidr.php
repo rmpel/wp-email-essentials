@@ -4,9 +4,9 @@
  *
  * Utility Functions for IPv4 ip addresses.
  * Supports PHP 5.3+ (32 & 64 bit)
- * @author Jonavon Wilcox <jowilcox@vt.edu>
+ * @author   Jonavon Wilcox <jowilcox@vt.edu>
  * @revision Carlos Guimarães <cvsguimaraes@gmail.com>
- * @version Wed Mar  12 13:00:00 EDT 2014
+ * @version  Wed Mar  12 13:00:00 EDT 2014
  */
 
 /**
@@ -64,7 +64,7 @@ class CIDR {
 	 * @access public
 	 * @static
 	 * @return int number of bits set.
-	 * @see http://stackoverflow.com/questions/109023/best-algorithm-to-co\
+	 * @see    http://stackoverflow.com/questions/109023/best-algorithm-to-co\
 	 * unt-the-number-of-set-bits-in-a-32-bit-integer
 	 */
 	public static function countSetbits( $int ) {
@@ -92,7 +92,7 @@ class CIDR {
 	 * @param $netmask String a 1pv4 formatted ip address.
 	 *
 	 * @return bool True if a valid netmask.
-	 * @see http://www.actionsnip.com/snippets/tomo_atlacatl/calculate-if-\
+	 * @see    http://www.actionsnip.com/snippets/tomo_atlacatl/calculate-if-\
 	 * a-netmask-is-valid--as2-
 	 * @access public
 	 * @static
@@ -165,8 +165,8 @@ class CIDR {
 	 *     bool(false)
 	 *
 	 * @param $ipinput String a IPv4 formatted ip address.
-	 * @param $cidr String a IPv4 formatted CIDR block. Block is aligned
-	 * during execution.
+	 * @param $cidr    String a IPv4 formatted CIDR block. Block is aligned
+	 *                 during execution.
 	 *
 	 * @access public
 	 * @static

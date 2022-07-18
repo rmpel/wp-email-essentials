@@ -1,34 +1,34 @@
 <?php
-if (!current_user_can('manage_options')) {
-	wp_die(__('Uh uh uh! You didn\'t say the magic word!', 'wpes'));
+if ( ! current_user_can( 'manage_options' ) ) {
+	wp_die( __( 'Uh uh uh! You didn\'t say the magic word!', 'wpes' ) );
 }
 global $current_user;
-$c = get_option('mail_key_admins', array());
-$keys = WP_Email_Essentials::mail_key_database();
-$admin = get_option('admin_email');
+$c     = get_option( 'mail_key_admins', array() );
+$keys  = WP_Email_Essentials::mail_key_database();
+$admin = get_option( 'admin_email' );
 ?>
 <div class="wrap">
 	<div class="icon32 icon32-posts-group" id="icon-edit">
 		<br/>
 	</div>
-	<h2>WP-Email-Essentials - <?php _e('Alternative Admins', 'wpes'); ?></h2>
-	<?php if (WP_Email_Essentials::$message) {
+	<h2>WP-Email-Essentials - <?php _e( 'Alternative Admins', 'wpes' ); ?></h2>
+	<?php if ( WP_Email_Essentials::$message ) {
 		print '<div class="updated"><p>' . WP_Email_Essentials::$message . '</p></div>';
 	} ?>
-	<?php if (WP_Email_Essentials::$error) {
+	<?php if ( WP_Email_Essentials::$error ) {
 		print '<div class="error"><p>' . WP_Email_Essentials::$error . '</p></div>';
 	} ?>
 	<form id="outpost" method='POST' action="">
 		<input type="hidden" name="form_id" value="wpes-admins"/>
 		<table>
 			<thead>
-			<th><?php _e('Mail Key', 'wpes'); ?></th>
-			<th><?php _e('Send to', 'wpes'); ?></th>
+			<th><?php _e( 'Mail Key', 'wpes' ); ?></th>
+			<th><?php _e( 'Send to', 'wpes' ); ?></th>
 			</thead>
 			<tbody>
-			<?php foreach ($keys as $key) {
-				if (!isset($c[$key])) {
-					$c[$key] = '';
+			<?php foreach ( $keys as $key ) {
+				if ( ! isset( $c[ $key ] ) ) {
+					$c[ $key ] = '';
 				}
 				?>
 				<tr>
@@ -37,32 +37,32 @@ $admin = get_option('admin_email');
 					</td>
 					<td>
 						<input type="text" name="settings[keys][<?php print $key ?>]"
-							   placeholder="<?php print esc_attr($admin); ?>" value="<?php print $c[$key]; ?>"
+							   placeholder="<?php print esc_attr( $admin ); ?>" value="<?php print $c[ $key ]; ?>"
 							   id="key-<?php print $key; ?>"/>
 					</td>
 				</tr>
 			<?php } ?>
 
 			<tr class="header">
-				<th><?php _e('RegExp matched against subject', 'wpes'); ?>*</th>
-				<th><?php _e('Send to', 'wpes'); ?></th>
+				<th><?php _e( 'RegExp matched against subject', 'wpes' ); ?>*</th>
+				<th><?php _e( 'Send to', 'wpes' ); ?></th>
 			</tr>
 			<?php $i = 0;
-			$exps = get_option('mail_key_list', array());
-			foreach ($exps as $regexp => $key) { ?>
+			$exps    = get_option( 'mail_key_list', array() );
+			foreach ( $exps as $regexp => $key ) { ?>
 				<tr>
 					<td>
 						<input type="text" name="settings[regexp][<?php print $i ?>][regexp]" class="a-regexp"
-							   value="<?php print esc_attr($regexp); ?>"/>
+							   value="<?php print esc_attr( $regexp ); ?>"/>
 					</td>
 					<td>
 						<input type="text" name="settings[regexp][<?php print $i ?>][key]"
-							   value="<?php print esc_attr($key); ?>"/>
+							   value="<?php print esc_attr( $key ); ?>"/>
 					</td>
 				</tr>
-				<?php $i++;
+				<?php $i ++;
 			} ?>
-			<?php for ($j = 0; $j < 5; $j++) { ?>
+			<?php for ( $j = 0; $j < 5; $j ++ ) { ?>
 				<tr>
 					<td>
 						<input type="text" name="settings[regexp][<?php print $j + $i ?>][regexp]" class="a-regexp"
@@ -75,7 +75,7 @@ $admin = get_option('admin_email');
 			<?php } ?>
 			<tr>
 				<td colspan="2">
-					<input type="submit" name="op" value="<?php print esc_attr__('Save settings', 'wpes'); ?>"
+					<input type="submit" name="op" value="<?php print esc_attr__( 'Save settings', 'wpes' ); ?>"
 						   class="button-primary action"/>
 				</td>
 			</tr>
@@ -83,13 +83,15 @@ $admin = get_option('admin_email');
 				<td><em> *) You must include the barriers, so start with / and end with /</em></td>
 			</tr>
 			<tr class="header">
-				<th><?php _e('Unmatched subjects', 'wpes'); ?></th>
+				<th><?php _e( 'Unmatched subjects', 'wpes' ); ?></th>
 			</tr>
 			<?php
-			$fails = get_option('mail_key_fails', array());
-			$fails = array_filter($fails, function ($item) { return !WP_Email_Essentials::mail_subject_match($item) && !WP_Email_Essentials::get_mail_key($item); });
-			update_option('mail_key_fails', array_values($fails));
-			foreach ($fails as $fail) { ?>
+			$fails = get_option( 'mail_key_fails', array() );
+			$fails = array_filter( $fails, function ( $item ) {
+				return ! WP_Email_Essentials::mail_subject_match( $item ) && ! WP_Email_Essentials::get_mail_key( $item );
+			} );
+			update_option( 'mail_key_fails', array_values( $fails ) );
+			foreach ( $fails as $fail ) { ?>
 				<tr>
 					<td>
 						<code class="a-fail"><?php print $fail; ?></code>
@@ -112,8 +114,7 @@ $admin = get_option('admin_email');
 				jQuery(".a-fail").each(function () {
 					jQuery(this).toggleClass('match', re.test((jQuery(this).text() || "")));
 				});
-			}
-			else {
+			} else {
 				jQuery(".a-fail").removeClass('match');
 			}
 		};

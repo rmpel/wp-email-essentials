@@ -29,7 +29,7 @@ class IP_54 {
 	}
 
 	public static function a_4_is_4( $ip1, $ip2 ) {
-		return ip2long($ip1) == ip2long($ip2);
+		return ip2long( $ip1 ) == ip2long( $ip2 );
 	}
 
 	public static function is_6( $ip ) {

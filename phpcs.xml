@@ -31,6 +31,7 @@
 
 		<exclude name="WordPress.WP.I18n.MissingTranslatorsComment"/>
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax.Found"/>
+		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
 		<!--
 		<exclude name="WordPress.WhiteSpace.ControlStructureSpacing"/>
 		<exclude name="WordPress.Security.EscapeOutput"/>
@@ -81,6 +82,7 @@
 		<properties>
 			<property name="prefixes" type="array">
 				<element value="wpes"/>
+				<element value="WP_Email_Essentials"/>
 			</property>
 		</properties>
 	</rule>

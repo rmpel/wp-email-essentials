@@ -2119,7 +2119,7 @@ class WP_Email_Essentials_History {
 			$reply_to_email = trim( $reply_to[0] ?? '' );
 			$reply_to       = $reply_to_name && $reply_to_name !== $reply_to_email ? sprintf( "%s <%s>", $reply_to_name, $reply_to_email ) : $reply_to_email;
 
-			$sender = $reply_to .' *';
+			$sender = $reply_to . ' *';
 		}
 		$data = json_encode( $data, JSON_PRETTY_PRINT );
 
