@@ -1,4 +1,9 @@
 <?php
+/**
+ * A normalised class for PHPMailer.
+ *
+ * @package WP_Email_Essentials
+ */
 
 use PHPMailer\PHPMailer\PHPMailer;
 

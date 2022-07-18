@@ -1,4 +1,9 @@
 <?php
+/**
+ * A normalised class for IP-operations.
+ *
+ * @package WP_Email_Essentials
+ */
 
 namespace RMPel\Tools;
 

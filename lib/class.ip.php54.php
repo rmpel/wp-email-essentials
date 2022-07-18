@@ -1,4 +1,9 @@
 <?php
+/**
+ * Class for IP operations compatible with all PHP versions.
+ *
+ * @package RMPel\Tools
+ */
 
 namespace RMPel\Tools;
 
