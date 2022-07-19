@@ -76,8 +76,7 @@ class Plugin {
 					self::class,
 					'wpcf7_mail_html_header',
 				],
-				~PHP_INT_MAX,
-				2
+				~PHP_INT_MAX
 			);
 			add_filter(
 				'wpcf7_mail_html_footer',
@@ -85,18 +84,17 @@ class Plugin {
 					self::class,
 					'wpcf7_mail_html_footer',
 				],
-				~PHP_INT_MAX,
-				2
+				~PHP_INT_MAX
 			);
 		}
 
 		// set default from email and from name.
 		if ( $config['from_email'] ) {
-			self::log( 'Config FromMail: ' . $config['from_email'] . '' );
+			self::log( 'Config FromMail: ' . $config['from_email'] );
 			add_filter( 'wp_mail_from', [ self::class, 'filter_wp_mail_from' ], 9999 );
 		}
 		if ( $config['from_name'] ) {
-			self::log( 'Config FromName: ' . $config['from_name'] . '' );
+			self::log( 'Config FromName: ' . $config['from_name'] );
 			add_filter( 'wp_mail_from_name', [ self::class, 'filter_wp_mail_from_name' ], 9999 );
 		}
 
@@ -245,7 +243,7 @@ class Plugin {
 	 *
 	 * @return mixed
 	 */
-	function correct_cfdb_form_data_ip( $cf7 ) {
+	public static function correct_cfdb_form_data_ip( $cf7 ) {
 		// CF7 to DB tries variable X_FORWARDED_FOR which is never in use, Apache sets HTTP_X_FORWARDED_FOR
 		// use our own method to get the remote_addr.
 		$cf7->ip = self::server_remote_addr();
@@ -253,6 +251,13 @@ class Plugin {
 		return $cf7;
 	}
 
+	/**
+	 * Get remote address, in any form it can be presented.
+	 *
+	 * @param bool $return_htaccess_variable Return the value (false) or the variable it was found in (true).
+	 *
+	 * @return string
+	 */
 	public static function server_remote_addr( $return_htaccess_variable = false ) {
 		$possibilities = [
 			'HTTP_CF_CONNECTING_IP' => 'HTTP:CF-CONNECTING-IP',
@@ -270,6 +275,13 @@ class Plugin {
 		return $_SERVER['REMOTE_ADDR'];
 	}
 
+	/**
+	 * Implementation of filter  wp_mail .
+	 *
+	 * @param array $wp_mail Array with wp_mail data. ('to', 'subject', 'message', 'headers', 'attachments') .
+	 *
+	 * @return array
+	 */
 	public static function action_wp_mail( $wp_mail ) {
 		if ( ! $wp_mail ) {
 			return $wp_mail;
@@ -287,6 +299,13 @@ class Plugin {
 		return self::patch_wp_mail( $wp_mail );
 	}
 
+	/**
+	 * Change the WP_Mail data array to suit the settings.
+	 *
+	 * @param array $wp_mail Array with wp_mail data. ('to', 'subject', 'message', 'headers', 'attachments') .
+	 *
+	 * @return array
+	 */
 	public static function patch_wp_mail( $wp_mail ) {
 
 		$config = self::get_config();
@@ -302,8 +321,9 @@ class Plugin {
 		if ( ! is_array( $wp_mail['headers'] ) ) {
 			$wp_mail['headers'] = [];
 		}
-		self::log( '' . __LINE__ . ' raw headers' . '' );
-		self::log( json_encode( $wp_mail['headers'] ) );
+
+		self::log( __LINE__ . ' raw headers' );
+		self::log( wp_json_encode( $wp_mail['headers'] ) );
 
 		$header_index = [];
 		foreach ( $wp_mail['headers'] as $i => $header ) {
@@ -314,16 +334,16 @@ class Plugin {
 		}
 
 		if ( isset( $all_headers['from'] ) ) {
-			self::log( '' . __LINE__ . ' headers has FROM: ' . $all_headers['from'] . '' );
+			self::log( __LINE__ . ' headers has FROM: ' . $all_headers['from'] );
 			$from = self::rfc_decode( $all_headers['from'] );
-			self::log( '' . __LINE__ . ' decoded:' );
-			self::log( json_encode( $from ) );
-			if ( $from['email'] && $from['email'] != self::get_wordpress_default_emailaddress() ) {
-				self::log( '' . __LINE__ . ' set from mail' . '' );
+			self::log( __LINE__ . ' decoded:' );
+			self::log( wp_json_encode( $from ) );
+			if ( $from['email'] && self::get_wordpress_default_emailaddress() !== $from['email'] ) {
+				self::log( __LINE__ . ' set from mail' );
 				self::wp_mail_from( $from['email'] );
 			}
 			if ( $from['name'] ) {
-				self::log( '' . __LINE__ . ' set from name' . '' );
+				self::log( __LINE__ . ' set from name' );
 				self::wp_mail_from_name( $from['name'] );
 			}
 		}
@@ -333,54 +353,62 @@ class Plugin {
 		}
 		$wp_mail['headers'][ $header_index['from'] ] = 'From: "' . self::wp_mail_from_name() . '" <' . self::wp_mail_from() . '>';
 
-		self::log( '' . __LINE__ . ' headers now:' );
-		self::log( json_encode( $wp_mail['headers'] ) );
+		self::log( __LINE__ . ' headers now:' );
+		self::log( wp_json_encode( $wp_mail['headers'] ) );
 
 		if ( ! array_key_exists( 'reply-to', $header_index ) ) {
-			self::log( '' . __LINE__ . ' Adding REPLY-TO:' );
+			self::log( __LINE__ . ' Adding REPLY-TO:' );
 			$header_index['reply-to']                        = count( $header_index );
 			$wp_mail['headers'][ $header_index['reply-to'] ] = 'Reply-To: ' . self::wp_mail_from_name() . ' <' . self::wp_mail_from() . '>';
 		} else {
-			self::log( '' . __LINE__ . ' Already have REPLY-TO:' );
+			self::log( __LINE__ . ' Already have REPLY-TO:' );
 		}
 
-		self::log( '' . __LINE__ . ' headers now:' );
-		self::log( json_encode( $wp_mail['headers'] ) );
+		self::log( __LINE__ . ' headers now:' );
+		self::log( wp_json_encode( $wp_mail['headers'] ) );
 
 		if ( $config['make_from_valid'] ) {
-			self::log( '' . __LINE__ . ' Validifying FROM:' );
+			self::log( __LINE__ . ' Validifying FROM:' );
 			self::wp_mail_from( self::a_valid_from( self::wp_mail_from(), $config['make_from_valid'] ) );
 			$wp_mail['headers'][ $header_index['from'] ] = 'From: "' . self::wp_mail_from_name() . '" <' . self::a_valid_from( self::wp_mail_from(), $config['make_from_valid'] ) . '>';
 		}
 
-		self::log( '' . __LINE__ . ' headers now:' );
-		self::log( json_encode( $wp_mail['headers'] ) );
+		self::log( __LINE__ . ' headers now:' );
+		self::log( wp_json_encode( $wp_mail['headers'] ) );
 
 		return $wp_mail;
 	}
 
+	/**
+	 * Transform invalid from-address to a valid one.
+	 *
+	 * @param string|array $invalid_from An invalid from-address.
+	 * @param string       $method       The method of validating it.
+	 *
+	 * @return mixed|string
+	 */
 	public static function a_valid_from( $invalid_from, $method ) {
 		$url    = get_bloginfo( 'url' );
-		$host   = parse_url( $url, PHP_URL_HOST );
+		$host   = wp_parse_url( $url, PHP_URL_HOST );
 		$host   = preg_replace( '/^www[0-9]*\./', '', $host );
 		$config = self::get_config();
 
 		if ( ! self::i_am_allowed_to_send_in_name_of( $invalid_from ) ) {
 			switch ( $method ) {
 				case '-at-':
-					return strtr(
-							   $invalid_from,
-							   [
-								   '@' => '-at-',
-								   '.' => '-dot-',
-							   ]
-						   ) . '@' . $host;
+					$translation = [
+						'@' => '-at-',
+						'.' => '-dot-',
+					];
+
+					$return = strtr( $invalid_from, $translation );
+
+					return $return . '@' . $host;
 				case 'default':
 					$defmail = self::wp_mail_from( $config['from_email'] );
 					if ( self::i_am_allowed_to_send_in_name_of( $defmail ) ) {
 						return $defmail;
-					}
-				// if test fails, bleed through to noreply, so leave this order in tact!
+					} // if test fails, bleed through to noreply, so leave this order in tact!
 				case 'noreply':
 					return 'noreply@' . $host;
 				default:
@@ -391,6 +419,13 @@ class Plugin {
 		return $invalid_from;
 	}
 
+	/**
+	 * Get the domain of an email address.
+	 *
+	 * @param string $email The email address.
+	 *
+	 * @return string
+	 */
 	public static function get_domain( $email ) {
 		if ( preg_match( '/@(.+)$/', $email, $sending_domain ) ) {
 			$sending_domain = $sending_domain[1];
@@ -399,6 +434,15 @@ class Plugin {
 		return $sending_domain;
 	}
 
+	/**
+	 * Get SPF record for the domain of the email given.
+	 *
+	 * @param string $email   The email address.
+	 * @param bool   $fix     If true; give a fixed SPF record.
+	 * @param bool   $as_html If true, return as richly formatted HTML.
+	 *
+	 * @return string
+	 */
 	public static function get_spf( $email, $fix = false, $as_html = false ) {
 		static $lookup;
 		if ( ! $lookup ) {
@@ -407,11 +451,12 @@ class Plugin {
 
 		$sending_domain = self::get_domain( $email );
 		if ( ! $sending_domain ) {
-			return false; // invalid email
+			return false; // invalid email.
 		}
 		$sending_server = self::get_sending_ip();
 		// we assume here that everything NOT IP4 is IP6. This will do for now, but ...
-		// todo: actual ip6 check!
+		// @phpcs:ignore Generic.Commenting.Todo.TaskFound
+		// todo: actual ip6 check!.
 		$ip = preg_match( '/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/', trim( $sending_server ) ) ? 'ip4' : 'ip6';
 
 		if ( ! isset( $lookup[ $sending_domain ] ) ) {
@@ -435,12 +480,12 @@ class Plugin {
 				$spf = 'v=spf1 a mx ~all';
 			}
 
-			// insert
+			// insert.
 			$spf      = explode( ' ', str_replace( 'include:', 'include: ', $spf ) );
-			$position = false !== array_search( 'mx', $spf ) ? array_search( 'mx', $spf ) + 1 : false;
-			$position = false !== $position ? $position : ( false !== array_search( 'a', $spf ) ? array_search( 'a', $spf ) + 1 : false );
-			$position = false !== $position ? $position : ( false !== array_search( 'include:', $spf ) ? array_search( 'include:', $spf ) - 1 : false );
-			$position = false !== $position ? $position : ( false !== array_search( 'v=spf1', $spf ) ? array_search( 'v=spf1', $spf ) + 1 : false );
+			$position = false !== array_search( 'mx', $spf, true ) ? array_search( 'mx', $spf, true ) + 1 : false;
+			$position = false !== $position ? $position : ( false !== array_search( 'a', $spf, true ) ? array_search( 'a', $spf, true ) + 1 : false );
+			$position = false !== $position ? $position : ( false !== array_search( 'include:', $spf, true ) ? array_search( 'include:', $spf, true ) - 1 : false );
+			$position = false !== $position ? $position : ( false !== array_search( 'v=spf1', $spf, true ) ? array_search( 'v=spf1', $spf, true ) + 1 : false );
 
 			array_splice( $spf, $position, 0, $ip . ':' . $sending_server );
 			$spf = str_replace( 'include: ', 'include:', implode( ' ', $spf ) );
@@ -464,31 +509,43 @@ class Plugin {
 		return $spf;
 	}
 
+	/**
+	 * Test: I (this server) is allowed to send in name of givern email address.
+	 *
+	 * @param string $email The email address to check.
+	 *
+	 * @return bool
+	 */
 	public static function i_am_allowed_to_send_in_name_of( $email ) {
 		$config = self::get_config();
 
-		if ( 'when_sender_not_as_set' == $config['make_from_valid_when'] ) {
+		if ( 'when_sender_not_as_set' === $config['make_from_valid_when'] ) {
 			return $config['from_email'] === $email;
 		}
 
 		if ( ! $config['spf_lookup_enabled'] ) {
-			// we tried and failed less than a day ago
-			// do not try again
+			// we tried and failed less than a day ago.
+			// do not try again.
 			return self::this_email_matches_website_domain( $email );
 		}
 
-		// try a SPF record
+		// try an SPF record.
 
 		$sending_domain = [];
 		preg_match( '/@(.+)$/', $email, $sending_domain );
 		if ( ! $sending_domain ) {
-			return false; // invalid email
+			return false; // invalid email.
 		}
 		$sending_server = self::get_sending_ip();
 
 		return self::validate_ip_listed_in_spf( $sending_domain[1], $sending_server );
 	}
 
+	/**
+	 * Get the sending IP address.
+	 *
+	 * @return string
+	 */
 	public static function get_sending_ip() {
 		static $sending_ip;
 		if ( $sending_ip ) {
@@ -501,7 +558,7 @@ class Plugin {
 		}
 		if ( ! $ip ) {
 			$ip = wp_remote_retrieve_body( wp_remote_get( 'https://ip.remonpel.nl' ) );
-			if ( $ip == '0.0.0.0' ) {
+			if ( '0.0.0.0' === $ip ) {
 				$ip = false;
 			}
 		}
@@ -523,9 +580,19 @@ class Plugin {
 			$ip = $_SERVER['SERVER_ADDR'];
 		}
 
-		return $sending_ip = $ip;
+		$sending_ip = $ip;
+
+		return $sending_ip;
 	}
 
+	/**
+	 * Test: Does the SPF for $domain contain or refer to this $ip.
+	 *
+	 * @param string $domain The domain name.
+	 * @param string $ip     The IP address.
+	 *
+	 * @return bool|null
+	 */
 	public static function validate_ip_listed_in_spf( $domain, $ip ) {
 		$dns = self::dns_get_record( $domain, DNS_TXT );
 		if ( ! $dns ) {
@@ -538,13 +605,13 @@ class Plugin {
 				$sections = explode( ' ', $record['txt'] );
 				foreach ( $sections as $section ) {
 					if ( preg_match( '/(a|aaaa|mx):(.+)/', $section, $mx_match ) ) {
-						// here we only expand the record, the actual check is done later
+						// here we only expand the record, the actual check is done later .
 						foreach ( self::dns_get_record( $mx_match[2], DNS_MX ) as $item ) {
 							$sections[] = 'a/' . $item['target'];
 						}
 					}
-					// echo "Section: $section\n";
-					if ( $section == 'a' || $section == 'aaaa' || substr( $section, 0, 2 ) === 'a/' ) {
+
+					if ( 'a' === $section || 'aaaa' === $section || 'a/' === substr( $section, 0, 2 ) ) {
 						list ( $_, $_domain ) = explode( '/', "$section/$domain" );
 						if ( IP::is_4( $ip ) ) {
 							$m_ip = self::dns_get_record( $_domain, DNS_A, true );
@@ -558,7 +625,7 @@ class Plugin {
 								return true;
 							}
 						}
-					} elseif ( $section == 'mx' ) {
+					} elseif ( 'mx' === $section ) {
 						$mx = self::dns_get_record( $domain, DNS_MX );
 						foreach ( $mx as $mx_record ) {
 							$target = $mx_record['target'];
@@ -611,6 +678,15 @@ class Plugin {
 		return false;
 	}
 
+	/**
+	 * Get the DNS record (cached) for a given domain.
+	 *
+	 * @param string $lookup        The domain to lookup.
+	 * @param int    $filter        A DNS_* constant indicating which records you are looking for, DNS_A, DNS_TXT etx.
+	 * @param bool   $single_output Return a single value (only works for DNS_A and DNS_A6/DNS_AAAA.
+	 *
+	 * @return array|mixed
+	 */
 	public static function dns_get_record( $lookup, $filter, $single_output = null ) {
 		$transient_name = "dns_{$lookup}__TYPE{$filter}__cache";
 		$transient      = get_site_transient( $transient_name );
@@ -619,11 +695,11 @@ class Plugin {
 			$ttl       = count( $transient ) > 0 && is_array( $transient[0] && isset( $transient[0]['ttl'] ) ) ? $transient[0]['ttl'] : 3600;
 			set_site_transient( $transient_name, $transient, $ttl );
 		}
-		if ( $single_output ) { // todo: most records are repeatable, should return array, calling code should proces array
-			if ( $filter == DNS_A ) {
+		if ( $single_output ) { // Most records are repeatable, should return array, calling code should process array.
+			if ( DNS_A === $filter ) {
 				return $transient[0]['ip'];
 			}
-			if ( $filter == DNS_A6 ) {
+			if ( DNS_A6 === $filter ) {
 				return $transient[0]['ipv6'];
 			}
 		}
@@ -631,16 +707,28 @@ class Plugin {
 		return $transient;
 	}
 
+	/**
+	 * Test: this email address matches the domain of this website.
+	 *
+	 * @param string $email The email address to test.
+	 *
+	 * @return bool
+	 */
 	public static function this_email_matches_website_domain( $email ) {
 		$url  = get_bloginfo( 'url' );
-		$host = parse_url( $url, PHP_URL_HOST );
+		$host = wp_parse_url( $url, PHP_URL_HOST );
 		$host = preg_replace( '/^www[0-9]*\./', '', $host );
 
 		return ( preg_match( '/@' . $host . '$/', $email ) );
 	}
 
+	/**
+	 * Implementation of action  wp_mailer_init .
+	 *
+	 * @param WPES_PHPMailer $mailer The PHPMailer object, either PHPMailer or PHPMailer\PHPMailer\PHPMailer ... Thank you WordPress...
+	 */
 	public static function action_phpmailer_init( &$mailer ) {
-		/** @var WPES_PHPMailer $mailer */
+		// @phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 		$config = self::get_config();
 
 		if ( isset( $config['smtp']['timeout'] ) ) {
@@ -649,10 +737,10 @@ class Plugin {
 
 		if ( $config['smtp'] ) {
 			$mailer->IsSMTP();
-			list( $host, $port ) = explode( ':', $config['smtp']['host'] . ':-1' );
-			$mailer->Host = $host;
-			if ( $port > 0 ) {
-				$mailer->Port = $port;
+
+			$mailer->Host = $config['smtp']['host'];
+			if ( $config['smtp']['port'] > 0 ) {
+				$mailer->Port = $config['smtp']['port'];
 			}
 			if ( ! empty( $config['smtp']['port'] ) ) {
 				$mailer->Port = $config['smtp']['port'];
@@ -669,7 +757,7 @@ class Plugin {
 				} else {
 					$mailer->SMTPAutoTLS = false;
 				}
-				if ( ( defined( 'WPES_ALLOW_SSL_SELF_SIGNED' ) && true === WPES_ALLOW_SSL_SELF_SIGNED ) || substr( isset( $config['smtp']['secure'] ) ? $config['smtp']['secure'] : '', - 1, 1 ) == '-' ) {
+				if ( ( defined( 'WPES_ALLOW_SSL_SELF_SIGNED' ) && true === WPES_ALLOW_SSL_SELF_SIGNED ) || '-' === substr( $config['smtp']['secure'] ?? '', - 1, 1 ) ) {
 					$mailer->SMTPOptions = [
 						'ssl' => [
 							'verify_peer'       => false,
@@ -681,14 +769,14 @@ class Plugin {
 			}
 		}
 
-		self::log( 'MAILER ' . __LINE__ . ' set FROM: ' . self::wp_mail_from() . '' );
+		self::log( 'MAILER ' . __LINE__ . ' set FROM: ' . self::wp_mail_from() );
 		$mailer->Sender = self::wp_mail_from();
 
 		$mailer->Body = self::preserve_weird_url_display( $mailer->Body );
 
 		if ( $config['is_html'] ) {
 			$check_encoding_result = false;
-			if ( $config['content_precode'] == 'auto' ) {
+			if ( 'auto' === $config['content_precode'] ) {
 				$encoding_table = explode( ',', self::ENCODINGS );
 				foreach ( $encoding_table as $encoding ) {
 					$check_encoding_result = mb_check_encoding( $mailer->Body, $encoding );
@@ -722,45 +810,46 @@ class Plugin {
 			if ( false !== $btag ) {
 				$bodystart = strpos( $body, '>', $btag );
 				$bodytag   = substr( $body, $btag, $bodystart - $btag + 1 );
+
 				list( $body, $junk ) = explode( '</body', $body );
 				list( $junk, $body ) = explode( $bodytag, $body );
 			}
 
-			// images to alt tags
-			// example; <img src="/logo.png" alt="company logo" /> becomes  company logo
+			// images to alt tags.
+			// example; <img src="/logo.png" alt="company logo" /> becomes  company logo.
 			$body = preg_replace( "/<img.+alt=([\"'])(.+)(\\1).+>/U", "\\2", $body );
 
-			// links to link-text+url
-			// example; <a href="http://nu.nl">Go to NU.nl</a> becomes:  Go to Nu.nl ( http://nu.nl )
+			// links to link-text+url.
+			// example; <a href="http://nu.nl">Go to NU.nl</a> becomes:  Go to Nu.nl ( http://nu.nl ).
 			$body = preg_replace( "/<a.+href=([\"'])(.+)(\\1).+>([^<]+)<\/a>/U", "\\4 (\\2)", $body );
 
-			// remove all HTML except line breaks and line-break-ish
+			// remove all HTML except line breaks and line-break-ish.
 			$body = strip_tags( $body, '<br><tr><li>' );
 
-			// replace all forms of breaks, list items and table row endings to new-lines
+			// replace all forms of breaks, list items and table row endings to new-lines.
 			$body = preg_replace( '/<br[\/ ]*>/Ui', "\n", $body );
 			$body = preg_replace( '/<\/(li|tr)>/Ui', '</\1>' . "\n\n", $body );
 
-			// remove all HTML
+			// remove all HTML.
 			$body = strip_tags( $body, '' );
 
-			// remove all carriage return symbols
+			// remove all carriage return symbols.
 			$body = str_replace( "\r", '', $body );
 
-			// convert non-breaking-space to regular space
+			// convert non-breaking-space to regular space.
 			$body = strtr( $body, [ '&nbsp;' => ' ' ] );
 
-			// remove white-space at beginning and end of the lines
+			// remove white-space at beginning and end of the lines.
 			$body = explode( "\n", $body );
 			foreach ( $body as $i => $line ) {
 				$body[ $i ] = trim( $line );
 			}
 			$body = implode( "\n", $body );
 
-			// remove newlines where more than two (two newlines make one blank line, remember that)
+			// remove newlines where more than two (two newlines make one blank line, remember that).
 			$body = preg_replace( "/[\n]{2,}/", "\n\n", $body );
 
-			// set the alternate body
+			// set the alternate body.
 			$mailer->AltBody = $body;
 
 			if ( $config['do_shortcodes'] ) {
@@ -768,7 +857,9 @@ class Plugin {
 			}
 		}
 
-		if ( $_POST && isset( $_POST['form_id'] ) && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == __( 'Send sample mail', 'wpes' ) ) {
+		// Check if this is a debug request;.
+		// @phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( $_POST && isset( $_POST['form_id'] ) && 'wp-email-essentials' === $_POST['form_id'] && __( 'Send sample mail', 'wpes' ) === $_POST['op'] ) {
 			$mailer->Timeout   = 5;
 			$mailer->SMTPDebug = 2;
 		}
@@ -777,36 +868,54 @@ class Plugin {
 
 		$from = self::wp_mail_from();
 
-		// S/MIME Signing
-		if ( $config['enable_smime'] && $id = self::get_smime_identity( $from ) ) {
-			list( $crt, $key, $pass ) = $id;
-			$mailer->sign( $crt, $key, $pass );
+		// S/MIME Signing .
+		if ( $config['enable_smime'] ) {
+			$id = self::get_smime_identity( $from );
+			if ( $id ) {
+				list( $crt, $key, $pass ) = $id;
+
+				$mailer->sign( $crt, $key, $pass );
+			}
 		}
 
-		// DKIM Signing
-		if ( $config['enable_dkim'] && $id = self::get_dkim_identity( $from ) ) {
-			list( $crt, $key, $pass, $selector, $domain ) = $id;
-			$mailer->DKIM_domain     = $domain;
-			$mailer->DKIM_private    = $key;
-			$mailer->DKIM_selector   = $selector; // FQDN? just selector? . '_domainkey.';
-			$mailer->DKIM_passphrase = $pass;
-			$mailer->DKIM_identity   = $from;
+		// DKIM Signing .
+		if ( $config['enable_dkim'] ) {
+			$id = self::get_dkim_identity( $from );
+			if ( $id ) {
+				list( $crt, $key, $pass, $selector, $domain ) = $id;
+
+				$mailer->DKIM_domain     = $domain;
+				$mailer->DKIM_private    = $key;
+				$mailer->DKIM_selector   = $selector;
+				$mailer->DKIM_passphrase = $pass;
+				$mailer->DKIM_identity   = $from;
+			}
 		}
 
-		// DEBUG output
-
-		if ( $_POST && isset( $_POST['form_id'] ) && $_POST['form_id'] == 'wp-email-essentials' && $_POST['op'] == __( 'Print debug output of sample mail', 'wpes' ) ) {
+		// DEBUG output .
+		// @phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( $_POST && isset( $_POST['form_id'] ) && 'wp-email-essentials' === $_POST['form_id'] && __( 'Print debug output of sample mail', 'wpes' ) === $_POST['op'] ) {
 			$mailer->SMTPDebug = true;
-			print '<h2>' . __( 'Dump of PHP Mailer object', 'wpes' ) . '</h2><pre>';
+			print '<h2>' . esc_html__( 'Dump of PHP Mailer object', 'wpes' ) . '</h2><pre>';
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_dump
 			var_dumP( $mailer );
 			exit;
 		}
+
+		// @phpcs:enable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 	}
 
+	/**
+	 * Fix WordPress' stupid decision to show an url wrapped in < > ... I mean, c'mon!.
+	 *
+	 * @param string $html The HTML to fix.
+	 *
+	 * @return string
+	 */
 	private static function preserve_weird_url_display( $html ) {
 		if ( preg_match( '/<(http(s)?:\/\/[^>]+)>/', $html, $m ) ) {
 			$url = $m[1];
-			if ( defined( 'WPES_CLEAN_LOGIN_RESET_URL' ) && WPES_CLEAN_LOGIN_RESET_URL === true ) {
+			if ( defined( 'WPES_CLEAN_LOGIN_RESET_URL' ) && true === WPES_CLEAN_LOGIN_RESET_URL ) {
 				return str_replace( '<' . $url . '>', $url, $html );
 			}
 
@@ -816,22 +925,31 @@ class Plugin {
 		return $html;
 	}
 
-
+	/**
+	 * Convert a body to HTML, if not already HTML.
+	 *
+	 * @param string         $might_be_text The email body that might be text, might be HTML.
+	 * @param string         $subject       The subject.
+	 * @param WPES_PHPMailer $mailer        The PHP_Mailer object.
+	 * @param string         $charset       A charset.
+	 *
+	 * @return mixed|string
+	 */
 	public static function maybe_convert_to_html( $might_be_text, $subject, $mailer, $charset = 'utf-8' ) {
 		$html_preg = '<(br|a|p|body|table|div|span|body|html)';
 		if ( preg_match( "/$html_preg/", $might_be_text ) ) {
-			// probably html
+			// probably html.
 			$should_be_html = $might_be_text;
 		} else {
 			$should_be_html = nl2br( trim( $might_be_text ) );
 		}
 
-		// should have some basic HTML now, otherwise, add a P
+		// should have some basic HTML now, otherwise, add a P.
 		if ( ! preg_match( "/$html_preg/", $should_be_html ) ) {
 			$should_be_html = '<p>' . $should_be_html . '</p>';
 		}
 
-		// now check for HTML evelope
+		// now check for HTML envelope.
 		if ( false === strpos( $should_be_html, '<html' ) ) {
 
 			$should_be_html = self::build_html( $mailer, $subject, $should_be_html, $charset );
@@ -840,10 +958,18 @@ class Plugin {
 		return $should_be_html;
 	}
 
+	/**
+	 * Build HTML for sending the email.
+	 *
+	 * @param WPES_PHPMailer $mailer         The mailer object.
+	 * @param string         $subject        The subject.
+	 * @param string         $should_be_html The email body which now should be HTML.
+	 * @param string         $charset        The charset.
+	 *
+	 * @return string
+	 */
 	public static function build_html( $mailer, $subject, $should_be_html, $charset = 'utf-8' ) {
-		$config = self::get_config();
-
-		// at this stage we will convert raw HTML part to a full HTML page
+		// at this stage we will convert raw HTML part to a full HTML page.
 
 		// you can define a file  wpes-email-template.php  in your theme to define the filters.
 		locate_template( [ 'wpes-email-template.php' ], true );
@@ -889,16 +1015,38 @@ class Plugin {
 		return $should_be_html;
 	}
 
-	// this is triggered when CF7 has option "send as html" on, but it interferes with the rest of WPES.
-	public static function wpcf7_mail_html_header( $header, WPCF7_Mail $wpcf7_mail ) {
+
+	/**
+	 * This is triggered when CF7 has option "send as html" on, but it interferes with the rest of WP_Email_Essentials.
+	 *
+	 * @optionalparam string      $header     WPCF7 Email header.
+	 * @optionalparam \WPCF7_Mail $wpcf7_mail The WPCF7_Mail object.
+	 *
+	 * @return string
+	 */
+	public static function wpcf7_mail_html_header() {
 		return '';
 	}
 
-	// this is triggered when CF7 has option "send as html" on, but it interferes with the rest of WPES.
-	public static function wpcf7_mail_html_footer( $footer, WPCF7_Mail $wpcf7_mail ) {
+	/**
+	 * This is triggered when CF7 has option "send as html" on, but it interferes with the rest of WP_Email_Essentials.
+	 *
+	 * @optionalparam string      $footer     WPCF7 Email footer.
+	 * @optionalparam \WPCF7_Mail $wpcf7_mail The WPCF7_Mail object.
+	 *
+	 * @return string
+	 */
+	public static function wpcf7_mail_html_footer() {
 		return '';
 	}
 
+	/**
+	 * Memory cell: the WP-Mail From: address.
+	 *
+	 * @param string $from The address to remember.
+	 *
+	 * @return mixed
+	 */
 	public static function wp_mail_from( $from = null ) {
 		static $store;
 		if ( $from ) {
@@ -908,6 +1056,13 @@ class Plugin {
 		return $store;
 	}
 
+	/**
+	 * Memory cell: the WP-Mail From: name.
+	 *
+	 * @param string $from The name to remember.
+	 *
+	 * @return mixed
+	 */
 	public static function wp_mail_from_name( $from = null ) {
 		static $store;
 		if ( $from ) {
@@ -917,14 +1072,31 @@ class Plugin {
 		return $store;
 	}
 
-	public static function filter_wp_mail_from( $from ) {
+	/**
+	 * Implementation of filter  wp_mail_from. Returns the remembered From address.
+	 *
+	 * @return string
+	 */
+	public static function filter_wp_mail_from() {
 		return self::wp_mail_from();
 	}
 
-	public static function filter_wp_mail_from_name( $from ) {
+	/**
+	 * Implementation of filter  wp_mail_from. Returns the remembered From name.
+	 *
+	 * @return string
+	 */
+	public static function filter_wp_mail_from_name() {
 		return self::wp_mail_from_name();
 	}
 
+	/**
+	 * Get the module configuration.
+	 *
+	 * @param bool $raw Get raw data?.
+	 *
+	 * @return array|mixed
+	 */
 	public static function get_config( $raw = false ) {
 		$defaults = [
 			'smtp'                 => false,
@@ -949,12 +1121,12 @@ class Plugin {
 		if ( ! $raw ) {
 			$settings = apply_filters( 'wpes_settings', $settings );
 
-			$settings['certificate_folder'] = isset( $settings['certfolder'] ) ? $settings['certfolder'] : '';
+			$settings['certificate_folder'] = $settings['certfolder'] ?? '';
 			if ( '/' !== substr( $settings['certificate_folder'], 0, 1 ) ) {
 				$settings['certificate_folder'] = rtrim( self::root_path(), '/' ) . '/' . $settings['certificate_folder'];
 			}
 
-			$settings['dkim_certificate_folder'] = isset( $settings['dkimfolder'] ) ? $settings['dkimfolder'] : '';
+			$settings['dkim_certificate_folder'] = $settings['dkimfolder'] ?? '';
 			if ( '/' !== substr( $settings['dkim_certificate_folder'], 0, 1 ) ) {
 				$settings['dkim_certificate_folder'] = rtrim( self::root_path(), '/' ) . '/' . $settings['dkim_certificate_folder'];
 			}
@@ -964,6 +1136,7 @@ class Plugin {
 
 		if ( $return['smtp'] && false !== strpos( $return['smtp']['host'], ':' ) ) {
 			list ( $wpes_host, $wpes_port ) = explode( ':', $return['smtp']['host'] );
+
 			if ( is_numeric( $wpes_port ) ) {
 				$return['smtp']['port'] = $wpes_port;
 				$return['smtp']['host'] = $wpes_host;
@@ -973,6 +1146,14 @@ class Plugin {
 		return $return;
 	}
 
+	/**
+	 * Write new configuration data.
+	 *
+	 * @param array $values The values to write.
+	 * @param bool  $raw    Write raw?.
+	 *
+	 * @return bool|void
+	 */
 	private static function set_config( $values, $raw = false ) {
 		if ( $raw ) {
 			return update_option( 'wp-email-essentials', $values );
@@ -1027,7 +1208,7 @@ class Plugin {
 
 	public static function get_hostname_by_blogurl() {
 		$url = get_bloginfo( 'url' );
-		$url = parse_url( $url );
+		$url = wp_parse_url( $url );
 
 		return $url['host'];
 	}
@@ -1113,7 +1294,7 @@ class Plugin {
 		$email_array['name'] = trim( stripslashes( $email_array['name'] ), '"' );
 		if ( version_compare( get_bloginfo( 'version' ), '4.5', '<=' ) ) {
 			// this will escape all quotes and encapsulate with quotes, for 4.5 and older
-			$email_array['name'] = json_encode( $email_array['name'] );
+			$email_array['name'] = wp_json_encode( $email_array['name'] );
 		}
 		// so NO QUOTES HERE, they are there where needed.
 		$return = trim( sprintf( '%s <%s>', $email_array['name'], $email_array['email'] ) );
@@ -1138,7 +1319,7 @@ class Plugin {
 			switch ( $_POST['op'] ) {
 				case __( 'Save settings', 'wpes' ):
 					$config  = self::get_config();
-					$host    = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
+					$host    = wp_parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
 					$host    = preg_replace( '/^www[0-9]*\./', '', $host );
 					$defmail = self::wp_mail_from( $_POST['settings']['from_email'] );
 					if ( 'default' == $_POST['settings']['make_from_valid'] && ! self::i_am_allowed_to_send_in_name_of( $defmail ) ) {
@@ -1802,7 +1983,7 @@ class Plugin {
 	}
 
 	public static function maybe_inject_admin_settings() {
-		$host = parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
+		$host = wp_parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
 		if ( basename( $_SERVER['PHP_SELF'] ) == 'options-general.php' && ! @$_GET['page'] ) {
 			?>
 			<script>
@@ -1837,7 +2018,7 @@ class Plugin {
 					setTimeout(function () {
 						var i = jQuery("#wpcf7-mail-sender,#wpcf7-mail-2-sender");
 						if (i.length > 0) {
-							var t = <?php print json_encode( $text ); ?>,
+							var t = <?php print wp_json_encode( $text ); ?>,
 								e = i.siblings('.config-error');
 
 							if (e.length > 0) {
@@ -1865,7 +2046,7 @@ class Plugin {
 					var defaultify = function (rfc) {
 						var host = ((document.location.host).replace(/^www\./, ''));
 						var email = getEmail(rfc);
-						var newemail = <?php print json_encode( self::wp_mail_from( $config['from_email'] ) ); ?>;
+						var newemail = <?php print wp_json_encode( self::wp_mail_from( $config['from_email'] ) ); ?>;
 						if ((new RegExp('@' + host)).test(newemail))
 							return rfc.replace(email, newemail);
 						else
