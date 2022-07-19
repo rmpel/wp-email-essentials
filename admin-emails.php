@@ -1,20 +1,30 @@
 <?php
+/**
+ * View: email log.
+ *
+ * @package WP_Email_Essentials
+ */
+
+namespace WP_Email_Essentials;
+
 if ( ! current_user_can( 'manage_options' ) ) {
-	wp_die( __( 'Uh uh uh! You didn\'t say the magic word!', 'wpes' ) );
+	wp_die( wp_kses_post( __( 'Uh uh uh! You didn\'t say the magic word!', 'wpes' ) ) );
 }
 global $current_user, $wpdb;
 
-$c      = WP_Email_Essentials::get_config();
-$ofield = isset( $_GET['_ofield'] ) ? $_GET['_ofield'] : 'ID';
 
-if ( ! in_array( $ofield, array( 'subject', 'sender', 'thedatetime', 'recipient' ) ) ) {
-	$ofield = 'ID';
+// @phpcs:disable WordPress.Security.NonceVerification.Recommended
+$wpes_view_order_field = $_GET['_ofield'] ?? 'ID';
+
+if ( ! in_array( $wpes_view_order_field, [ 'subject', 'sender', 'thedatetime', 'recipient' ], true ) ) {
+	$wpes_view_order_field = 'ID';
 }
 
-$order = isset( $_GET['_order'] ) ? ( $_GET['_order'] == 'DESC' ? 'DESC' : 'ASC' ) : ( $ofield == 'ID' ? 'DESC' : 'ASC' );
-$limit = isset( $_GET['_limit'] ) && intval( $_GET['_limit'] ) > 0 ? intval( $_GET['_limit'] ) : 25;
-$page  = isset( $_GET['_page'] ) && intval( $_GET['_page'] ) > 0 ? intval( $_GET['_page'] ) : 0;
-$start = $page * $limit;
+$wpes_view_order_direction = isset( $_GET['_order'] ) ? ( 'DESC' === $_GET['_order'] ? 'DESC' : 'ASC' ) : ( 'ID' === $wpes_view_order_field ? 'DESC' : 'ASC' );
+$wpes_view_items_per_page  = isset( $_GET['_limit'] ) && intval( $_GET['_limit'] ) > 0 ? intval( $_GET['_limit'] ) : 25;
+$wpes_view_current_page    = isset( $_GET['_page'] ) && intval( $_GET['_page'] ) > 0 ? intval( $_GET['_page'] ) : 0;
+$wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page;
+// @phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 ?>
 <div class="wrap">
@@ -169,44 +179,44 @@ $start = $page * $limit;
 	</style>
 	<h2>WP-Email-Essentials - Email history</h2>
 	<?php
-	if ( WP_Email_Essentials::$message ) {
-		print '<div class="updated"><p>' . WP_Email_Essentials::$message . '</p></div>';
+	if ( Plugin::$message ) {
+		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
 	}
 	?>
 	<?php
-	if ( WP_Email_Essentials::$error ) {
-		print '<div class="error"><p>' . WP_Email_Essentials::$error . '</p></div>';
+	if ( Plugin::$error ) {
+		print '<div class="error"><p>' . wp_kses_post( Plugin::$error ) . '</p></div>';
 	}
 	?>
 	<?php
-	$total = $wpdb->get_var( "SELECT COUNT(ID) as thecount FROM {$wpdb->prefix}wpes_hist" );
-	if ( $start > $total ) {
-		$start = 0;
+	$wpes_view_total_nr_items = $wpdb->get_var( "SELECT COUNT(ID) as thecount FROM {$wpdb->prefix}wpes_hist" );
+	if ( $wpes_view_first_item > $wpes_view_total_nr_items ) {
+		$wpes_view_first_item = 0;
 	}
-	$pages     = ceil( $total / $limit );
-	$next_page = $page + 1;
-	$prev_page = $page - 1;
-	if ( $prev_page < 0 ) {
-		$prev_page = false;
+	$wpes_view_nr_pages  = ceil( $wpes_view_total_nr_items / $wpes_view_items_per_page );
+	$wpes_view_next_page = $wpes_view_current_page + 1;
+	$wpes_view_prev_page = $wpes_view_current_page - 1;
+	if ( $wpes_view_prev_page < 0 ) {
+		$wpes_view_prev_page = false;
 	}
-	if ( $next_page > $pages - 1 ) {
-		$next_page = false;
+	if ( $wpes_view_next_page > $wpes_view_nr_pages - 1 ) {
+		$wpes_view_next_page = false;
 	}
 	?>
 	<div class="pager">
 		<span>
 		<?php
-		if ( false !== $prev_page ) {
+		if ( false !== $wpes_view_prev_page ) {
 			?>
 			<a
-				href="<?php print esc_attr( add_query_arg( '_page', $prev_page ) ); ?>">
+				href="<?php print esc_attr( add_query_arg( '_page', $wpes_view_prev_page ) ); ?>">
 					&lt; Previous page</a> <?php } ?></span>
 		<span>
 		<?php
-		if ( false !== $next_page ) {
+		if ( false !== $wpes_view_next_page ) {
 			?>
 			<a
-				href="<?php print esc_attr( add_query_arg( '_page', $next_page ) ); ?>">
+				href="<?php print esc_attr( add_query_arg( '_page', $wpes_view_next_page ) ); ?>">
 					&lt; Next page</a> <?php } ?></span>
 	</div>
 	<div id="mail-viewer">
@@ -214,35 +224,40 @@ $start = $page * $limit;
 			<ul id="mail-index">
 				<li id="email-header">
 					<span class="eml"><span class="dashicons dashicons-email-alt"></span></span>
-					<span class="thedatetime"><?php _e( 'Date/Time', 'wpes' ); ?></span>
-					<span class="recipient"><?php _e( 'Recipient', 'wpes' ); ?></span>
-					<span class="sender"><?php _e( 'Sender', 'wpes' ); ?></span>
-					<span class="subject"><?php _e( 'Subject', 'wpes' ); ?></span>
-					<span class="status"><?php _e( 'Status', 'wpes' ); ?></span>
+					<span class="thedatetime"><?php esc_html_e( 'Date/Time', 'wpes' ); ?></span>
+					<span class="recipient"><?php esc_html_e( 'Recipient', 'wpes' ); ?></span>
+					<span class="sender"><?php esc_html_e( 'Sender', 'wpes' ); ?></span>
+					<span class="subject"><?php esc_html_e( 'Subject', 'wpes' ); ?></span>
+					<span class="status"><?php esc_html_e( 'Status', 'wpes' ); ?></span>
 				</li>
 				<?php
-				$list  = $wpdb->get_results( "SELECT subject, sender, thedatetime, recipient, ID, body, alt_body, headers, status, `debug`, errinfo, eml FROM {$wpdb->prefix}wpes_hist ORDER BY $ofield $order LIMIT $start,$limit" );
-				$stati = array(
-					__( 'Sent ??' ),
-					__( 'Sent Ok' ),
-					__( 'Failed' ),
+				// @phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- All data is sanitized before injection.
+				$wpes_view_emails_list = $wpdb->get_results( "SELECT subject, sender, thedatetime, recipient, ID, body, alt_body, headers, status, `debug`, errinfo, eml FROM {$wpdb->prefix}wpes_hist ORDER BY $wpes_view_order_field $wpes_view_order_direction LIMIT $wpes_view_first_item,$wpes_view_items_per_page" );
+				$wpes_view_email_stati = array(
+					__( 'Sent ??', 'wpes' ),
+					__( 'Sent Ok', 'wpes' ),
+					__( 'Failed', 'wpes' ),
 				);
-				foreach ( $list as $item ) {
+				foreach ( $wpes_view_emails_list as $wpes_view_email ) {
 					?>
-					<li class="email-item" id="email-<?php print $item->ID; ?>">
-					<span class="eml">
-					<?php
-					if ( $item->eml ) {
-						print '<a href="' . add_query_arg( 'download_eml', $item->ID ) . '" class="dashicons dashicons-download"></a>';
-					}
-					?>
+					<li class="email-item" id="email-<?php print esc_attr( $wpes_view_email->ID ); ?>">
+						<span class="eml">
+						<?php
+						if ( $wpes_view_email->eml ) {
+							print '<a href="' . esc_attr( add_query_arg( 'download_eml', $wpes_view_email->ID ) ) . '" class="dashicons dashicons-download"></a>';
+						}
+						?>
 						</span>
-						<span class="thedatetime"><?php print esc_html( $item->thedatetime ); ?>&nbsp;</span>
-						<span class="recipient"><?php print esc_html( $item->recipient ); ?>&nbsp;</span>
-						<span class="sender"><?php print esc_html( $item->sender ); ?>&nbsp;</span>
-						<span class="subject"><?php print esc_html( $item->subject ); ?>&nbsp;</span>
 						<span
-							class="status"><?php print $stati[ $item->status ]; ?> <?php print $item->errinfo; ?>&nbsp;</span>
+							class="thedatetime"><?php print esc_html( $wpes_view_email->thedatetime ); ?>&nbsp;</span>
+						<span
+							class="recipient"><?php print esc_html( $wpes_view_email->recipient ); ?>&nbsp;</span>
+						<span
+							class="sender"><?php print esc_html( $wpes_view_email->sender ); ?>&nbsp;</span>
+						<span
+							class="subject"><?php print esc_html( $wpes_view_email->subject ); ?>&nbsp;</span>
+						<span
+							class="status"><?php print esc_html( $wpes_view_email_stati[ $wpes_view_email->status ] ); ?> <?php print wp_kses_post( $wpes_view_email->errinfo ); ?>&nbsp;</span>
 					</li>
 					<?php
 				}
@@ -251,35 +266,49 @@ $start = $page * $limit;
 		</div>
 		<div id="mail-data-viewer">
 			<?php
-			$mailer = new WPES_PHPMailer();
-			$config = WP_Email_Essentials::get_config();
-			$css    = apply_filters_ref_array( 'wpes_css', array( '', &$mailer ) );
+			$wpes_mailer = new WPES_PHPMailer();
+			$wpes_css    = apply_filters_ref_array( 'wpes_css', array( '', &$wpes_mailer ) );
 
-			foreach ( $list as $item ) {
-				$mailer->Subject = $item->subject;
-				$item->debug     = json_decode( $item->debug );
-				if ( ! $item->debug ) {
-					$item->debug = new stdClass();
+			foreach ( $wpes_view_emails_list as $wpes_view_email ) {
+				// @phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- phpMailer thing. cannot help it.
+				$wpes_mailer->Subject   = $wpes_view_email->subject;
+				$wpes_view_email->debug = json_decode( $wpes_view_email->debug );
+				if ( ! $wpes_view_email->debug ) {
+					$wpes_view_email->debug = new \stdClass();
 				}
-				$item->debug = json_encode( $item->debug, JSON_PRETTY_PRINT );
-				?>
-			<div class="email-data" id="email-data-<?php print $item->ID; ?>">
-				<span class="headers"><pre><?php print esc_html( $item->headers ); ?></pre></span>
-				<span class="alt_body"><pre><?php print nl2br( $item->alt_body ); ?></pre></span>
-				<span class="body"><iframe
-						class="autofit" width="100%" height="100%" border="0" frameborder="0"
-						src="data:text/html;headers=<?php print urlencode( 'Content-Security-Policy: script-src none;' ); ?>;base64,<?php print base64_encode( str_ireplace( array(
+				$wpes_view_email->debug = wp_json_encode( $wpes_view_email->debug, JSON_PRETTY_PRINT );
+
+				// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- how else am I supposed to base64_encode?.
+				$wpes_email_data_base64 = base64_encode(
+					str_ireplace(
+						[
 							'onload',
 							'<script',
-							'</script>'
-						), array(
+							'</script>',
+						],
+						[
 							'nonload',
 							'[SCRIPT',
-							'[/SCRIPT]'
-						), WP_Email_Essentials::maybe_convert_to_html( $item->body, $item->subject, $mailer ) ) ); ?>"></iframe></span>
-				<span class="debug"><pre><?php print esc_html( $item->debug ); ?></pre></span>
-				</div><?php
-			} ?>
+							'[/SCRIPT]',
+						],
+						Plugin::maybe_convert_to_html( $wpes_view_email->body, $wpes_view_email->subject, $wpes_mailer )
+					)
+				);
+				?>
+				<div class="email-data" id="email-data-<?php print esc_attr( $wpes_view_email->ID ); ?>">
+					<span class="headers"><pre><?php print esc_html( $wpes_view_email->headers ); ?></pre></span>
+					<span class="alt_body"><pre><?php print wp_kses_post( nl2br( $wpes_view_email->alt_body ) ); ?></pre></span>
+					<span class="body">
+					<iframe
+						class="autofit" width="100%" height="100%" border="0" frameborder="0"
+						src="data:text/html;headers=<?php print rawurlencode( 'Content-Security-Policy: script-src none;' ); ?>;base64,<?php print $wpes_email_data_base64; /* @phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>">
+					</iframe>
+				</span>
+					<span class="debug"><pre><?php print esc_html( $wpes_view_email->debug ); ?></pre></span>
+				</div>
+				<?php
+			}
+			?>
 		</div><!-- /mdv -->
 	</div><!-- /mv -->
 	<p>*) A sender with an asterisk is rewritten to the site default sender and used as Reply-To address.</p>

@@ -2,13 +2,23 @@
 /**
  * Class for IP operations compatible with all PHP versions >= php 5.5.
  *
- * @package RMPel\Tools
+ * @package WP_Email_Essentials
  */
 
-namespace RMPel\Tools;
+namespace WP_Email_Essentials;
 
+/**
+ * The PHP 5.5+ version of the class, uses a generator to slightly improves memory consumption.
+ */
 class IP_55 extends IP_54 {
-	// using a generator slightly improves memory consumption
+	/**
+	 * Does the IP ($ip) match the CIRD ($cidr).
+	 *
+	 * @param string $ip   The IPv4 address.
+	 * @param string $cidr The CIDR to match against.
+	 *
+	 * @return bool
+	 */
 	public static function ip4_match_cidr( $ip, $cidr ) {
 		list( $cidr_base, $prefix ) = explode( '/', $cidr );
 
@@ -20,7 +30,7 @@ class IP_55 extends IP_54 {
 			}
 		};
 		foreach ( $generator() as $_ip ) {
-			if ( $_ip == long2ip( ip2long( $ip ) ) ) {
+			if ( long2ip( ip2long( $ip ) ) === $_ip ) {
 				return true;
 			}
 		}

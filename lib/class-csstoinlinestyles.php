@@ -1,5 +1,4 @@
 <?php
-
 /**
  * CSS to Inline Styles class
  *
@@ -8,6 +7,12 @@
  * @copyright      Copyright (c), Tijs Verkoyen. All rights reserved.
  * @license        BSD License
  */
+
+namespace WP_Email_Essentials;
+
+use DOMDocument;
+use DOMXPath;
+
 class CssToInlineStyles {
 	/**
 	 * The CSS to use
@@ -359,7 +364,7 @@ class CssToInlineStyles {
 
 			// validate query
 			if ( $query === false ) {
-				return;
+				return false;
 			}
 
 			// search elements
