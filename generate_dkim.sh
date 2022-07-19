@@ -22,4 +22,4 @@ echo "Writing selector to file [$DOMAIN_TLD.selector]"
 echo "$SELECTOR" > $DOMAIN_TLD.selector
 KEYCONTENT=$(cat $DOMAIN_TLD.crt | grep -v 'PUBLIC KEY' | tr --delete '\n')
 echo "Generating DNS record for $SELECTOR._domainkey.$DOMAIN_TLD. [$DOMAIN_TLD.dns-record.txt]"
-echo $SELECTOR'._domainkey.$DOMAIN_TLD. IN TXT "v=DKIM1; k=rsa; p='$KEYCONTENT'"' > $DOMAIN_TLD.dns-record.txt
+echo $SELECTOR'._domainkey.'$DOMAIN_TLD'. IN TXT "v=DKIM1; k=rsa; p='$KEYCONTENT'"' > $DOMAIN_TLD.dns-record.txt
