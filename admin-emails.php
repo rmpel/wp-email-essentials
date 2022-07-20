@@ -22,6 +22,11 @@ $start = $page * $limit;
 		<br/>
 	</div>
 	<style>
+			.pager {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+			}
 			#mail-viewer {
 				position: relative;
 				border: 1px solid grey;
@@ -195,7 +200,7 @@ $start = $page * $limit;
 					&lt; Previous page</a> <?php } ?></span>
 		<span><?php if ( false !== $next_page ) { ?><a
 				href="<?php print esc_attr( add_query_arg( '_page', $next_page ) ); ?>">
-					&lt; Next page</a> <?php } ?></span>
+					Next page &gt;</a> <?php } ?></span>
 	</div>
 	<div id="mail-viewer">
 		<div class="top-panel">

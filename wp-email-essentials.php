@@ -7,7 +7,7 @@ Plugin URI: https://github.com/clearsite/wp-email-essentials
 Upstream URI: https://github.com/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 3.2.8
+Version: 3.2.9
 */
 
 if ( ! class_exists( 'CIDR' ) ) {
