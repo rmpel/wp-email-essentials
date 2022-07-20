@@ -71,15 +71,15 @@ class History {
 				update_option( 'wpes_hist_rev', $hash );
 			}
 
-			add_action( 'phpmailer_init', array( History::class, 'phpmailer_init' ), 10000000000 );
-			add_filter( 'wp_mail', array( History::class, 'wp_mail' ), 10000000000 );
-			add_action( 'wp_mail_failed', array( History::class, 'wp_mail_failed' ), 10000000000 );
+			add_action( 'phpmailer_init', [ self::class, 'phpmailer_init' ], 10000000000 );
+			add_filter( 'wp_mail', [ self::class, 'wp_mail' ], 10000000000 );
+			add_action( 'wp_mail_failed', [ self::class, 'wp_mail_failed' ], 10000000000 );
 
-			add_action( 'pre_handle_404', array( History::class, 'handle_tracker' ), ~PHP_INT_MAX );
+			add_action( 'pre_handle_404', [ self::class, 'handle_tracker' ], ~PHP_INT_MAX );
 
-			add_action( 'shutdown', array( History::class, 'shutdown' ) );
+			add_action( 'shutdown', [ self::class, 'shutdown' ] );
 
-			add_action( 'admin_menu', array( History::class, 'admin_menu' ) );
+			add_action( 'admin_menu', [ self::class, 'admin_menu' ] );
 		} else {
 			if ( get_option( 'wpes_hist_rev', 0 ) ) {
 				$wpdb->query( "DROP TABLE `{$wpdb->prefix}wpes_hist`;" );
@@ -117,10 +117,10 @@ class History {
 			'Email History',
 			'manage_options',
 			'wpes-emails',
-			array(
-				History::class,
+			[
+				self::class,
 				'admin_interface',
-			)
+			]
 		);
 	}
 
@@ -177,7 +177,7 @@ class History {
 			$in = implode( "\n", $lines );
 			// make sure we only match stuff with 4 preceding spaces (stuff for this array and not a nested one)
 			preg_match_all( '/^\s{4}\[(.+?)\] \=\> /m', $in, $matches, PREG_OFFSET_CAPTURE | PREG_SET_ORDER );
-			$pos          = array();
+			$pos          = [];
 			$previous_key = '';
 			$in_length    = strlen( $in );
 			// store the following in $pos:
@@ -186,13 +186,13 @@ class History {
 			foreach ( $matches as $match ) {
 				$key         = $match[1][0];
 				$start       = $match[0][1] + strlen( $match[0][0] );
-				$pos[ $key ] = array( $start, $in_length );
+				$pos[ $key ] = [ $start, $in_length ];
 				if ( $previous_key != '' ) {
 					$pos[ $previous_key ][1] = $match[0][1] - 1;
 				}
 				$previous_key = $key;
 			}
-			$ret = array();
+			$ret = [];
 			foreach ( $pos as $key => $where ) {
 				// recursively see if the parsed out value is an array too
 				$ret[ $key ] = self::print_r_reverse( substr( $in, $where[0], $where[1] - $where[0] ) );
@@ -201,7 +201,6 @@ class History {
 			return $ret;
 		}
 	}
-
 
 	public static function phpmailer_init( $phpmailer ) {
 		global $wpdb;
@@ -227,18 +226,16 @@ class History {
 		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = %d, sender = %s, alt_body = %s, debug = %s, eml = %s WHERE ID = %d AND subject = %s LIMIT 1", self::MAIL_SENT, $sender, $phpmailer->AltBody, $data, $eml, self::last_insert(), $phpmailer->Subject ) );
 	}
 
-
 	public static function wp_mail( $data ) {
 		global $wpdb;
 		// fallback values
-		$to      = $subject = $message = $from = '';
-		$headers = $attachments = array();
+		$to          = '';
+		$subject     = '';
+		$message     = '';
+		$from        = '';
+		$headers     = [];
+		$attachments = [];
 
-		/** @var String $to the addressee */
-		/** @var String $subject the subject */
-		/** @var String $message the message */
-		/** @var array|String $headers the headers */
-		/** @var array $attachments the attachments */
 		extract( $data );
 
 		if ( ! is_array( $headers ) ) {
@@ -279,7 +276,7 @@ class History {
 
 		$tracker = '<img src="' . esc_attr( $tracker_url ) . '" alt="" />';
 
-		$message = false !== strpos( $message, '</body>' ) ? str_replace( '</body>', $tracker . '</body>' ) : $message . $tracker;
+		$message = false !== strpos( $message, '</body>' ) ? str_replace( '</body>', $tracker . '</body>', $message ) : $message . $tracker;
 	}
 
 	public static function handle_tracker() {
@@ -293,6 +290,4 @@ class History {
 			exit;
 		}
 	}
-
-
 }
