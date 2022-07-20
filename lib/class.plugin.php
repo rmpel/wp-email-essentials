@@ -774,7 +774,7 @@ class Plugin {
 
 		$mailer->Body = self::preserve_weird_url_display( $mailer->Body );
 
-		if ( $config['is_html'] ) {
+		if ( $config['is_html'] || $config['enable_history'] ) {
 			$check_encoding_result = false;
 			if ( 'auto' === $config['content_precode'] ) {
 				$encoding_table = explode( ',', self::ENCODINGS );
@@ -804,7 +804,7 @@ class Plugin {
 			$mailer->Body = do_shortcode( $mailer->Body );
 		}
 
-		if ( $config['alt_body'] ) {
+		if ( $config['alt_body'] || $config['enable_history'] ) {
 			$body = $mailer->Body;
 			$btag = strpos( $body, '<body' );
 			if ( false !== $btag ) {

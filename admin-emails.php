@@ -234,9 +234,10 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 				// @phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- All data is sanitized before injection.
 				$wpes_view_emails_list = $wpdb->get_results( "SELECT subject, sender, thedatetime, recipient, ID, body, alt_body, headers, status, `debug`, errinfo, eml FROM {$wpdb->prefix}wpes_hist ORDER BY $wpes_view_order_field $wpes_view_order_direction LIMIT $wpes_view_first_item,$wpes_view_items_per_page" );
 				$wpes_view_email_stati = array(
-					__( 'Sent ??', 'wpes' ),
-					__( 'Sent Ok', 'wpes' ),
-					__( 'Failed', 'wpes' ),
+					History::MAIL_NEW => __( 'Sent ??', 'wpes' ),
+					History::MAIL_SENT => __( 'Sent Ok', 'wpes' ),
+					History::MAIL_FAILED => __( 'Failed', 'wpes' ),
+					History::MAIL_OPENED => __( 'Opened' ),
 				);
 				foreach ( $wpes_view_emails_list as $wpes_view_email ) {
 					?>

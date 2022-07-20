@@ -8,6 +8,11 @@
 namespace WP_Email_Essentials;
 
 class History {
+	const MAIL_NEW    = 0;
+	const MAIL_SENT   = 1;
+	const MAIL_FAILED = 2;
+	const MAIL_OPENED = 3;
+
 	public static function getInstance() {
 		static $instance;
 		if ( ! $instance ) {
@@ -69,6 +74,8 @@ class History {
 			add_action( 'phpmailer_init', array( History::class, 'phpmailer_init' ), 10000000000 );
 			add_filter( 'wp_mail', array( History::class, 'wp_mail' ), 10000000000 );
 			add_action( 'wp_mail_failed', array( History::class, 'wp_mail_failed' ), 10000000000 );
+
+			add_action( 'pre_handle_404', array( History::class, 'handle_tracker' ), ~PHP_INT_MAX );
 
 			add_action( 'shutdown', array( History::class, 'shutdown' ) );
 
@@ -217,7 +224,7 @@ class History {
 		$phpmailer->PreSend();
 		$eml = $phpmailer->GetSentMIMEMessage();
 
-		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = 1, sender = %s, alt_body = %s, debug = %s, eml = %s WHERE ID = %d AND subject = %s LIMIT 1", $sender, $phpmailer->AltBody, $data, $eml, self::last_insert(), $phpmailer->Subject ) );
+		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = %d, sender = %s, alt_body = %s, debug = %s, eml = %s WHERE ID = %d AND subject = %s LIMIT 1", self::MAIL_SENT, $sender, $phpmailer->AltBody, $data, $eml, self::last_insert(), $phpmailer->Subject ) );
 	}
 
 
@@ -248,8 +255,10 @@ class History {
 		$_headers = trim( implode( "\n", $headers ) );
 
 		$ip = Queue::server_remote_addr();
-		$wpdb->query( $wpdb->prepare( "INSERT INTO `{$wpdb->prefix}wpes_hist` (status, sender, recipient, subject, headers, body, thedatetime, ip) VALUES (0, %s, %s, %s, %s, %s, %s, %s);", $from, is_array( $to ) ? implode( ',', $to ) : $to, $subject, $_headers, $message, date( 'Y-m-d H:i:s', current_time( 'timestamp' ) ), $ip ) );
+		$wpdb->query( $wpdb->prepare( "INSERT INTO `{$wpdb->prefix}wpes_hist` (status, sender, recipient, subject, headers, body, thedatetime, ip) VALUES (%d, %s, %s, %s, %s, %s, %s, %s);", self::MAIL_NEW, $from, is_array( $to ) ? implode( ',', $to ) : $to, $subject, $_headers, $message, date( 'Y-m-d H:i:s', current_time( 'timestamp' ) ), $ip ) );
 		self::last_insert( $wpdb->insert_id );
+
+		self::add_tracker( $data['message'], self::last_insert() );
 
 		return $data;
 	}
@@ -262,7 +271,27 @@ class History {
 			$errormsg = 'Unknown error';
 		}
 		// 'to', 'subject', 'message', 'headers', 'attachments'
-		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = 2, errinfo = CONCAT(%s, errinfo) WHERE ID = %d LIMIT 1", $errormsg . "\n", self::last_insert() ) );
+		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = %d, errinfo = CONCAT(%s, errinfo) WHERE ID = %d LIMIT 1", self::MAIL_FAILED, $errormsg . "\n", self::last_insert() ) );
+	}
+
+	private static function add_tracker( &$message, $mail_id ) {
+		$tracker_url = trailingslashit( home_url() ) . 'email-image-' . $mail_id . '.png';
+
+		$tracker = '<img src="' . esc_attr( $tracker_url ) . '" alt="" />';
+
+		$message = false !== strpos( $message, '</body>' ) ? str_replace( '</body>', $tracker . '</body>' ) : $message . $tracker;
+	}
+
+	public static function handle_tracker() {
+		global $wpdb;
+		if ( preg_match( '/\/email-image-([0-9]+).png/', $_SERVER['REQUEST_URI'], $match ) ) {
+			$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = %s WHERE ID = %d;", self::MAIL_OPENED, $match[1] ) );
+
+			header( 'Content-Type: image/png' );
+			header( 'Content-Length: 0' );
+			header( 'HTTP/1.1 404 Not Found' );
+			exit;
+		}
 	}
 
 
