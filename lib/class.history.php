@@ -117,10 +117,7 @@ class History {
 			'Email History',
 			'manage_options',
 			'wpes-emails',
-			[
-				self::class,
-				'admin_interface',
-			]
+			[ self::class, 'admin_interface' ]
 		);
 	}
 
