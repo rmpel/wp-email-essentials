@@ -32,6 +32,11 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 		<br/>
 	</div>
 	<style>
+			.pager {
+				display: flex;
+				flex-direction: row;
+				justify-content: space-between;
+			}
 			#mail-viewer {
 				position: relative;
 				border: 1px solid grey;
@@ -208,16 +213,16 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 		<?php
 		if ( false !== $wpes_view_prev_page ) {
 			?>
-			<a
+			<a class="button"
 				href="<?php print esc_attr( add_query_arg( '_page', $wpes_view_prev_page ) ); ?>">
 					&lt; Previous page</a> <?php } ?></span>
 		<span>
 		<?php
 		if ( false !== $wpes_view_next_page ) {
 			?>
-			<a
+			<a class="button"
 				href="<?php print esc_attr( add_query_arg( '_page', $wpes_view_next_page ) ); ?>">
-					&lt; Next page</a> <?php } ?></span>
+					Next page &gt;</a> <?php } ?></span>
 	</div>
 	<div id="mail-viewer">
 		<div class="top-panel">
