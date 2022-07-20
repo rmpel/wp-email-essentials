@@ -1,10 +1,10 @@
 === WP Email Essentials ===
-Contributors: clearsite
-Donate link: http://clearsite.nl/wordpress-development/
+Contributors: rmpel, clearsite
+Donate link: https://remonpel.nl/
 Tags: email
 Requires at least: 3.6.1
-Tested up to: 3.8.1
-Stable tag: 1.8.3
+Tested up to: 6.0.1
+Stable tag: 3.2.8
 License: GPL2
 
 WP Email Essentials helps you send better emails from your WordPress blog.
@@ -13,13 +13,27 @@ WP Email Essentials helps you send better emails from your WordPress blog.
 
 WP Email Essentials helps you send better emails from your WordPress blog.
 
-* Allows you to set a (default) From name. Instead of 'WordPress' you can set your own name.
-* Allows you to set a (default) From email, instead of 'no-reply@blogdomain.com'.
-* Both can be overridden when wp_mail is called with a valid From: header. If From: is just an email addres, only the email address is overridden, if From: is an RFC2822 email addres+name, both will be.
+# This plugin offers your WP-site...
+* A good From name,
+* A good From email address,
+* The correct envelope-from e-mail address,
+* Reformatting as HTML, if needed, with proper plain text alternative,
+* process shortcodes,
+* UTF8-recoding,
+* filters for adding CSS, header, footer and body template,
+* convert CSS to inline styles for better support in tools like GMail, Outlook Online, Hotmail etc.),
+* SMTP configuration,
+* Send emails with multiple addressees as separate emails (less spammy),
+* S/MIME signing,
+* DKIM signing,
+* Altering destination of certain emails normally addressed to the site-admin,
+* Keeping a history of outgoing emails with their results (for debugging, history is cleared on deactivation of this function),
+* When history is enabled, add a tracker to track correct receipt of emails *1,
 
-* Allows you to send all emails through an STMP server, my favorite is mandrillapp.com.
-* Allows you to convert emails to HTML. You can hook filters wpes_head and wpes_body to add to the head and body section of the HTML email.
-* Optionally an Alt body is derived from the body-part of the email (this plain text alternative makes your emails less spammy)
+# Important note:
+This tool is created for people that know what to do and why they do it. If you don't know what a feature does, ask for help :)
+
+*1) Under GDPR, storing and tracking emails is prohibited, the history feature is meant for investigative purposes only!
 
 == Installation ==
 

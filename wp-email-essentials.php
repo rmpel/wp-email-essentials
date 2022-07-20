@@ -7,7 +7,7 @@ Plugin URI: https://github.com/clearsite/wp-email-essentials
 Upstream URI: https://github.com/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 3.2.7
+Version: 3.2.8
 */
 
 if ( ! class_exists( 'CIDR' ) ) {
@@ -2176,7 +2176,7 @@ class WP_Email_Essentials_History {
 
 		$tracker = '<img src="'. esc_attr( $tracker_url ) .'" alt="" />';
 
-		$message = false !== strpos( $message, '</body>' ) ? str_replace( '</body>', $tracker . '</body>' ) : $message . $tracker;
+		$message = false !== strpos( $message, '</body>' ) ? str_replace( '</body>', $tracker . '</body>', $message ) : $message . $tracker;
 	}
 
 	public static function handle_tracker(  ) {
