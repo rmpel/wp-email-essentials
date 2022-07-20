@@ -7,7 +7,7 @@ Plugin URI: https://github.com/clearsite/wp-email-essentials
 Upstream URI: https://github.com/rmpel/wp-email-essentials
 Author: Remon Pel
 Author URI: http://remonpel.nl
-Version: 3.2.6
+Version: 3.2.7
 */
 
 if ( ! class_exists( 'CIDR' ) ) {
@@ -688,7 +688,7 @@ class WP_Email_Essentials {
 
 		$mailer->Body = self::preserve_weird_url_display( $mailer->Body );
 
-		if ( $config['is_html'] ) {
+		if ( $config['is_html'] || $config['enable_history'] ) {
 			$check_encoding_result = false;
 			if ( $config['content_precode'] == 'auto' ) {
 				$encoding_table = explode( ',', WP_Email_Essentials::encodings );
@@ -718,7 +718,7 @@ class WP_Email_Essentials {
 			$mailer->Body = do_shortcode( $mailer->Body );
 		}
 
-		if ( $config['alt_body'] ) {
+		if ( $config['alt_body'] || $config['enable_history'] ) {
 			$body = $mailer->Body;
 			$btag = strpos( $body, '<body' );
 			if ( false !== $btag ) {
@@ -1926,6 +1926,11 @@ add_filter( 'wp_mail', array( 'WP_Email_Essentials', 'alternative_to' ) );
 add_action( 'wp_ajax_nopriv_wpes_get_ip', array( 'WP_Email_Essentials', 'ajax_get_ip' ) );
 
 class WP_Email_Essentials_History {
+	const MAIL_NEW = 0;
+	const MAIL_SENT = 1;
+	const MAIL_FAILED = 2;
+	const MAIL_OPENED = 3;
+
 	public static function getInstance() {
 		static $instance;
 		if ( ! $instance ) {
@@ -1987,6 +1992,8 @@ class WP_Email_Essentials_History {
 			add_action( 'phpmailer_init', array( 'WP_Email_Essentials_History', 'phpmailer_init' ), 10000000000 );
 			add_filter( 'wp_mail', array( 'WP_Email_Essentials_History', 'wp_mail' ), 10000000000 );
 			add_action( 'wp_mail_failed', array( 'WP_Email_Essentials_History', 'wp_mail_failed' ), 10000000000 );
+
+			add_action( 'pre_handle_404', array( 'WP_Email_Essentials_History', 'handle_tracker' ), ~PHP_INT_MAX );
 
 			add_action( 'shutdown', array( 'WP_Email_Essentials_History', 'shutdown' ) );
 
@@ -2103,7 +2110,6 @@ class WP_Email_Essentials_History {
 		}
 	}
 
-
 	public static function phpmailer_init( $phpmailer ) {
 		global $wpdb;
 		$data                  = self::object_data( $phpmailer );
@@ -2126,7 +2132,7 @@ class WP_Email_Essentials_History {
 		$eml = $phpmailer->GetSentMIMEMessage();
 
 
-		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = 1, sender = %s, alt_body = %s, debug = %s, eml = %s WHERE ID = %d AND subject = %s LIMIT 1", $sender, $phpmailer->AltBody, $data, $eml, self::last_insert(), $phpmailer->Subject ) );
+		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = %d, sender = %s, alt_body = %s, debug = %s, eml = %s WHERE ID = %d AND subject = %s LIMIT 1", self::MAIL_SENT, $sender, $phpmailer->AltBody, $data, $eml, self::last_insert(), $phpmailer->Subject ) );
 	}
 
 
@@ -2157,10 +2163,32 @@ class WP_Email_Essentials_History {
 		$_headers = trim( implode( "\n", $headers ) );
 
 		$ip = WP_Email_Essentials_Queue::server_remote_addr();
-		$wpdb->query( $wpdb->prepare( "INSERT INTO `{$wpdb->prefix}wpes_hist` (status, sender, recipient, subject, headers, body, thedatetime, ip) VALUES (0, %s, %s, %s, %s, %s, %s, %s);", $from, is_array( $to ) ? implode( ',', $to ) : $to, $subject, $_headers, $message, date( 'Y-m-d H:i:s', current_time( 'timestamp' ) ), $ip ) );
+		$wpdb->query( $wpdb->prepare( "INSERT INTO `{$wpdb->prefix}wpes_hist` (status, sender, recipient, subject, headers, body, thedatetime, ip) VALUES (%d, %s, %s, %s, %s, %s, %s, %s);", self::MAIL_NEW, $from, is_array( $to ) ? implode( ',', $to ) : $to, $subject, $_headers, $message, date( 'Y-m-d H:i:s', current_time( 'timestamp' ) ), $ip ) );
 		self::last_insert( $wpdb->insert_id );
 
+		self::add_tracker( $data['message'], self::last_insert() );
+
 		return $data;
+	}
+
+	private static function add_tracker( &$message, $mail_id ) {
+		$tracker_url = trailingslashit( home_url() ) . 'email-image-'. $mail_id .'.png';
+
+		$tracker = '<img src="'. esc_attr( $tracker_url ) .'" alt="" />';
+
+		$message = false !== strpos( $message, '</body>' ) ? str_replace( '</body>', $tracker . '</body>' ) : $message . $tracker;
+	}
+
+	public static function handle_tracker(  ) {
+		global $wpdb;
+		if ( preg_match( '/\/email-image-([0-9]+).png/', $_SERVER['REQUEST_URI'], $match ) ) {
+			$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = %s WHERE ID = %d;", self::MAIL_OPENED, $match[1] ) );
+
+			header('Content-Type: image/png');
+			header( 'Content-Length: 0');
+			header( 'HTTP/1.1 404 Not Found');
+			exit;
+		}
 	}
 
 	public static function wp_mail_failed( $error ) {
@@ -2171,7 +2199,7 @@ class WP_Email_Essentials_History {
 			$errormsg = 'Unknown error';
 		}
 		//  'to', 'subject', 'message', 'headers', 'attachments'
-		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = 2, errinfo = CONCAT(%s, errinfo) WHERE ID = %d LIMIT 1", $errormsg . "\n", self::last_insert() ) );
+		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = %d, errinfo = CONCAT(%s, errinfo) WHERE ID = %d LIMIT 1", self::MAIL_FAILED, $errormsg . "\n", self::last_insert() ) );
 	}
 
 

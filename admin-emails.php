@@ -211,9 +211,10 @@ $start = $page * $limit;
 				<?php
 				$list  = $wpdb->get_results( "SELECT subject, sender, thedatetime, recipient, ID, body, alt_body, headers, status, `debug`, errinfo, eml FROM {$wpdb->prefix}wpes_hist ORDER BY $ofield $order LIMIT $start,$limit" );
 				$stati = array(
-					__( 'Sent ??' ),
-					__( 'Sent Ok' ),
-					__( 'Failed' ),
+					WP_Email_Essentials_History::MAIL_NEW => __( 'Sent ??' ),
+					WP_Email_Essentials_History::MAIL_SENT => __( 'Sent Ok' ),
+					WP_Email_Essentials_History::MAIL_FAILED => __( 'Failed' ),
+					WP_Email_Essentials_History::MAIL_OPENED => __( 'Opened' ),
 				);
 				foreach ( $list as $item ) {
 					?>
