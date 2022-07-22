@@ -113,7 +113,14 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 				</td>
 			</tr>
 			<tr>
-				<td><em> *) You must include the barriers, so start with / and end with /</em></td>
+				<td>
+					<em> *)
+						<?php
+						// translators: %1$s: the regexp barrier "/" .
+						print wp_kses_post( sprintf( __( 'You must include the barriers, so start with %1$s and end with %1$s', 'wpes' ), '<code>/</code>' ) );
+						?>
+					</em>
+				</td>
 			</tr>
 			<tr class="header">
 				<th><?php esc_html_e( 'Unmatched subjects', 'wpes' ); ?></th>
@@ -142,11 +149,12 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 <script>
 	jQuery(document).ready(function () {
 		var t = function () {
-			if (/^\/[\s\S]+\/$/.test((jQuery(this).val() || ""))) {
+			if (/^\/[\s\S]+\/[i]?$/.test((jQuery(this).val() || ""))) {
 				var that = this;
 				var re = jQuery(that).val();
-				// re matches /asdsadasdasd/, so use substring to get rid of those /-es
-				re = new RegExp(re.substr(1, re.length - 2));
+
+				re = re.split(re.substr(0, 1));
+				re = new RegExp(re[1], re[2]);
 
 				jQuery(".a-fail").each(function () {
 					jQuery(this).toggleClass('match', re.test((jQuery(this).text() || "")));
@@ -160,7 +168,7 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 			if ("" === val) {
 				return jQuery(this).removeClass('error match');
 			}
-			jQuery(this).toggleClass('error', !/^\/[\s\S]+\/$/.test(val)).not('.error').addClass('match');
+			jQuery(this).toggleClass('error', !/^\/[\s\S]+\/[i]?$/.test(val)).not('.error').addClass('match');
 		}).bind('focus', function (e) {
 			jQuery(".a-fail,.a-regexp").removeClass('match');
 			jQuery(this).removeClass('error match');

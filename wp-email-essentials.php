@@ -34,5 +34,3 @@ History::instance();
 
 /* this section enables mail_queue, which is not yet finished */
 add_filter( '__disabled__wp_mail', [ Queue::class, 'wp_mail' ], PHP_INT_MAX - 2000 );
-
-

@@ -75,7 +75,7 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 			#mail-viewer #mail-index #email-header {
 				background: grey;
 				color: white;
-				font-weight: bold;
+				foxnt-weight: bold;
 			}
 
 			#mail-viewer #mail-index li:nth-child(2n+1) {
@@ -320,10 +320,15 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 			?>
 		</div><!-- /mdv -->
 	</div><!-- /mv -->
-	<p>*) A sender with an asterisk is rewritten to the site default sender and used as Reply-To address.</p>
+	<p>
+		*) <?php esc_html_e( 'A sender with an asterisk is rewritten to the site default sender and used as Reply-To address.', 'wpes' ); ?></p>
 	<script>
 		jQuery(document).ready(function ($) {
-			$(".email-item").bind('click', function (e) {
+			$(".email-item").on('click', function (e) {
+				if ($(e.target).is('a.dashicons-download')) {
+					e.stopPropagation();
+					return true;
+				}
 				var alt = e.altKey || false;
 				$(this).addClass('active').siblings().removeClass('show-body').removeClass('show-debug').removeClass('show-headers').removeClass('show-alt-body').removeClass('active');
 				var id = '#' + $(".email-item.active").attr('id').replace('email-', 'email-data-');
@@ -336,7 +341,6 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 				} else if ($(this).is('.show-body')) {
 					$(this).removeClass('show-body').addClass('show-headers');
 					$(that).removeClass('show-body').addClass('show-headers');
-					t
 				} else if ($(this).is('.show-headers')) {
 					$(this).removeClass('show-headers').addClass('show-alt-body');
 					$(that).removeClass('show-headers').addClass('show-alt-body');

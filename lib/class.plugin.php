@@ -1027,30 +1027,36 @@ class Plugin {
 			]
 		);
 
-		$css = apply_filters_ref_array(
-			'wpes_css',
-			[
-				'',
-				&$mailer,
-			]
-		);
+		$head = '';
 
-		$head = apply_filters_ref_array(
-			'wpes_head',
-			[
-				'<title>' . $subject . '</title><style type="text/css">' . $css . '</style>',
-				&$mailer,
-			]
-		);
+		if ( self::get_config()['is_html'] ) {
 
-		$should_be_html = apply_filters_ref_array(
-			'wpes_body',
-			[
-				$should_be_html,
-				&$mailer,
-			]
-		);
-		$should_be_html = htmlspecialchars_decode( htmlentities( $should_be_html ) );
+			$css = apply_filters_ref_array(
+				'wpes_css',
+				[
+					'',
+					&$mailer,
+				]
+			);
+
+			$head = apply_filters_ref_array(
+				'wpes_head',
+				[
+					'<title>' . $subject . '</title><style type="text/css">' . $css . '</style>',
+					&$mailer,
+				]
+			);
+
+			$should_be_html = apply_filters_ref_array(
+				'wpes_body',
+				[
+					$should_be_html,
+					&$mailer,
+				]
+			);
+			$should_be_html = htmlspecialchars_decode( htmlentities( $should_be_html ) );
+
+		}
 
 		$should_be_html = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -1411,18 +1417,26 @@ class Plugin {
 				case __( 'Print debug output of sample mail', 'wpes' ):
 				case __( 'Send sample mail', 'wpes' ):
 					ob_start();
-					self::$debug = true;
+					self::$debug       = true;
+					$wpes_admin        = get_option( 'admin_email', false );
+					$wpes_sample_email = [
+						'to'      => $wpes_admin,
+						'subject' => __( 'WP-Email-Essentials Test-email', 'wpes' ),
+					];
+					$wpes_sample_email = self::alternative_to( $wpes_sample_email );
+					$wpes_admin        = reset( $wpes_sample_email['to'] );
+
 					$result      = wp_mail(
-						get_option( 'admin_email', false ),
+						$wpes_admin,
 						__( 'WP-Email-Essentials Test-email', 'wpes' ),
 						self::dummy_content(),
 						[ 'X-Priority: 1' ]
 					);
 					self::$debug = ob_get_clean();
 					if ( $result ) {
-						self::$message = sprintf( __( 'Mail sent to %s', 'wpes' ), get_option( 'admin_email', false ) );
+						self::$message = sprintf( __( 'Mail sent to %s', 'wpes' ), $wpes_admin );
 					} else {
-						self::$error = sprintf( __( 'Mail NOT sent to %s', 'wpes' ), get_option( 'admin_email', false ) );
+						self::$error = sprintf( __( 'Mail NOT sent to %s', 'wpes' ), $wpes_admin );
 					}
 					break;
 			}
@@ -1438,11 +1452,18 @@ class Plugin {
 			$subject         = __( 'Sample email subject', 'wpes' );
 			$mailer->Subject = $subject; // @phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- PHPMailer, sorry.
 			$body            = self::dummy_content();
-			header( 'Content-Type: text/html; charset=utf-8' );
+			switch ( true ) {
+				case ! ! $config['is_html']:
+					header( 'Content-Type: text/html; charset=utf-8' );
+					$html = self::build_html( $mailer, $subject, $body, 'utf-8' );
+					$html = self::cid_to_image( $html, $mailer );
+					break;
+				case ! $config['is_html']:
+					header( 'Content-Type: text/plain; charset=utf-8' );
+					$html = $body;
+					break;
+			}
 
-			$html = self::build_html( $mailer, $subject, $body, 'utf-8' );
-
-			$html = self::cid_to_image( $html, $mailer );
 			print $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- How to escape email content?.
 
 			exit;
@@ -1620,7 +1641,36 @@ class Plugin {
 	 * @return string
 	 */
 	public static function dummy_content() {
-		return '<h1>Sample Email Body</h1><p>Some <a href="https://google.com/?s=random">råndôm</a> text Lorem Ipsum is <b>bold simply dummy</b> text of the <strong>strong printing and typesetting</strong> industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><h2>A header-2</h2><p>Some more text</p><h3>A header-3</h3><ul><li>A list - unordered, item 1</li><li>Item 2</li></ul><h4>A header-4</h4><ol><li>A list - ordered, item 1</li><li>Item 2</li></ol>';
+		$config = self::get_config();
+		switch ( true ) {
+			case ! ! $config['is_html']:
+				return '<h1>Sample Email Body - HTML</h1>
+<p>Some <a href="https://google.com/?s=random">råndôm</a> text Lorem Ipsum is <b>bold simply dummy</b> text of the <strong>strong printing and typesetting</strong> industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
+<h2>A header-2</h2>
+<p>Some more text</p>
+<h3>A header-3</h3>
+<ul><li>A list - unordered, item 1</li><li>Item 2</li></ul>
+<h4>A header-4</h4>
+<ol><li>A list - ordered, item 1</li><li>Item 2</li></ol>';
+			case ! $config['is_html']:
+				return 'Sample Email Body - Plain text
+
+Some råndôm text Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.
+
+A header-2
+Some more text
+
+A header-3
+A list
+item 1
+Item 2
+
+A header-4
+A list
+item 1
+Item 2
+';
+		}
 	}
 
 	/**
@@ -1816,7 +1866,7 @@ class Plugin {
 	}
 
 	/**
-	 * Get the alternative recepient for sending a specific email to the site admin.
+	 * Get the alternative recipient for sending a specific email to the site admin.
 	 *
 	 * @param array $email The WordPress email array with 'to', 'subject', 'message', 'headers' and 'attachments'.
 	 *
@@ -2051,6 +2101,7 @@ class Plugin {
 			'password_lost_changed_email',
 			'password_reset_email',
 			'password_changed_email',
+			'wpes_email_test',
 		];
 
 		return array_merge( $wp_filters, $unsupported_wp_filters );

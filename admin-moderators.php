@@ -54,19 +54,24 @@ if ( ! get_option( 'moderation_notify' ) ) {
 						if ( ! isset( $wpes_config[ $wpes_post_type ][ $wpes_moderator_recipient ][ $wpes_moderator_key ] ) ) {
 							$wpes_config[ $wpes_post_type ][ $wpes_moderator_recipient ][ $wpes_moderator_key ] = '';
 						}
+						// translators: %s: post-type.
+						$wpes_placeholder = sprintf( __( 'default: owner of %s', 'wpes' ), $wpes_post_type );
 						?>
 						<tr>
 							<td>
 								<label
-									for="key-<?php print esc_attr( $wpes_post_type ); ?>-<?php print esc_attr( $wpes_moderator_recipient ); ?>-<?php print esc_attr( $wpes_moderator_key ); ?>"><?php print esc_html( $wpes_moderator_action ); ?>
-									to author on <?php print esc_html( $wpes_moderator_key ); ?>
-									on <?php print esc_html( $wpes_post_type ); ?></label>
+									for="key-<?php print esc_attr( $wpes_post_type ); ?>-<?php print esc_attr( $wpes_moderator_recipient ); ?>-<?php print esc_attr( $wpes_moderator_key ); ?>">
+									<?php
+									// translators: %1$s: email type like notification or request, %2$s: comment type like comment or pingback, %3$s: post_type .
+									print wp_kses_post( sprintf( __( '<em>%1$s</em> to author on <em>%2$s</em> on <em>%3$s</em>', 'wpes' ), $wpes_moderator_action, $wpes_moderator_key, $wpes_post_type ) ) . ':';
+									?>
+								</label>
 							</td>
 							<td>
 								<input
 									type="text"
 									name="settings[keys][<?php print esc_attr( $wpes_post_type ); ?>][<?php print esc_attr( $wpes_moderator_recipient ); ?>][<?php print esc_attr( $wpes_moderator_key ); ?>]"
-									placeholder="default: owner of <?php print esc_attr( $wpes_post_type ); ?>"
+									placeholder="<?php print esc_attr( $wpes_placeholder ); ?>"
 									value="<?php print esc_attr( $wpes_config[ $wpes_post_type ][ $wpes_moderator_recipient ][ $wpes_moderator_key ] ); ?>"
 									id="key-<?php print esc_attr( $wpes_post_type ); ?>-<?php print esc_attr( $wpes_moderator_recipient ); ?>-<?php print esc_attr( $wpes_moderator_key ); ?>"/>
 							</td>
@@ -87,11 +92,21 @@ if ( ! get_option( 'moderation_notify' ) ) {
 			</tbody>
 		</table>
 	</form>
-	<p><code>:blackhole:</code> is allowed to disable sending the email.</p>
-	<p>Moderation for pingbacks and comments
-		is: <?php print ( get_option( 'moderation_notify' ) ? 'enabled' : 'disabled' ); ?>.
-		<a href="<?php print esc_attr( admin_url( 'options-discussion.php' ) ); ?>#comment_order">Change this
-			setting</a>.
+	<p>
+		<?php
+		print wp_kses_post( sprintf( __( '%s is allowed to disable sending the email.', 'wpes' ), '<code>:blackhole:</code>' ) );
+		?>
+	</p>
+	<p>
+		<?php
+		print esc_html__( 'Moderation for pingbacks and comments is', 'wpes' ) . ': ';
+		print wp_kses_post( '<strong>' . ( get_option( 'moderation_notify' ) ? __( 'enabled', 'wpes' ) : __( 'disabled', 'wpes' ) ) . '</strong>.' );
+		?>
+		<a href="<?php print esc_attr( admin_url( 'options-discussion.php' ) ); ?>#comment_order">
+			<?php
+			print esc_html__( 'Change this setting', 'wpes' ) . '.';
+			?>
+		</a>
 	</p>
 </div>
 <style>

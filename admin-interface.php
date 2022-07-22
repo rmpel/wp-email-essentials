@@ -31,9 +31,9 @@ $wpes_config = Plugin::get_config();
 	<form id="outpost" method='POST' action="" enctype="multipart/form-data">
 		<input type="hidden" name="form_id" value="wp-email-essentials"/>
 		<?php wp_nonce_field( 'wp-email-essentials--settings', 'wpes-nonce' ); ?>
-		<table>
+		<table class="wpes-table">
 			<tr>
-				<td colspan="4">
+				<td colspan="4" class="last">
 					<h3><?php print wp_kses_post( __( 'E-mail History', 'wpes' ) ); ?>:</h3>
 				</td>
 			</tr>
@@ -46,10 +46,10 @@ $wpes_config = Plugin::get_config();
 					<label
 						for="enable_history"><?php print wp_kses_post( __( 'Enable Email History', 'wpes' ) ); ?></label>
 				</th>
-				<td colspan="3"></td>
+				<td colspan="3"></td class=last>
 			</tr>
-			<tr>
-				<td colspan="4">
+			<tr class="last on-enable_history">
+				<td colspan="4" class="last">
 					<?php print wp_kses_post( __( '<strong>Warning: </strong> Storing e-mails in your database is a BAD idea and illegal in most countries. Use this for DEBUGGING only!', 'wpes' ) ); ?>
 					<br/>
 					<?php print wp_kses_post( __( 'Enabling the history feature will also add a tracker to all outgoing emails to check receipt.', 'wpes' ) ); ?>
@@ -61,47 +61,35 @@ $wpes_config = Plugin::get_config();
 				</th>
 			</tr>
 			<tr>
-				<th colspan="4">
+				<th colspan="4" class="last">
 					<hr/>
 				</th>
 			</tr>
 			<tr>
-				<td colspan="4">
+				<td colspan="4" class="last">
 					<h3><?php print wp_kses_post( __( 'E-mail Settings', 'wpes' ) ); ?>:</h3>
 				</td>
 			</tr>
 			<tr>
-				<th>
-					<label for="timeout"><?php print wp_kses_post( __( 'phpMailer Timeout', 'wpes' ) ); ?></label>
-				</th>
-				<td colspan="3">
-					<select id="timeout" name="settings[timeout]">
-						<?php
-						$wpes_timeouts = array(
-							60  => __( '1 minute', 'wpes' ),
-							300 => __( '5 minutes (default)', 'wpes' ),
-							600 => __( '10 minutes (for very slow hosts)', 'wpes' ),
-						);
-						if ( ! isset( $wpes_config['timeout'] ) || ! $wpes_config['timeout'] ) {
-							$wpes_config['timeout'] = 300;
-						}
-						foreach ( $wpes_timeouts as $wpes_key => $wpes_val ) {
-							print '<option value="' . esc_attr( $wpes_key ) . '" ' . selected( intval( $wpes_config['timeout'] ), $wpes_key, false ) . '>' . esc_html( $wpes_val ) . '</option>';
-						}
-						?>
-					</select>
-				</td>
-			</tr>
-			<tr>
-				<th colspan="4">
+				<th colspan="2">
 					<input
 						type="checkbox" name="settings[smtp-enabled]" value="1"
 						<?php checked( isset( $wpes_config['smtp'] ) && $wpes_config['smtp'] ); ?>
 						id="smtp-enabled"/><label
 						for="smtp-enabled"><?php print wp_kses_post( __( 'Enable sending mail over SMTP?', 'wpes' ) ); ?></label>
 				</th>
+				<th colspan="2" class="last not-smtp-enabled">
+					<?php
+					print wp_kses_post( __( 'Using an SMTP improves reliability, helps reducing the chance of your e-mails being marked as spam and gives the option to use an external mail service like MailJet, MailGun, SparkPost etc.', 'wpes' ) );
+					?>
+				</th>
+				<th colspan="2" rowspan="8" class="last on-smtp-enabled">
+					<?php
+					print wp_kses_post( __( 'Using an SMTP improves reliability, helps reducing the chance of your e-mails being marked as spam and gives the option to use an external mail service like MailJet, MailGun, SparkPost etc.', 'wpes' ) );
+					?>
+				</th>
 			</tr>
-			<tr>
+			<tr class="on-smtp-enabled">
 				<th width="25%">
 					<label for="smtp-hostname"><?php print wp_kses_post( __( 'Hostname or -ip', 'wpes' ) ); ?></label>
 				</th>
@@ -111,6 +99,8 @@ $wpes_config = Plugin::get_config();
 						value="<?php print esc_attr( $wpes_config['smtp'] ? $wpes_config['smtp']['host'] : '' ); ?>"
 						id="smtp-hostname"/>
 				</td>
+			</tr>
+			<tr class="on-smtp-enabled">
 				<th width="25%">
 					<label for="smtp-port"><?php print wp_kses_post( __( 'SMTP Port', 'wpes' ) ); ?></label>
 				</th>
@@ -121,7 +111,7 @@ $wpes_config = Plugin::get_config();
 						id="smtp-port"/>
 				</td>
 			</tr>
-			<tr>
+			<tr class="on-smtp-enabled">
 				<th>
 					<label for="smtp-username"><?php print wp_kses_post( __( 'Username', 'wpes' ) ); ?></label>
 				</th>
@@ -131,6 +121,8 @@ $wpes_config = Plugin::get_config();
 						value="<?php print esc_attr( $wpes_config['smtp'] ? $wpes_config['smtp']['username'] : '' ); ?>"
 						id="smtp-username"/>
 				</td>
+			</tr>
+			<tr class="on-smtp-enabled">
 				<th>
 					<label for="smtp-password"><?php print wp_kses_post( __( 'Password', 'wpes' ) ); ?></label>
 				</th>
@@ -141,11 +133,12 @@ $wpes_config = Plugin::get_config();
 						id="smtp-password"/>
 				</td>
 			</tr>
-			<tr>
+			<tr class="on-smtp-enabled">
 				<th>
-					<label for="smtp-secure"><?php print wp_kses_post( __( 'Secure?', 'wpes' ) ); ?></label>
+					<label
+						for="smtp-secure"><?php print wp_kses_post( __( 'Use encrypted connection?', 'wpes' ) ); ?></label>
 				</th>
-				<td colspan="3">
+				<td>
 					<select name="settings[secure]" class="widefat" id="smtp-secure">
 						<option value=""><?php print wp_kses_post( __( 'No', 'wpes' ) ); ?></option>
 						<option disabled>───────────────────────</option>
@@ -173,25 +166,41 @@ $wpes_config = Plugin::get_config();
 					</select>
 				</td>
 			</tr>
+			<tr class="on-smtp-enabled">
+				<th>
+					<label for="timeout"><?php print wp_kses_post( __( 'phpMailer Timeout', 'wpes' ) ); ?></label>
+				</th>
+				<td>
+					<select id="timeout" name="settings[timeout]">
+						<?php
+						$wpes_timeouts = array(
+							60  => __( '1 minute', 'wpes' ),
+							300 => __( '5 minutes (default)', 'wpes' ),
+							600 => __( '10 minutes (for very slow hosts)', 'wpes' ),
+						);
+						if ( ! isset( $wpes_config['timeout'] ) || ! $wpes_config['timeout'] ) {
+							$wpes_config['timeout'] = 300;
+						}
+						foreach ( $wpes_timeouts as $wpes_key => $wpes_val ) {
+							print '<option value="' . esc_attr( $wpes_key ) . '" ' . selected( intval( $wpes_config['timeout'] ), $wpes_key, false ) . '>' . esc_html( $wpes_val ) . '</option>';
+						}
+						?>
+					</select>
+				</td>
+			</tr>
 			<tr>
-				<td colspan="4">
+				<td colspan="4" class="last">
 					<hr/>
 				</td>
 			</tr>
 			<tr>
-				<th colspan="4">
+				<th colspan="4" class="last">
 					<input
 						type="checkbox" name="settings[SingleTo]" value="1"
 						<?php checked( isset( $wpes_config['SingleTo'] ) && $wpes_config['SingleTo'] ); ?>
 						id="smtp-singleto"/><label
 						for="smtp-singleto"><?php print wp_kses_post( __( 'Split mail with more than one Recipient into separate mails?', 'wpes' ) ); ?></label>
 				</th>
-			</tr>
-			<tr>
-				<td colspan="4">
-					<strong
-						style="color:darkred"><?php print wp_kses_post( __( 'Under GDPR, from May 25th, 2018, using a no-reply@ (or any variation of a not-responded-to email address) is prohibited. Please make sure the default sender address is valid and used in the setting below.', 'wpes' ) ); ?></strong>
-				</td>
 			</tr>
 			<tr>
 				<th>
@@ -203,14 +212,22 @@ $wpes_config = Plugin::get_config();
 						value="<?php print esc_attr( $wpes_config['from_name'] ); ?>"
 						id="from-name"/>
 				</td>
+			</tr>
+			<tr>
 				<th>
 					<label for="from-email"><?php print wp_kses_post( __( 'Default from e-mail', 'wpes' ) ); ?></label>
 				</th>
-				<td>
+				<td class="last">
 					<input
 						type="text" class="widefat" name="settings[from_email]"
 						value="<?php print esc_attr( $wpes_config['from_email'] ); ?>"
 						id="from-email"/>
+				</td>
+			</tr>
+			<tr class="on-regexp-test" data-regexp="(no-?reply)@" data-field="from-email">
+				<td colspan="4" class="last">
+					<strong
+						style="color:darkred"><?php print wp_kses_post( __( 'Under GDPR, from May 25th, 2018, using a no-reply@ (or any variation of a not-responded-to email address) is prohibited. Please make sure the default sender address is valid and used in the setting below.', 'wpes' ) ); ?></strong>
 				</td>
 			</tr>
 			<?php
@@ -221,7 +238,8 @@ $wpes_config = Plugin::get_config();
 					<tr>
 						<th>
 						</th>
-						<td colspan="3"><?php print wp_kses_post( __( 'SPF Records are checked', 'wpes' ) ); ?>
+						<td colspan="3"
+							class=last><?php print wp_kses_post( __( 'SPF Records are checked', 'wpes' ) ); ?>
 							: <?php print wp_kses_post( __( 'you are NOT allowed to send mail with this domain.', 'wpes' ) ); ?>
 							<br/>
 							<?php print wp_kses_post( __( 'If you really need to use this sender e-mail address, you need to change the SPF record to include the sending-IP of this server', 'wpes' ) ); ?>
@@ -237,7 +255,7 @@ $wpes_config = Plugin::get_config();
 					?>
 					<tr>
 						<td></td>
-						<td colspan="3"><?php print wp_kses_post( __( 'SPF Record', 'wpes' ) ); ?>:
+						<td colspan="3" class=last><?php print wp_kses_post( __( 'SPF Record', 'wpes' ) ); ?>:
 							<code><?php print wp_kses_post( Plugin::get_spf( $wpes_config['from_email'], false, true ) ); ?></code>
 						</td>
 					</tr>
@@ -250,7 +268,8 @@ $wpes_config = Plugin::get_config();
 					<tr>
 						<th>
 						</th>
-						<td colspan="3"><?php print wp_kses_post( __( 'You are NOT allowed to send mail with this domain; it should match the domainname of the website.', 'wpes' ) ); ?>
+						<td colspan="3"
+							class=last><?php print wp_kses_post( __( 'You are NOT allowed to send mail with this domain; it should match the domainname of the website.', 'wpes' ) ); ?>
 							<br/>
 							<?php print wp_kses_post( __( 'If you really need to use this sender e-mail address, you need to switch to SPF-record checking and make sure the SPF for this domain matches this server.', 'wpes' ) ); ?>
 						</td>
@@ -260,12 +279,12 @@ $wpes_config = Plugin::get_config();
 			}
 			?>
 			<tr>
-				<td colspan="4">
+				<td colspan="4" class="last">
 					<h3><?php print wp_kses_post( __( 'How to validate sender?', 'wpes' ) ); ?></h3>
 				</td>
 			</tr>
 			<tr>
-				<td colspan="4">
+				<td colspan="4" class="last">
 					<?php print wp_kses_post( __( 'You have 2 options', 'wpes' ) ); ?>:
 					<ul>
 						<li><input
@@ -288,12 +307,12 @@ $wpes_config = Plugin::get_config();
 				</td>
 			</tr>
 			<tr>
-				<td colspan="4">
+				<td colspan="4" class="last">
 					<hr/>
 				</td>
 			</tr>
 			<tr>
-				<td colspan="4">
+				<td colspan="4" class="last">
 					<h3><?php print wp_kses_post( __( 'What to do in case the sender is not valid for this domain?', 'wpes' ) ); ?></h3>
 				</td>
 			</tr>
@@ -302,13 +321,18 @@ $wpes_config = Plugin::get_config();
 					<label
 						for="make_from_valid"><?php print wp_kses_post( __( 'Fix sender-address?', 'wpes' ) ); ?></label>
 				</th>
-				<td colspan="3">
+				<td colspan="3" class="last">
 					<?php print wp_kses_post( __( 'E-mails sent as different domain will probably be marked as spam. Fix the sender-address to always match the sending domain and send original From address as Reply-To: header?', 'wpes' ) ); ?>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td colspan="3">
 					<?php
 					$wpes_host = wp_parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
 					$wpes_host = preg_replace( '/^www[0-9]*\./', '', $wpes_host );
 					?>
-					<select name="settings[make_from_valid_when]">
+					<select class="wide" name="settings[make_from_valid_when]">
 						<option
 							value="when_sender_invalid" <?php selected( 'when_sender_invalid', $wpes_config['make_from_valid_when'] ); ?>
 						><?php print wp_kses_post( __( 'When sender email domain/SPF does not match', 'wpes' ) ); ?></option>
@@ -316,7 +340,12 @@ $wpes_config = Plugin::get_config();
 							value="when_sender_not_as_set" <?php selected( 'when_sender_not_as_set', $wpes_config['make_from_valid_when'] ); ?>
 						><?php print wp_kses_post( __( 'When sender email is not equal to above', 'wpes' ) ); ?></option>
 					</select>
-					<select name="settings[make_from_valid]" id="make_from_valid">
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td colspan="3">
+					<select class="wide" name="settings[make_from_valid]" id="make_from_valid">
 						<option
 							value=""><?php print wp_kses_post( __( 'Keep the possibly-invalid sender as is. (might cause your mails to be marked as spam!)', 'wpes' ) ); ?></option>
 						<option disabled>────────────────────────────────────────────────────────────</option>
@@ -339,43 +368,48 @@ $wpes_config = Plugin::get_config();
 				</td>
 			</tr>
 			<tr>
-				<th colspan="4">
+				<th colspan="4" class="last">
 					<hr/>
 				</th>
 			</tr>
 			<tr>
-				<td colspan="4">
+				<td colspan="1" rowspan="2">
 					<h3><?php print wp_kses_post( __( 'E-mail content', 'wpes' ) ); ?>:</h3>
 				</td>
-			</tr>
-			<tr>
-				<th colspan="4">
+				<td colspan="3" class="last">
 					<input
 						type="checkbox" name="settings[is_html]" value="1"
 						<?php checked( isset( $wpes_config['is_html'] ) && $wpes_config['is_html'] ); ?>
 						id="smtp-is_html"/><label
 						for="smtp-is_html"><?php print wp_kses_post( __( 'Send as HTML? (Will convert non-html body to html-ish body)', 'wpes' ) ); ?></label>
-				</th>
+				</td>
 			</tr>
 			<tr>
-				<th colspan="4">
+				<td colspan="3" class="last">
 					<input
 						type="checkbox" name="settings[css_inliner]" value="1"
 						<?php checked( isset( $wpes_config['css_inliner'] ) && $wpes_config['css_inliner'] ); ?>
 						id="smtp-css_inliner"/><label
 						for="smtp-css_inliner"><?php print wp_kses_post( __( 'Convert CSS to Inline Styles (for Outlook Online, Yahoo Mail, Google Mail, Hotmail)', 'wpes' ) ); ?></label>
-				</th>
+				</td>
 			</tr>
 			<tr>
-				<th><?php print wp_kses_post( __( 'Content pre-coding (for lack of a better word)', 'wpes' ) ); ?></th>
-				<td colspan="3">
+				<th><?php print wp_kses_post( __( 'Content charset re-coding', 'wpes' ) ); ?></th>
+				<td colspan="3" class="last">
 					<label
 						for="content-precoding"><?php print wp_kses_post( __( 'Some servers have f*cked-up content-encoding settings, resulting in wrongly encoded diacritics. If you expect a character like &eacute; and all you get is something like &euro;&tilde;&Itilde;, experiment with this setting.', 'wpes' ) ); ?></label><br/>
 					<select id="content-precoding" name="settings[content_precode]">
 						<?php
 						$wpes_encoding_table         = explode( ',', '0,auto,' . Plugin::ENCODINGS );
 						$wpes_encoding_table         = array_combine( $wpes_encoding_table, $wpes_encoding_table );
-						$wpes_encoding_table['0']    = __( 'No precoding (default)', 'wpes' );
+						$wpes_encoding_table         = array_map(
+							function ( $item ) {
+								// translators: %s: a content-encoding, like UTF-8.
+								return sprintf( __( 'From: %s', 'wpes' ), strtoupper( $item ) );
+							},
+							$wpes_encoding_table
+						);
+						$wpes_encoding_table['0']    = __( 'No charset re-coding (default)', 'wpes' );
 						$wpes_encoding_table['auto'] = __( 'Autodetect with mb_check_encoding()', 'wpes' );
 						foreach ( $wpes_encoding_table as $wpes_encoding => $wpes_nice_encoding ) {
 							print '<option value="' . esc_attr( $wpes_encoding ) . '" ' . selected( $wpes_config['content_precode'], $wpes_encoding, false ) . '>' . esc_html( $wpes_nice_encoding ) . '</option>';
@@ -385,7 +419,8 @@ $wpes_config = Plugin::get_config();
 				</td>
 			</tr>
 			<tr>
-				<th colspan="4">
+				<th rowspan="2"><?php esc_html_e( 'Content handling', 'wpes' ); ?></th>
+				<th colspan="3" class="last">
 					<input
 						type="checkbox" name="settings[alt_body]" value="1"
 						<?php checked( isset( $wpes_config['alt_body'] ) && $wpes_config['alt_body'] ); ?>
@@ -394,7 +429,7 @@ $wpes_config = Plugin::get_config();
 				</th>
 			</tr>
 			<tr>
-				<th colspan="4">
+				<th colspan="3" class="last">
 					<input
 						type="checkbox" name="settings[do_shortcodes]" value="1"
 						<?php checked( isset( $wpes_config['do_shortcodes'] ) && $wpes_config['do_shortcodes'] ); ?>
@@ -403,39 +438,38 @@ $wpes_config = Plugin::get_config();
 				</th>
 			</tr>
 			<tr>
-				<th colspan="4">
+				<th colspan="4" class="last">
 					<hr/>
 				</th>
 			</tr>
 
 			<?php if ( function_exists( 'openssl_pkcs7_sign' ) ) { ?>
 				<tr>
-					<td colspan="4">
+					<td colspan="4" class="last">
 						<h3><?php print wp_kses_post( __( 'Digital E-mail Signing (S/MIME)', 'wpes' ) ); ?>:</h3>
 					</td>
 				</tr>
 				<tr>
-					<td colspan="4">
+					<td>
 						<input
 							type="checkbox" name="settings[enable_smime]" value="1"
 							<?php checked( isset( $wpes_config['enable_smime'] ) && $wpes_config['enable_smime'] ); ?>
 							id="enable-smime"/><label
 							for="enable-smime"><?php print wp_kses_post( __( 'Sign emails with S/MIME certificate', 'wpes' ) ); ?></label>
 					</td>
-				</tr>
-				<tr>
-					<td>
+					<td class="on-enable-smime">
 						<label
 							for="certfolder"><?php print wp_kses_post( __( 'S/MIME Certificate/Private-Key path', 'wpes' ) ); ?></label>
 					</td>
-					<td colspan="3">
+					<td colspan="2" class="last on-enable-smime">
 						<input
 							type="text" class="widefat" name="settings[certfolder]"
 							value="<?php print esc_attr( $wpes_config['certfolder'] ); ?>" id="certfolder"/>
 					</td>
 				</tr>
-				<tr>
-					<td colspan="4">
+				<tr class="on-enable-smime">
+					<td></td>
+					<td colspan="3" class="last">
 						<?php
 						if ( Plugin::path_is_in_web_root( $wpes_config['certificate_folder'] ) ) {
 							?>
@@ -446,7 +480,12 @@ $wpes_config = Plugin::get_config();
 						?>
 						<?php print wp_kses_post( __( 'You can also type a relative path (any path not starting with a / is a relative path), this will be evaluated against ABSPATH (the root of your WordPress).', 'wpes' ) ); ?>
 						<br/>
-						<?php print wp_kses_post( __( 'The naming convention is: certificate: <code>email@addre.ss.crt</code>, private key: <code>email@addre.ss.key</code>, (optional) passphrase: <code>email@addre.ss.pass</code>.', 'wpes' ) ); ?>
+						<?php
+						print wp_kses_post( __( 'The file-naming convention is', 'wpes' ) ) . ':<br/>';
+						print wp_kses_post( __( 'certificate: <code>email@addre.ss.crt</code>', 'wpes' ) ) . ',<br/>';
+						print wp_kses_post( __( 'private key: <code>email@addre.ss.key</code>', 'wpes' ) ) . ',<br/>';
+						print wp_kses_post( __( '(optional) passphrase: <code>email@addre.ss.pass</code>', 'wpes' ) ) . '.';
+						?>
 					</td>
 				</tr>
 				<?php
@@ -459,8 +498,8 @@ $wpes_config = Plugin::get_config();
 						$wpes_smime_identities = array_keys( $wpes_smime_identities );
 					} else {
 						?>
-						<tr>
-							<td colspan="4" style="color:red;">
+						<tr class="on-enable-smime">
+							<td colspan="4" class="last" style="color:red;" class="last">
 								<strong>
 									<?php
 									print wp_kses_post( sprintf( __( 'Set folder <code>%s</code> not found.', 'wpes' ), $wpes_config['certfolder'] ) );
@@ -476,53 +515,52 @@ $wpes_config = Plugin::get_config();
 					if ( $wpes_smime_identities ) {
 						?>
 						<tr>
-							<td colspan="4">
+							<th colspan="4" class="last">
 								<?php print wp_kses_post( sprintf( __( 'Found S/MIME identities for the following senders: <code>%s</code>', 'wpes' ), implode( '</code>, <code>', $wpes_smime_identities ) ) ); ?>
-							</td>
+							</th>
 						</tr>
 						<?php
 					}
 				}
 				?>
 				<tr>
-					<th colspan="4">
+					<th colspan="4" class="last">
 						<hr/>
 					</th>
 				</tr>
 			<?php } else { ?>
 				<tr>
-					<td colspan="4">
+					<td colspan="4" class="last">
 						<input type="hidden" name="settings[enable_smime]" value="0"/>
 					</td>
 				</tr>
 			<?php } ?>
 			<tr>
-				<td colspan="4">
+				<td colspan="4" class="last">
 					<h3><?php print wp_kses_post( __( 'Digital E-mail Signing (DKIM)', 'wpes' ) ); ?>:</h3>
 				</td>
 			</tr>
 			<tr>
-				<td colspan="4">
+				<td>
 					<input
 						type="checkbox" name="settings[enable_dkim]" value="1"
 						<?php checked( isset( $wpes_config['enable_dkim'] ) && $wpes_config['enable_dkim'] ); ?>
 						id="enable-dkim"/><label
 						for="enable-dkim"><?php print wp_kses_post( __( 'Sign emails with DKIM certificate', 'wpes' ) ); ?></label>
 				</td>
-			</tr>
-			<tr>
-				<td>
+				<td class="on-enable-dkim">
 					<label
 						for="dkimfolder"><?php print wp_kses_post( __( 'DKIM Certificate/Private-Key path', 'wpes' ) ); ?></label>
 				</td>
-				<td colspan="3">
+				<td colspan="2" class="last on-enable-dkim">
 					<input
 						type="text" class="widefat" name="settings[dkimfolder]"
 						value="<?php print esc_attr( $wpes_config['dkimfolder'] ); ?>" id="dkimfolder"/>
 				</td>
 			</tr>
-			<tr>
-				<td colspan="4">
+			<tr class="on-enable-dkim">
+				<td></td>
+				<td colspan="3" class="last">
 					<?php
 					if ( Plugin::path_is_in_web_root( $wpes_config['dkimfolder'] ) ) {
 						?>
@@ -533,36 +571,56 @@ $wpes_config = Plugin::get_config();
 					?>
 					<?php print wp_kses_post( __( 'You can also type a relative path (any path not starting with a / is a relative path), this will be evaluated against ABSPATH (the root of your WordPress).', 'wpes' ) ); ?>
 					<br/>
-					<?php print wp_kses_post( __( 'The naming convention is: certificate: <code>domain.tld.crt</code>, private key: <code>domain.tld.key</code>, DKIM Selector: <code>domain.tld.selector</code>, (optional) passphrase: <code>domain.tld.pass</code>.', 'wpes' ) ); ?>
+					<?php
+					print wp_kses_post( __( 'The file-naming convention is', 'wpes' ) ) . ':<br/>';
+					print wp_kses_post( __( 'certificate: <code>domain.tld.crt</code>', 'wpes' ) ) . ',<br/>';
+					print wp_kses_post( __( 'private key: <code>domain.tld.key</code>', 'wpes' ) ) . ',<br/>';
+					print wp_kses_post( __( 'DKIM Selector: <code>domain.tld.selector</code>', 'wpes' ) ) . ',<br/>';
+					print wp_kses_post( __( '(optional) passphrase: <code>domain.tld.pass</code>', 'wpes' ) ) . '.';
+					?>
 				</td>
 			</tr>
-			<tr>
-				<td colspan="4">
-					To generate DKIM keys, use: <br/>
-					<code>openssl genrsa -aes256 -passout pass:"YOUR-PASSWORD" -out domain.tld.key 2048</code><br/>
-					<code>openssl rsa -in domain.tld.key -pubout > domain.tld.crt</code><br/>
-					<code>echo "YOUR-PASSWORD" > domain.tld.pass</code><br/>
-					<code>echo "DKIM-SELECTOR-FOR-THIS-KEY" > domain.tld.selector</code>
+			<tr class="on-enable-dkim">
+				<td></td>
+				<td colspan="3" class="last">
+					<?php
+					print wp_kses_post( __( 'To generate DKIM keys, use', 'wpes' ) ) . ':<br/>';
+					print wp_kses_post( '<code>openssl genrsa -aes256 -passout pass:"' . _x( 'YOUR-PASSWORD', 'A sample password', 'wpes' ) . '" -out domain.tld.key 2048</code><br/>' );
+					print wp_kses_post( '<code>openssl rsa -in domain.tld.key -pubout > domain.tld.crt</code><br/>' );
+					print wp_kses_post( '<code>echo "' . _x( 'YOUR-PASSWORD', 'A sample password', 'wpes' ) . '" > domain.tld.pass</code><br/>' );
+					print wp_kses_post( '<code>echo "' . _x( 'DKIM-SELECTOR-FOR-THIS-KEY', 'A sample DKIM selector', 'wpes' ) . '" > domain.tld.selector</code><br/>' );
+					?>
 				</td>
 			</tr>
-			<tr>
-				<td colspan="4">
-					upload these files to the specified path on the server and again; this should not be publicly
-					queriable!!!
+			<tr class="on-enable-dkim">
+				<td></td>
+				<td colspan="3" class="last">
+					<?php
+					esc_html__( 'Upload these files to the specified path on the server and again; this should not be publicly queriable!!!', 'wpes' );
+					?>
 				</td>
 			</tr>
-			<tr>
-				<td colspan="4">
-					Finally, register the domain key in the DNS<br/>
-					<code>DKIM-SELECTOR-FOR-THIS-KEY._domainkey.domain.tld. IN TXT "v=DKIM1; k=rsa;
-						p=FULL-CONTENT-OF-domain.tld.crt"</code><br/>
-					remove linebreaks and ignore the ---BEGIN KEY and END KEY lines
+			<tr class="on-enable-dkim">
+				<td></td>
+				<td colspan="3" class="last">
+					<?php esc_html_e( 'Finally, register the domain key in the DNS', 'wpes' ); ?>
+					<br/>
+					<?php print wp_kses_post( '<code>' . _x( 'DKIM-SELECTOR-FOR-THIS-KEY', 'A sample DKIM selector', 'wpes' ) . '._domainkey.domain.tld. IN TXT "v=DKIM1; k=rsa; p=' . _x( 'CONTENT-OF', 'A tag that tells the user to get the content of a file', 'wpes' ) . '-domain.tld.crt"</code>' ); ?>
+					<br/>
+					<?php
+					// translators: %1$s and %2$s are sample content lines to be removed from the key.
+					print esc_html( sprintf( __( 'Remove the lines "%1$s" and "%2$s" and place the rest of the content on a single line.', 'wpes' ), '-----BEGIN PUBLIC KEY-----', '-----END PUBLIC KEY-----' ) );
+					?>
+					<br/>
 				</td>
 			</tr>
-			<tr>
-				<td colspan="4">
-					test your settings with <a href="https://www.dmarcanalyzer.com/dkim/dkim-check/" target="_blank">DMARC
-						Analyser</a> (unaffiliated)
+			<tr class="on-enable-dkim">
+				<td></td>
+				<td colspan="3" class="last">
+					<?php
+					// translators: %s: an URL: to a testing site.
+					print wp_kses_post( sprintf( __( 'Test your settings with <a href="%s" target="_blank">DMARC Analyser</a> (unaffiliated)', 'wpes' ), esc_attr( 'https://www.dmarcanalyzer.com/dkim/dkim-check/' ) ) );
+					?>
 				</td>
 			</tr>
 			<?php
@@ -570,13 +628,12 @@ $wpes_config = Plugin::get_config();
 				$wpes_dkim_identities         = array();
 				$wpes_dkim_certificate_folder = $wpes_config['dkim_certificate_folder'];
 				if ( is_dir( $wpes_dkim_certificate_folder ) ) {
-					$wpes_dkim_files      = glob( $wpes_dkim_certificate_folder . '/*.crt' );
 					$wpes_dkim_identities = Plugin::list_dkim_identities();
 					$wpes_dkim_identities = array_keys( $wpes_dkim_identities );
 				} else {
 					?>
-					<tr>
-						<td colspan="4" style="color:red;">
+					<tr class="on-enable-dkim">
+						<td colspan="4" class="last" style="color:red;" class="last">
 							<strong>
 								<?php
 								print wp_kses_post( sprintf( __( 'Set folder <code>%s</code> not found.', 'wpes' ), $wpes_config['dkimfolder'] ) );
@@ -591,22 +648,26 @@ $wpes_config = Plugin::get_config();
 				}
 				if ( $wpes_dkim_identities ) {
 					?>
-					<tr>
-						<td colspan="4">
-							<?php print wp_kses_post( sprintf( __( 'Found DKIM certificates for the following sender-domains: <code>%s</code>', 'wpes' ), implode( '</code>, <code>', $wpes_dkim_identities ) ) ); ?>
-						</td>
+					<tr class="on-enable-dkim">
+						<td></td>
+						<th colspan="3" class="last">
+							<?php
+							// translators: %s: a list of domains.
+							print wp_kses_post( sprintf( __( 'Found DKIM certificates for the following sender-domains: %s', 'wpes' ), '<code>' . implode( '</code>, <code>', $wpes_dkim_identities ) . '</code>' ) );
+							?>
+						</th>
 					</tr>
 					<?php
 				}
 			}
 			?>
 			<tr>
-				<th colspan="4">
+				<th colspan="4" class="last">
 					<hr/>
 				</th>
 			</tr>
 			<tr>
-				<th colspan="4">
+				<th colspan="4" class="last">
 					<input
 						type="submit" name="op" value="<?php print esc_attr__( 'Save settings', 'wpes' ); ?>"
 						class="button-primary action"/>
@@ -614,66 +675,120 @@ $wpes_config = Plugin::get_config();
 					<input
 						type="submit" name="op" value="<?php print esc_attr__( 'Send sample mail', 'wpes' ); ?>"
 						class="button-secondary action"/>
-					<em><?php print wp_kses_post( sprintf( __( 'Sample mail will be sent to the <a href="%1$s">Site Administrator</a>; <b>%2$s</b>.', 'wpes' ), admin_url( 'options-general.php' ), get_option( 'admin_email', false ) ) ); ?></em>
+					<em>
+						<?php
+						$wpes_admin        = get_option( 'admin_email', false );
+						$wpes_sample_email = [
+							'to'      => $wpes_admin,
+							'subject' => __( 'WP-Email-Essentials Test-email', 'wpes' ),
+						];
+						$wpes_sample_email = Plugin::alternative_to( $wpes_sample_email );
+						$wpes_admin        = reset( $wpes_sample_email['to'] );
+						// translators: %1$s: a link to the options panel, %2$s: an email address.
+						print wp_kses_post( sprintf( __( 'Sample mail will be sent to the <a href="%1$s">Site Administrator</a>; <b>%2$s</b>.', 'wpes' ), admin_url( 'options-general.php' ), $wpes_admin ) );
+						?>
+					</em>
 				</th>
 			</tr>
 			<tr>
-				<th colspan="4">
+				<th colspan="4" class="last">
 					<hr/>
 				</th>
 			</tr>
 			<tr>
-				<th colspan="4">
-					<h3><?php print wp_kses_post( __( 'E-mail styling, and filters for HTML head/body', 'wpes' ) ); ?>
-						:</h3>
+				<th colspan="4" class="last">
+					<h3>
+						<?php print wp_kses_post( __( 'E-mail styling, and filters for HTML head/body', 'wpes' ) ) . ':'; ?>
+					</h3>
 				</th>
 			</tr>
-
-			<tr>
-				<th valign="top">
-					<h4><?php print wp_kses_post( __( 'Filters', 'wpes' ) ); ?></h4>
-				</th>
-				<td colspan="3">
-					<?php print wp_kses_post( sprintf( __( 'DEFAULTS can be overruled with WordPress filter %1$s, parameters: %2$s', 'wpes' ), '<code>wpes_defaults</code>', '<code>Array $defaults</code>' ) ); ?>
-					<br/>
-					<?php print wp_kses_post( sprintf( __( 'SETTINGS can be overruled with WordPress filter %1$s, parameters: %2$s', 'wpes' ), '<code>wpes_settings</code>', '<code>Array $settings</code>' ) ); ?>
-					<br/>
-					<?php print wp_kses_post( sprintf( __( 'Email HEAD can be overruled with WordPress filter %1$s, parameters: %2$s, %3$s', 'wpes' ), '<code>wpes_head</code>', '<code>String $head_content</code>', '<code>PHPMailer $mailer</code>' ) ); ?>
-					<br/>
-					<?php print wp_kses_post( sprintf( __( 'Email BODY can be overruled with WordPress filter %1$s, parameters: %2$s, %3$s', 'wpes' ), '<code>wpes_body</code>', '<code>String $body_content</code>', '<code>PHPMailer $mailer</code>' ) ); ?>
-					<br/>
+			<tr class="on-smtp-is_html">
+				<td colspan="4" class="last">
+					<?php print wp_kses_post( __( 'You can use WordPress filters to augment the HEAD and BODY sections of the HTML e-mail.', 'wpes' ) ); ?>
+				</td>
+			</tr>
+			<tr class="not-smtp-is_html">
+				<td colspan="4" class="last">
+					<?php print wp_kses_post( __( 'You can use WordPress filters to change the e-mail.', 'wpes' ) ); ?>
 				</td>
 			</tr>
 			<tr>
-				<th colspan="4">
+				<th><?php esc_html_e( 'Purpose', 'wpes' ); ?></th>
+				<th><?php esc_html_e( 'WordPress filter', 'wpes' ); ?></th>
+				<th colspan="2"><?php esc_html_e( 'Parameters', 'wpes' ); ?></th class=last>
+			</tr>
+			<tr class="on-smtp-is_html">
+				<td><?php esc_html_e( 'Plugin defaults', 'wpes' ); ?></td>
+				<td><code>wpes_defaults</code></td>
+				<td colspan="2"><code>array $defaults</code></td class=last>
+			</tr>
+			<tr class="on-smtp-is_html">
+				<td><?php esc_html_e( 'Plugin settings', 'wpes' ); ?></td>
+				<td><code>wpes_settings</code></td>
+				<td colspan="2"><code>array $settings</code></td class=last>
+			</tr>
+			<tr>
+				<td><?php esc_html_e( 'Email subject', 'wpes' ); ?></td>
+				<td><code>wpes_subject</code></td>
+				<td colspan="2"><code>string $subject</code>, <code>PHPMailer $mailer</code></td class=last>
+			</tr>
+			<tr class="on-smtp-is_html">
+				<td><?php esc_html_e( 'Email <head>', 'wpes' ); ?></td>
+				<td><code>wpes_head</code></td>
+				<td colspan="2"><code>string $head_content</code>, <code>PHPMailer $mailer</code></td class=last>
+			</tr>
+			<tr class="on-smtp-is_html">
+				<td><?php esc_html_e( 'Email <body>', 'wpes' ); ?></td>
+				<td><code>wpes_body</code></td>
+				<td colspan="2"><code>string $body_content</code>, <code>PHPMailer $mailer</code></td class=last>
+			</tr>
+			<tr class="not-smtp-is_html">
+				<td colspan="4" class="last">
+					<?php print wp_kses_post( __( 'Turn on HTML email to enable e-mail styling.', 'wpes' ) ); ?>
+				</td>
+			</tr>
+			<tr>
+				<th colspan="4" class="last">
 					<pre><?php print wp_kses_post( Plugin::$debug ); ?></pre>
 				</th>
 			</tr>
 	</form>
 </div>
 <table width="90%">
-	<?php
-	$wpes_mailer      = new WPES_PHPMailer();
-	$wpes_wpes_config = Plugin::get_config();
-	$wpes_css         = apply_filters_ref_array( 'wpes_css', array( '', &$wpes_mailer ) );
-	$wpes_subject     = __( 'Sample email subject', 'wpes' );
-	$wpes_body        = Plugin::dummy_content();
-	?>
 	<tr>
-		<td><?php print wp_kses_post( __( 'If HTML enabled: You can use WordPress filters to augment the HEAD and BODY sections of the HTML e-mail. To add information to the HEAD (or change the title) hook to filter wpes_head. For the body, hook to wpes_body', 'wpes' ) ); ?></td>
+		<th class="last">
+			<?php
+			print wp_kses_post(
+				Plugin::get_config()['is_html'] ? __( 'Example Email (actual HTML) - with your filters applied', 'wpes' ) : __( 'Example Email', 'wpes' )
+			);
+			?>
+		</th>
 	</tr>
 	<tr>
-		<th><?php print wp_kses_post( __( 'Example Email (actual HTML) - with your filters applied', 'wpes' ) ); ?></th>
-	</tr>
-	<tr>
-		<td>
+		<td class="last">
 			<iframe style="width: 100%; min-width: 700px; height: auto; min-height: 600px;"
 					src="<?php print esc_attr( add_query_arg( 'iframe', 'content' ) ); ?>"></iframe>
 		</td>
 	</tr>
 </table>
-<style>
-	table th {
-		text-align: left;
-	}
-</style>
+<script>
+	jQuery(document).ready(function ($) {
+		var keys = 'enable_history,smtp-enabled,enable-smime,enable-dkim,smtp-is_html'.split(',');
+		for (var key in keys) {
+			var i = keys[key];
+			$("#" + i).on('change', function (e) {
+				var i = e.target.id;
+				$(".on-" + i).toggle($(this).is(':checked'));
+				$(".not-" + i).toggle(!$(this).is(':checked'));
+			}).trigger('change');
+		}
+		$(".on-regexp-test").each(function () {
+			(function (field, regexp, label) {
+				$('#' + field).on('change keyup blur paste', function () {
+					label.toggle(null !== ($(this).val() || "").match(new RegExp(regexp, 'i')));
+				}).trigger('change');
+			})($(this).attr('data-field'), $(this).attr('data-regexp'), $(this));
+		});
+	});
+
+</script>

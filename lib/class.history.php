@@ -115,13 +115,28 @@ class History {
 				// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- not a form!.
 				if ( current_user_can( 'manage_options' ) && isset( $_GET['download_eml'] ) ) {
 					// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- still not a form!.
-					$eml = $wpdb->get_var( $wpdb->prepare( "SELECT eml FROM {$wpdb->prefix}wpes_hist WHERE id = %d LIMIT 1", $_GET['download_eml'] ) );
-					if ( $eml ) {
+					$data = $wpdb->get_row( $wpdb->prepare( "SELECT ID, eml, subject, recipient, thedatetime FROM {$wpdb->prefix}wpes_hist WHERE id = %d LIMIT 1", $_GET['download_eml'] ), ARRAY_A );
+					if ( $data['eml'] ?? false ) {
 						header( 'Content-Type: message/rfc822' );
-						header( 'Content-Disposition: inline; filename=message.eml' );
-						header( 'Content-Length: ' . strlen( $eml ) );
+						$uniq = sprintf(
+							'%1$s-%2$d-%3$s-%4$s',
+							sanitize_title( $data['thedatetime'] ),
+							intval( $data['ID'] ),
+							sanitize_title(
+								strtr(
+									$data['recipient'],
+									[
+										'.' => '-dot-',
+										'@' => '-at-',
+									]
+								)
+							),
+							sanitize_title( $data['subject'] )
+						);
+						header( 'Content-Disposition: inline; filename=' . $uniq . '.eml' );
+						header( 'Content-Length: ' . strlen( $data['eml'] ) );
 						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- How do you escape an email? we're DOWNLOADING it.
-						print $eml;
+						print $data['eml'];
 						exit;
 					}
 				}
@@ -260,7 +275,7 @@ class History {
 	 *
 	 * @param WPES_PHPMailer $phpmailer The PHPMailer object.
 	 */
-	public static function phpmailer_init( $phpmailer ) {
+	public static function phpmailer_init( &$phpmailer ) {
 		// @phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- PHPMailer, folks...
 		global $wpdb;
 		$data                  = self::object_data( $phpmailer );
@@ -278,6 +293,8 @@ class History {
 			$sender = $reply_to . ' *';
 		}
 		$data = wp_json_encode( $data, JSON_PRETTY_PRINT );
+
+		self::add_tracker( $phpmailer->Body, self::last_insert() );
 
 		$phpmailer->PreSend();
 		$eml = $phpmailer->GetSentMIMEMessage();
@@ -326,8 +343,6 @@ class History {
 		$ip = Queue::server_remote_addr();
 		$wpdb->query( $wpdb->prepare( "INSERT INTO `{$wpdb->prefix}wpes_hist` (status, sender, recipient, subject, headers, body, thedatetime, ip) VALUES (%d, %s, %s, %s, %s, %s, %s, %s);", self::MAIL_NEW, $from, is_array( $to ) ? implode( ',', $to ) : $to, $subject, $_headers, $message, gmdate( 'Y-m-d H:i:s', time() ), $ip ) );
 		self::last_insert( $wpdb->insert_id );
-
-		self::add_tracker( $data['message'], self::last_insert() );
 
 		return $data;
 	}
