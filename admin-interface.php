@@ -13,7 +13,7 @@ if ( ! current_user_can( 'manage_options' ) ) {
 global $current_user;
 $wpes_config = Plugin::get_config();
 ?>
-<div class="wrap">
+<div class="wrap wpes-wrap">
 	<div class="icon32 icon32-posts-group" id="icon-edit">
 		<br/>
 	</div>
@@ -30,6 +30,7 @@ $wpes_config = Plugin::get_config();
 	?>
 	<form id="outpost" method='POST' action="" enctype="multipart/form-data">
 		<input type="hidden" name="form_id" value="wp-email-essentials"/>
+		<?php wp_nonce_field( 'wp-email-essentials--settings', 'wpes-nonce' ); ?>
 		<table>
 			<tr>
 				<td colspan="4">
@@ -52,9 +53,9 @@ $wpes_config = Plugin::get_config();
 					<?php print wp_kses_post( __( '<strong>Warning: </strong> Storing e-mails in your database is a BAD idea and illegal in most countries. Use this for DEBUGGING only!', 'wpes' ) ); ?>
 					<br/>
 					<?php print wp_kses_post( __( 'Enabling the history feature will also add a tracker to all outgoing emails to check receipt.', 'wpes' ) ); ?>
-					<br />
+					<br/>
 					<?php print wp_kses_post( __( 'Disabling this feature will delete the mail-store.', 'wpes' ) ); ?>
-					<br />
+					<br/>
 					<strong
 						style="color: darkred"><?php print wp_kses_post( __( 'If you insist on storing emails, please note that you need to implement the appropriate protocols for compliance with GDPR. The responsibility lies with the owner of the website, not the creator or hosting company.', 'wpes' ) ); ?></strong>
 				</th>

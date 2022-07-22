@@ -101,8 +101,6 @@ class Plugin {
 		add_filter( 'wp_mail', [ self::class, 'action_wp_mail' ], PHP_INT_MAX - 1000 );
 		add_action( 'admin_menu', [ self::class, 'admin_menu' ], 10 );
 
-		add_action( 'admin_menu', [ self::class, 'migrate_from_smtp_connect' ], - 10000 );
-
 		add_action( 'admin_footer', [ self::class, 'maybe_inject_admin_settings' ] );
 
 		add_filter( 'cfdb_form_data', [ self::class, 'correct_cfdb_form_data_ip' ] );
@@ -111,19 +109,13 @@ class Plugin {
 
 		add_filter(
 			'comment_moderation_recipients',
-			[
-				self::class,
-				'correct_moderation_to',
-			],
+			[ self::class, 'correct_moderation_to' ],
 			~PHP_INT_MAX,
 			2
 		);
 		add_filter(
 			'comment_notification_recipients',
-			[
-				self::class,
-				'correct_comment_to',
-			],
+			[ self::class, 'correct_comment_to' ],
 			~PHP_INT_MAX,
 			2
 		);
@@ -858,8 +850,7 @@ class Plugin {
 		}
 
 		// Check if this is a debug request;.
-		// @phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( $_POST && isset( $_POST['form_id'] ) && 'wp-email-essentials' === $_POST['form_id'] && __( 'Send sample mail', 'wpes' ) === $_POST['op'] ) {
+		if ( wp_verify_nonce( $_POST['wpes-nonce'] ?? false, 'wp-email-essentials--settings' ) && $_POST && isset( $_POST['form_id'] ) && 'wp-email-essentials' === $_POST['form_id'] && __( 'Send sample mail', 'wpes' ) === $_POST['op'] ) {
 			$mailer->Timeout   = 5;
 			$mailer->SMTPDebug = 2;
 		}
@@ -894,7 +885,7 @@ class Plugin {
 
 		// DEBUG output .
 		// @phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( $_POST && isset( $_POST['form_id'] ) && 'wp-email-essentials' === $_POST['form_id'] && __( 'Print debug output of sample mail', 'wpes' ) === $_POST['op'] ) {
+		if ( wp_verify_nonce( $_POST['wpes-nonce'] ?? false, 'wp-email-essentials--settings' ) && $_POST && isset( $_POST['form_id'] ) && 'wp-email-essentials' === $_POST['form_id'] && __( 'Print debug output of sample mail', 'wpes' ) === $_POST['op'] ) {
 			$mailer->SMTPDebug = true;
 			print '<h2>' . esc_html__( 'Dump of PHP Mailer object', 'wpes' ) . '</h2><pre>';
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_dump
@@ -1167,7 +1158,7 @@ class Plugin {
 				'host'     => $values['host'],
 				'port'     => $values['port'],
 				'username' => $values['username'],
-				'password' => ( $values['password'] == str_repeat( '*', strlen( $values['password'] ) ) && $settings['smtp'] ) ? $settings['smtp']['password'] : $values['password'],
+				'password' => ( str_repeat( '*', strlen( $values['password'] ) ) === $values['password'] && $settings['smtp'] ) ? $settings['smtp']['password'] : $values['password'],
 			];
 
 			if ( false !== strpos( $settings['smtp']['host'], ':' ) ) {
@@ -1206,6 +1197,11 @@ class Plugin {
 		update_option( 'wp-email-essentials', $settings );
 	}
 
+	/**
+	 * Get the hostname for the website.
+	 *
+	 * @return string
+	 */
 	public static function get_hostname_by_blogurl() {
 		$url = get_bloginfo( 'url' );
 		$url = wp_parse_url( $url );
@@ -1213,6 +1209,13 @@ class Plugin {
 		return $url['host'];
 	}
 
+	/**
+	 * Decode an RFC2822 formatted email address to its components.
+	 *
+	 * @param string $rfc RFC2822 formatted email in format   "My Name" <my.email@address.com>    .
+	 *
+	 * @return array|false
+	 */
 	private static function rfc_decode( $rfc ) {
 		$rfc = trim( $rfc );
 
@@ -1224,24 +1227,26 @@ class Plugin {
 			];
 		}
 
-		// $rfc is not an email, the RFC format is:
-		// "Name Surname Anything here" <email@addr.ess>
-		// but quotes are optional...
-		// Name Surname Anything here <email@addr.ess>
-		// is considered valid as well
-		//
-		// considering HTML, <email@addr.ess> is a tag so we can strip that out with strip_tags
-		// and the remainder is the name-part.
-		$name_part = strip_tags( $rfc );
-		// remove the name-part from the original and the email part is known
+		/**
+		 * $rfc is not an email, the RFC format is:
+		 * "Name Surname Anything here" <email@addr.ess>
+		 * but quotes are optional...
+		 * Name Surname Anything here <email@addr.ess>
+		 * is considered valid as well
+		 *
+		 * Considering HTML, <email@addr.ess> is a tag, so we can strip that out with strip_tags
+		 * and the remainder is the name-part.
+		 */
+		$name_part = wp_strip_all_tags( $rfc );
+		// remove the name-part from the original and the email part is known.
 		$email_part = str_replace( $name_part, '', $rfc );
 
-		// strip illegal characters;
-		// the name part could have had escaped quotes (like "I have a quote \" here" <some@email.com> )
+		// strip illegal characters;.
+		// the name part could have had escaped quotes (like "I have a quote \" here" <some@email.com> ).
 		$name_part  = trim( stripslashes( $name_part ), "\n\t\r\" " );
 		$email_part = trim( $email_part, "\n\t\r\"<> " );
 
-		// verify :)
+		// verify :).
 		if ( is_email( $email_part ) ) {
 			return [
 				'name'  => $name_part,
@@ -1252,10 +1257,17 @@ class Plugin {
 		return false;
 	}
 
+	/**
+	 * Split a comma separated list of RFC encoded email addresses into an array.
+	 *
+	 * @param string $string Comma separated list of email addresses.
+	 *
+	 * @return array
+	 */
 	private static function rfc_explode( $string ) {
-		// safequard escaped quotes
+		// safequard escaped quotes.
 		$string = str_replace( '\\"', 'ESCAPEDQUOTE', $string );
-		// get chnks
+		// get chunks.
 		$exploded = [];
 		$i        = 0;
 		// this regexp will match any comma + a string behind it.
@@ -1263,19 +1275,23 @@ class Plugin {
 		$string .= ', dummy';
 		while ( trim( $string ) && preg_match( '/(,)(([^"]|"[^"]*")*$)/', $string, $match ) ) {
 			$i ++;
-			// print "Round $i; \n";
-			// print "String WAS: $string \n";
+
 			$matched_rest    = $match[0];
 			$unmatched_first = str_replace( $matched_rest, '', $string );
 			$string          = trim( $matched_rest, ', ' );
 			$exploded[]      = str_replace( 'ESCAPEDQUOTE', '\\"', $unmatched_first );
-			// var_dump('match:', $match, "mrest:", $matched_rest, "umfirst:", $unmatched_first, "string is now:", $string);
-			// print '---------------------------------------------------------------------------------'. "\n";
 		}
 
 		return array_map( 'trim', $exploded );
 	}
 
+	/**
+	 * Re-code email to RFC2822.
+	 *
+	 * @param string|string[2] $e The email, either a string, possibly in RFC2822 format, or an array with 'name' and 'email' .
+	 *
+	 * @return string
+	 */
 	private static function rfc_recode( $e ) {
 		if ( ! is_array( $e ) ) {
 			$e = self::rfc_decode( $e );
@@ -1285,6 +1301,13 @@ class Plugin {
 		return $e;
 	}
 
+	/**
+	 * Encode an email to RFC2822.
+	 *
+	 * @param string[2] $email_array The email array consists of elements 'name' and 'email'.
+	 *
+	 * @return string
+	 */
 	private static function rfc_encode( $email_array ) {
 		if ( ! $email_array['name'] ) {
 			return $email_array['email'];
@@ -1293,7 +1316,7 @@ class Plugin {
 		// this is the unescaped, unencasulated RFC, as WP 4.6 and higher want it.
 		$email_array['name'] = trim( stripslashes( $email_array['name'] ), '"' );
 		if ( version_compare( get_bloginfo( 'version' ), '4.5', '<=' ) ) {
-			// this will escape all quotes and encapsulate with quotes, for 4.5 and older
+			// this will escape all quotes and encapsulate with quotes, for 4.5 and older.
 			$email_array['name'] = wp_json_encode( $email_array['name'] );
 		}
 		// so NO QUOTES HERE, they are there where needed.
@@ -1302,27 +1325,30 @@ class Plugin {
 		return $return;
 	}
 
+	/**
+	 * Callback to the admin_menu action.
+	 */
 	public static function admin_menu() {
 		add_menu_page(
 			'WP-Email-Essentials',
 			'Email Essentials',
 			'manage_options',
 			'wp-email-essentials',
-			[
-				self::class,
-				'admin_interface',
-			],
+			[ self::class, 'admin_interface' ],
 			'dashicons-email-alt'
 		);
 
-		if ( isset( $_GET['page'] ) && $_GET['page'] == 'wp-email-essentials' && $_POST && isset( $_POST['form_id'] ) && $_POST['form_id'] == 'wp-email-essentials' ) {
+		/**
+		 * Save options for "Settings" pane..
+		 */
+		if ( wp_verify_nonce( $_POST['wpes-nonce'] ?? false, 'wp-email-essentials--settings' ) && isset( $_GET['page'] ) && 'wp-email-essentials' === $_GET['page'] && $_POST && isset( $_POST['form_id'] ) && 'wp-email-essentials' === $_POST['form_id'] ) {
 			switch ( $_POST['op'] ) {
 				case __( 'Save settings', 'wpes' ):
 					$config  = self::get_config();
 					$host    = wp_parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
 					$host    = preg_replace( '/^www[0-9]*\./', '', $host );
 					$defmail = self::wp_mail_from( $_POST['settings']['from_email'] );
-					if ( 'default' == $_POST['settings']['make_from_valid'] && ! self::i_am_allowed_to_send_in_name_of( $defmail ) ) {
+					if ( 'default' === $_POST['settings']['make_from_valid'] && ! self::i_am_allowed_to_send_in_name_of( $defmail ) ) {
 						$_POST['settings']['make_from_valid'] = 'noreply';
 					}
 					self::set_config( $_POST['settings'] );
@@ -1334,7 +1360,7 @@ class Plugin {
 					self::$debug = true;
 					$result      = wp_mail(
 						get_option( 'admin_email', false ),
-						__( 'Test-email', 'wpes' ),
+						__( 'WP-Email-Essentials Test-email', 'wpes' ),
 						self::dummy_content(),
 						[ 'X-Priority: 1' ]
 					);
@@ -1347,18 +1373,23 @@ class Plugin {
 					break;
 			}
 		}
-		if ( isset( $_GET['page'] ) && $_GET['page'] == 'wp-email-essentials' && isset( $_GET['iframe'] ) && $_GET['iframe'] == 'content' ) {
+
+		/**
+		 * Iframe content to show a sample email.
+		 */
+		// @phpcs:ignore WordPress.Security.NonceVerification.Missing -- not processing form content.
+		if ( isset( $_GET['page'] ) && 'wp-email-essentials' === $_GET['page'] && isset( $_GET['iframe'] ) && 'content' === $_GET['iframe'] ) {
 			$mailer          = new WPES_PHPMailer();
 			$config          = self::get_config();
 			$subject         = __( 'Sample email subject', 'wpes' );
-			$mailer->Subject = $subject;
+			$mailer->Subject = $subject; // @phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- PHPMailer, sorry.
 			$body            = self::dummy_content();
 			header( 'Content-Type: text/html; charset=utf-8' );
 
 			$html = self::build_html( $mailer, $subject, $body, 'utf-8' );
 
 			$html = self::cid_to_image( $html, $mailer );
-			print $html;
+			print $html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- How to escape email content?.
 
 			exit;
 		}
@@ -1374,7 +1405,11 @@ class Plugin {
 				'admin_interface_admins',
 			]
 		);
-		if ( isset( $_GET['page'] ) && $_GET['page'] == 'wpes-admins' && $_POST && isset( $_POST['form_id'] ) && $_POST['form_id'] == 'wpes-admins' ) {
+
+		/**
+		 * Save options for "alternative admins" panel
+		 */
+		if ( wp_verify_nonce( $_POST['wpes-nonce'] ?? false, 'wp-email-essentials--admins' ) && isset( $_GET['page'] ) && 'wpes-admins' === $_GET['page'] && $_POST && isset( $_POST['form_id'] ) && 'wpes-admins' === $_POST['form_id'] ) {
 			switch ( $_POST['op'] ) {
 				case __( 'Save settings', 'wpes' ):
 					$keys = $_POST['settings']['keys'];
@@ -1423,7 +1458,11 @@ class Plugin {
 				'admin_interface_moderators',
 			]
 		);
-		if ( isset( $_GET['page'] ) && $_GET['page'] == 'wpes-moderators' && $_POST && isset( $_POST['form_id'] ) && $_POST['form_id'] == 'wpes-moderators' ) {
+
+		/**
+		 * Save options for "Moderators" panel.
+		 */
+		if ( wp_verify_nonce( $_POST['wpes-nonce'] ?? false, 'wp-email-essentials--moderators' ) && isset( $_GET['page'] ) && 'wpes-moderators' === $_GET['page'] && $_POST && isset( $_POST['form_id'] ) && 'wpes-moderators' === $_POST['form_id'] ) {
 			switch ( $_POST['op'] ) {
 				case __( 'Save settings', 'wpes' ):
 					foreach ( $_POST['settings']['keys'] as $recipient => $_keys ) {
@@ -1456,19 +1495,32 @@ class Plugin {
 		}
 	}
 
-	static function admin_interface() {
+	/**
+	 * Load the settings template.
+	 */
+	public static function admin_interface() {
 		include __DIR__ . '/../admin-interface.php';
 	}
 
-	static function admin_interface_admins() {
+	/**
+	 * Load the alternative admins template.
+	 */
+	public static function admin_interface_admins() {
 		include __DIR__ . '/../admin-admins.php';
 	}
 
-	static function admin_interface_moderators() {
+	/**
+	 * Load the moderators template.
+	 */
+	public static function admin_interface_moderators() {
 		include __DIR__ . '/../admin-moderators.php';
 	}
 
+	/**
+	 * Tests.
+	 */
 	public static function test() {
+		// @phpcs:disable
 		$test = self::rfc_decode( 'ik@remonpel.nl' );
 		// should return array( 'name' => 'ik@remonpel.nl', 'email' => 'ik@remonpel.nl' )
 		if ( $test['name'] == 'ik@remonpel.nl' && $test['email'] == 'ik@remonpel.nl' ) {
@@ -1502,54 +1554,46 @@ class Plugin {
 		}
 
 		exit;
+		// @phpcs:enable
 	}
 
-	public static function migrate_from_smtp_connect() {
-		$plugin = 'smtp-connect/smtp-connect.php';
-		if ( is_plugin_active( $plugin ) ) {
-			// plugin active, migrate
-			$smtp_connect = get_option( 'smtp-connect', [] );
-			if ( $smtp_connect['enabled'] ) {
-				$smtp_connect['smtp-enabled'] = true;
-			}
-			$smtp_connect['host'] = $smtp_connect['Host'];
-			unset( $smtp_connect['Host'] );
-			$smtp_connect['username'] = $smtp_connect['Username'];
-			unset( $smtp_connect['Username'] );
-			$smtp_connect['password'] = $smtp_connect['Password'];
-			unset( $smtp_connect['Password'] );
-			self::set_config( $smtp_connect );
-
-			// deactivate conflicting plugin
-			deactivate_plugins( $plugin, false );
-
-			// WordPress still thinks the plugin is active, do it the hard way
-			$active = get_option( 'active_plugins', [] );
-			unset( $active[ array_search( $plugin, $active ) ] );
-			update_option( 'active_plugins', $active );
-
-			// log the deactivation.
-			update_option( 'recently_activated', [ $plugin => time() ] + (array) get_option( 'recently_activated' ) );
-		}
-	}
-
+	/**
+	 * Generate dummy content for sample email.
+	 *
+	 * @return string
+	 */
 	public static function dummy_content() {
 		return '<h1>Sample Email Body</h1><p>Some <a href="https://google.com/?s=random">råndôm</a> text Lorem Ipsum is <b>bold simply dummy</b> text of the <strong>strong printing and typesetting</strong> industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p><h2>A header-2</h2><p>Some more text</p><h3>A header-3</h3><ul><li>A list - unordered, item 1</li><li>Item 2</li></ul><h4>A header-4</h4><ol><li>A list - ordered, item 1</li><li>Item 2</li></ol>';
 	}
 
+	/**
+	 * For display purposes: fetch an ambedded image based on the CID and show it.
+	 *
+	 * @param string         $html   The HTML of the email.
+	 * @param WPES_PHPMailer $mailer The PHP_Mailer object.
+	 *
+	 * @return string
+	 */
 	public static function cid_to_image( $html, $mailer ) {
 		foreach ( $mailer->getAttachments() as $attachment ) {
 			if ( $attachment[7] ) {
+				// @phpcs:disable WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- I ain't stupid...
+				// @phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents -- Yeah, cus that works on local files...
 				$html = str_replace( 'cid:' . $attachment[7], 'data:' . $attachment[4] . ';' . $attachment[3] . ',' . base64_encode( file_get_contents( $attachment[0] ) ), $html );
+				// @phpcs:enable WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode
 			}
 		}
 
 		return $html;
 	}
 
-	function adminNotices() {
+	/**
+	 * Display admin notices.
+	 */
+	public static function admin_notices() {
 		$config = self::get_config();
-		$onpage = is_admin() && isset( $_GET['page'] ) && $_GET['page'] == 'wp-email-essentials';
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- no form processing, just checking...
+		$onpage = is_admin() && isset( $_GET['page'] ) && 'wp-email-essentials' === $_GET['page'];
 
 		$from = $config['from_email'];
 		if ( ! $from ) {
@@ -1557,46 +1601,38 @@ class Plugin {
 			if ( $onpage ) {
 				$class   = 'updated';
 				$message = __( 'WP-Email-Essentials is not yet configured. Please fill out the form below.', 'wpes' );
-				echo "<div class='$class'><p>$message</p></div>";
+				echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 			} else {
 				$class   = 'error';
-				$message = sprintf( __( 'WP-Email-Essentials is not yet configured. Please go <a href="%s">here</a>.', 'wpes' ), $url );
-				echo "<div class='$class'><p>$message</p></div>";
+				$message = sprintf( __( 'WP-Email-Essentials is not yet configured. Please go <a href="%s">here</a>.', 'wpes' ), esc_attr( $url ) );
+				echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 			}
 
 			return;
 		}
 
-		// certfolder == setting, certificate_folder == real path;
+		// For devs; certfolder = setting, certificate_folder = real path;.
 		if ( $config['enable_smime'] && isset( $config['certfolder'] ) && $config['certfolder'] ) {
-			if ( is_writable( $config['certificate_folder'] ) && ! get_option( 'suppress_smime_writable' ) ) {
-				$class   = 'error';
-				$message = __( 'The S/MIME certificate folder is writable. This is Extremely insecure. Please reconfigure, make sure the folder is not writable by Apache. If your server is running suPHP, you cannot make the folder read-only for apache. Please contact your hosting provider and ask for a more secure hosting package, one not based on suPHP.', 'wpes' );
-				// echo "<div class='$class'><p>$message</p></div>";
-			}
-
 			if ( false !== strpos( realpath( $config['certificate_folder'] ), realpath( self::root_path() ) ) ) {
 				$class   = 'error';
 				$message = sprintf( __( 'The S/MIME certificate folder is inside the webspace. This is Extremely insecure. Please reconfigure, make sure the folder is outside the website-root %s.', 'wpes' ), self::root_path() );
-				echo "<div class='$class'><p>$message</p></div>";
+				echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 			}
 		}
 
-		// certfolder == setting, certificate_folder == real path;
 		if ( $config['enable_smime'] && $onpage && ! function_exists( 'openssl_pkcs7_sign' ) ) {
 			$class   = 'error';
 			$message = __( 'The openssl package for PHP is not installed, incomplete or broken. Please contact your hosting provider. S/MIME signing is NOT available.', 'wpes' );
-			echo "<div class='$class'><p>$message</p></div>";
+			echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 		}
 
-		// certfolder == setting, certificate_folder == real path;
 		if ( $config['enable_smime'] && $onpage && isset( $config['smtp']['host'] ) && ( false !== strpos( $config['smtp']['host'], 'mandrillapp' ) || false !== strpos( $config['smtp']['host'], 'sparkpostmail' ) ) && function_exists( 'openssl_pkcs7_sign' ) ) {
 			$class   = 'error';
 			$message = __( 'Services like MandrillApp or SparkPostMail will break S/MIME signing. Please use a different SMTP-service if signing is required.', 'wpes' );
-			echo "<div class='$class'><p>$message</p></div>";
+			echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 		}
 
-		// default mail identity existance
+		// default mail identity existence.
 		if ( $config['enable_smime'] && $onpage && ! self::get_smime_identity( $from ) ) {
 			$rawset               = self::get_config( true );
 			$set                  = $rawset['certfolder'];
@@ -1605,33 +1641,27 @@ class Plugin {
 			if ( self::get_smime_identity( $from ) ) {
 				$class   = 'error';
 				$message = sprintf( __( 'There is no certificate for the default sender address <code>%s</code>. The required certificate is supplied with this plugin. Please copy it to the correct folder.', 'wpes' ), $from );
-				echo "<div class='$class'><p>$message</p></div>";
+				echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 			} else {
 				$class   = 'error';
 				$message = sprintf( __( 'There is no certificate for the default sender address <code>%s</code>. Start: <a href="https://www.comodo.com/home/email-security/free-email-certificate.php" target="_blank">here</a>.', 'wpes' ), $from );
-				echo "<div class='$class'><p>$message</p></div>";
+				echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 			}
 
 			$rawset['certfolder'] = $set;
 			self::set_config( $rawset, true );
 		}
 
-		// dkimfolder == setting, dkim_certificate_folder == real path;
+		// For devs; dkimfolder = setting, dkim_certificate_folder = real path;.
 		if ( ! empty( $config['enable_dkim'] ) && $config['enable_dkim'] && isset( $config['dkimfolder'] ) && $config['dkimfolder'] ) {
-			if ( is_writable( $config['dkim_certificate_folder'] ) && ! get_option( 'suppress_dkim_writable' ) ) {
-				$class   = 'error';
-				$message = __( 'The DKIM certificate folder is writable. This is Extremely insecure. Please reconfigure, make sure the folder is not writable by Apache. If your server is running suPHP, you cannot make the folder read-only for apache. Please contact your hosting provider and ask for a more secure hosting package, one not based on suPHP.', 'wpes' );
-				// echo "<div class='$class'><p>$message</p></div>";
-			}
-
 			if ( false !== strpos( realpath( $config['dkim_certificate_folder'] ), realpath( self::root_path() ) ) ) {
 				$class   = 'error';
 				$message = sprintf( __( 'The DKIM certificate folder is inside the webspace. This is Extremely insecure. Please reconfigure, make sure the folder is outside the website-root %s.', 'wpes' ), self::root_path() );
-				echo "<div class='$class'><p>$message</p></div>";
+				echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 			}
 		}
 
-		// default mail identity existance
+		// default mail identity existence.
 		if ( ! empty( $config['enable_dkim'] ) && $config['enable_dkim'] && $onpage && ! self::get_dkim_identity( $from ) ) {
 			$rawset               = self::get_config( true );
 			$set                  = $rawset['dkimfolder'];
@@ -1641,6 +1671,11 @@ class Plugin {
 
 	}
 
+	/**
+	 * List all available S/MIME identities.
+	 *
+	 * @return array
+	 */
 	public static function list_smime_identities() {
 		$c                  = self::get_config();
 		$ids                = [];
@@ -1652,7 +1687,7 @@ class Plugin {
 					$ids[ basename( preg_replace( '/\.crt$/', '', $file ) ) ] = [
 						$file,
 						preg_replace( '/\.crt$/', '.key', $file ),
-						trim( @file_get_contents( preg_replace( '/\.crt$/', '.pass', $file ) ) ),
+						trim( self::file_get_contents( preg_replace( '/\.crt$/', '.pass', $file ) ) ),
 					];
 				}
 			}
@@ -1661,6 +1696,13 @@ class Plugin {
 		return $ids;
 	}
 
+	/**
+	 * Get S/MIME identity for a given email address.
+	 *
+	 * @param string $email The email address.
+	 *
+	 * @return false|mixed
+	 */
 	public static function get_smime_identity( $email ) {
 		$ids = self::list_smime_identities();
 		if ( isset( $ids[ $email ] ) ) {
@@ -1670,7 +1712,11 @@ class Plugin {
 		return false;
 	}
 
-
+	/**
+	 * List all available DKIM identities.
+	 *
+	 * @return array[]
+	 */
 	public static function list_dkim_identities() {
 		$c                  = self::get_config();
 		$ids                = [];
@@ -1683,8 +1729,8 @@ class Plugin {
 					$ids[ $domain ] = [
 						$file,
 						preg_replace( '/\.crt$/', '.key', $file ),
-						trim( @file_get_contents( preg_replace( '/\.crt$/', '.pass', $file ) ) ),
-						trim( @file_get_contents( preg_replace( '/\.crt$/', '.selector', $file ) ) ),
+						trim( self::file_get_contents( preg_replace( '/\.crt$/', '.pass', $file ) ) ),
+						trim( self::file_get_contents( preg_replace( '/\.crt$/', '.selector', $file ) ) ),
 						$domain,
 					];
 				}
@@ -1694,6 +1740,13 @@ class Plugin {
 		return $ids;
 	}
 
+	/**
+	 * Get a DKIM identity for a given email address.
+	 *
+	 * @param string $email The email address.
+	 *
+	 * @return false|array
+	 */
 	public static function get_dkim_identity( $email ) {
 		$ids    = self::list_dkim_identities();
 		$domain = explode( '@', '@' . $email );
@@ -1705,64 +1758,67 @@ class Plugin {
 		return false;
 	}
 
-
+	/**
+	 * Get the alternative recepient for sending a specific email to the site admin.
+	 *
+	 * @param array $email The WordPress email array with 'to', 'subject', 'message', 'headers' and 'attachments'.
+	 *
+	 * @return array
+	 */
 	public static function alternative_to( $email ) {
 		$admin_email = get_option( 'admin_email' );
 
-		// make sure we have a list of emails, not a single email
+		// make sure we have a list of emails, not a single email.
 		if ( ! is_array( $email['to'] ) ) {
 			$email['to'] = self::rfc_explode( $email['to'] );
 		}
 
-		// find the admin address
+		// find the admin address.
 		$found_mail_item_number = - 1;
 		foreach ( $email['to'] as $i => $email_address ) {
 			$email['to'][ $i ] = self::rfc_recode( $email['to'][ $i ] );
 
 			$decoded = self::rfc_decode( $email_address );
-			if ( $decoded['email'] == $admin_email ) {
+			if ( $decoded['email'] === $admin_email ) {
 				$found_mail_item_number = $i;
 			}
 		}
-		if ( $found_mail_item_number == - 1 ) {
+		if ( - 1 === $found_mail_item_number ) {
 			// not going to an admin.
-
-			// var_dump($email, __LINE__);exit;
 			return $email;
 		}
 
-		// $to is our found admin addressee
+		// $to is our found admin addressee.
 		$to = &$email['to'][ $found_mail_item_number ];
 		$to = self::rfc_decode( $to );
 
-		// this message is sent to the system admin
-		// we might want to send this to a different admin
-		if ( $key = self::get_mail_key( $email['subject'] ) ) {
+		// this message is sent to the system admin.
+		// we might want to send this to a different admin.
+		$key = self::get_mail_key( $email['subject'] );
+		if ( $key ) {
 			// we were able to determine a mailkey.
 			$admins = get_option( 'mail_key_admins', [] );
 			if ( isset( $admins[ $key ] ) && $admins[ $key ] ) {
 				$the_admins = explode( ',', $admins[ $key ] );
 				foreach ( $the_admins as $i => $the_admin ) {
 					$the_admin = self::rfc_decode( $the_admin );
-					if ( $i === 0 ) {
-						if ( $the_admin['name'] == $the_admin['email'] && $to['name'] != $to['email'] ) {
-							// not rfc, just email, but the original TO has a real name
+					if ( 0 === $i ) {
+						if ( $the_admin['name'] === $the_admin['email'] && $to['name'] !== $to['email'] ) {
+							// not rfc, just email, but the original TO has a real name.
 							$the_admin['name'] = $to['name'];
 						}
 						$to = self::rfc_encode( $the_admin );
 					} else {
-						// extra
+						// extra.
 						$email['to'][] = self::rfc_encode( $the_admin );
 					}
 				}
 
-				// var_dump($email, __LINE__);exit;
 				return $email;
 			}
 
-			// known key, but no email set
-			// we revert to the DEFAULT admin_email, and prevent matching against subjects
-			// var_dump($email, __LINE__);exit;
+			// known key, but no email set.
+			// we revert to the DEFAULT admin_email, and prevent matching against subjects.
 			if ( is_array( $to ) && array_key_exists( 'email', $to ) ) {
 				$to = self::rfc_encode( $to );
 			}
@@ -1770,29 +1826,28 @@ class Plugin {
 			return $email;
 		}
 
-		// perhaps we have a regexp?
+		// perhaps we have a regexp?.
 		$admin = self::mail_subject_match( $email['subject'] );
 		if ( $admin ) {
 			$the_admins = explode( ',', $admin );
 			foreach ( $the_admins as $i => $the_admin ) {
 				$the_admin = self::rfc_decode( $the_admin );
-				if ( $i === 0 ) {
-					if ( $the_admin['name'] == $the_admin['email'] && $to['name'] != $to['email'] ) {
-						// not rfc, just email, but the original TO has a real name
+				if ( 0 === $i ) {
+					if ( $the_admin['name'] === $the_admin['email'] && $to['name'] !== $to['email'] ) {
+						// not rfc, just email, but the original TO has a real name.
 						$the_admin['name'] = $to['name'];
 					}
 					$to = self::rfc_encode( $the_admin );
 				} else {
-					// extra
+					// extra.
 					$email['to'][] = self::rfc_encode( $the_admin );
 				}
 			}
 
-			// var_dump($email, __LINE__);exit;
 			return $email;
 		}
 
-		// sorry, we failed :(
+		// sorry, we failed :( .
 		$fails = get_option( 'mail_key_fails', [] );
 		if ( $fails ) {
 			$fails = array_combine( $fails, $fails );
@@ -1806,12 +1861,18 @@ class Plugin {
 		);
 		update_option( 'mail_key_fails', array_values( $fails ) );
 
-		// var_dump($email, __LINE__);exit;
 		$to = self::rfc_encode( $to );
 
 		return $email;
 	}
 
+	/**
+	 * Memory call: a pingback is detected.
+	 *
+	 * @param null|mixed $set Set memory cell content.
+	 *
+	 * @return mixed
+	 */
 	public static function pingback_detected( $set = null ) {
 		static $static;
 		if ( null !== $set ) {
@@ -1821,23 +1882,48 @@ class Plugin {
 		return $static;
 	}
 
+	/**
+	 * Set the correct comment email recipient.
+	 *
+	 * @param string[] $email      An array of email addresses to receive a comment notification.
+	 * @param int      $comment_id The comment (ID) in question.
+	 *
+	 * @return array|mixed
+	 */
 	public static function correct_comment_to( $email, $comment_id ) {
 		$comment = get_comment( $comment_id );
 
 		return self::correct_moderation_and_comments( $email, $comment, 'author' );
 	}
 
+	/**
+	 * Set the correct moderation email recipient.
+	 *
+	 * @param string[] $email      An array of email addresses to receive a comment notification.
+	 * @param int      $comment_id The comment (ID) in question.
+	 *
+	 * @return array|mixed
+	 */
 	public static function correct_moderation_to( $email, $comment_id ) {
 		$comment = get_comment( $comment_id );
 
 		return self::correct_moderation_and_comments( $email, $comment, 'moderator' );
 	}
 
+	/**
+	 * Set the correct comment email recipient.
+	 *
+	 * @param string[]               $email   An array of email addresses to receive a comment notification.
+	 * @param \WP_Comment|array|null $comment Depends on $output value.
+	 * @param string                 $action  Which action are we doing now.
+	 *
+	 * @return array|mixed
+	 */
 	public static function correct_moderation_and_comments( $email, $comment, $action ) {
 
 		$post_type = 'post';
-		// todo: future version; allow setting per post-type
-		// trace back the post-type using: commentID -> comment -> post -> post-type
+		// idea: future version; allow setting per post-type.
+		// trace back the post-type using: commentID -> comment -> post -> post-type.
 
 		$c = get_option( 'mail_key_moderators', [] );
 		if ( ! $c || ! is_array( $c ) ) {
@@ -1866,6 +1952,13 @@ class Plugin {
 		return $email;
 	}
 
+	/**
+	 * Get a mail-key identification tag for a know subject.
+	 *
+	 * @param string $subject The subject to inspect.
+	 *
+	 * @return string
+	 */
 	public static function get_mail_key( $subject ) {
 		// got a filter/action name?
 		$mail_key = self::current_mail_key();
@@ -1882,17 +1975,20 @@ class Plugin {
 		return $mail_key;
 	}
 
+	/**
+	 * List of know mail-tags
+	 *
+	 * @return string[]
+	 */
 	public static function mail_key_database() {
-		// supported;
+		// supported;.
 		$wp_filters = [
 			'automatic_updates_debug_email',
 			'auto_core_update_email',
-			// 'comment_moderation_recipients',
-			// 'comment_notification_recipients',
 			'recovery_mode_email',
 		];
 
-		// unsupported until added, @see wp_mail_key.patch, matched by subject, @see self::mail_subject_database
+		// unsupported until added, @see wp_mail_key.patch, matched by subject, @see self::mail_subject_database.
 		$unsupported_wp_filters = [
 			'new_user_registration_admin_email',
 			'password_lost_changed_email',
@@ -1903,27 +1999,48 @@ class Plugin {
 		return array_merge( $wp_filters, $unsupported_wp_filters );
 	}
 
+	/**
+	 * List of known subjects.
+	 *
+	 * @param string $lookup A subject to lookup.
+	 *
+	 * @return false|string
+	 */
 	public static function mail_subject_database( $lookup ) {
+		// phpcs:disable WordPress.Arrays.MultipleStatementAlignment.LongIndexSpaceBeforeDoubleArrow -- PHPCS is messing up.
+		// phpcs:disable WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned -- PHPCS is messing up.
 		$blogname = wp_specialchars_decode( get_option( 'blogname' ), ENT_QUOTES );
 
-		// FULL TEXT LOOKUP
+		// FULL TEXT LOOKUP.
+		// @phpcs:disable WordPress.WP.I18n.MissingArgDomain
+		// WordPress strings, do NOT use own text-domain here, this construction is here because these are WP translated strings.
 		$keys = [
-			// wp, do NOT use own text-domain here, this construction is here because these are WP translated strings
 			sprintf( __( '[%s] New User Registration' ), $blogname ) => 'new_user_registration_admin_email',
-			sprintf( __( '[%s] Password Reset' ), $blogname )        => 'password_reset_email', // wp 4.5 +
-			sprintf( __( '[%s] Password Changed' ), $blogname )      => 'password_changed_email', // wp 4.5 +
-			sprintf( __( '[%s] Password Lost/Changed' ), $blogname ) => 'password_lost_changed_email', // wp < 4.5
+			sprintf( __( '[%s] Password Reset' ), $blogname )        => 'password_reset_email',
+			sprintf( __( '[%s] Password Changed' ), $blogname )      => 'password_changed_email',
+			sprintf( __( '[%s] Password Lost/Changed' ), $blogname ) => 'password_lost_changed_email',
+			__( 'WP-Email-Essentials Test-email', 'wpes' )           => 'wpes_email_test',
 		];
+		// @phpcs:enable WordPress.WP.I18n.MissingArgDomain
 
-		$key = isset( $keys[ $lookup ] ) ? $keys[ $lookup ] : '';
+		$key = $keys[ $lookup ] ?? '';
 
 		if ( $key ) {
 			return $key;
 		}
 
+		// phpcs:enable WordPress.Arrays.MultipleStatementAlignment.LongIndexSpaceBeforeDoubleArrow -- PHPCS is messing up.
+		// phpcs:enable WordPress.Arrays.MultipleStatementAlignment.DoubleArrowNotAligned -- PHPCS is messing up.
 		return false;
 	}
 
+	/**
+	 * Match a subject to a regular expression input by the admin.
+	 *
+	 * @param string $subject The subject to match.
+	 *
+	 * @return false|string
+	 */
 	public static function mail_subject_match( $subject ) {
 		$store = get_option( 'mail_key_list', [] );
 		foreach ( $store as $regexp => $mail_key ) {
@@ -1935,18 +2052,28 @@ class Plugin {
 		return false;
 	}
 
+	/**
+	 * Hook into all known filters/actions known to be used prior to sending an email.
+	 * this works on the mechanics that prior to sending an email, a filter or actions is hooked, a make-shift mail key
+	 * actions and filters are equal to WordPress, but handled with or without return values.
+	 */
 	public static function mail_key_registrations() {
-		// this works on the mechanics that prior to sending an email, a filter or actions is hooked, a make-shift mail key
-		// actions and filters are equal to WordPress, but handled with or without return values.
 		foreach ( self::mail_key_database() as $filter_name ) {
 			add_filter( $filter_name, [ self::class, 'now_sending___' ] );
 		}
 	}
 
+	/**
+	 * Memory cell for current mail key.
+	 *
+	 * @param null|string $set The mail key currently in use.
+	 *
+	 * @return mixed
+	 */
 	private static function current_mail_key( $set = null ) {
 		static $mail_key;
 		if ( $set ) {
-			if ( $set == '*CLEAR*' ) {
+			if ( '*CLEAR*' === $set ) {
 				$set = false;
 			}
 			$mail_key = $set;
@@ -1955,39 +2082,71 @@ class Plugin {
 		return $mail_key;
 	}
 
+	/**
+	 * Filter/action callback to set a mail key.
+	 *
+	 * @param mixed $value A value given by a filter to pass-thru.
+	 *
+	 * @return mixed
+	 */
 	public static function now_sending___( $value ) {
 		self::current_mail_key( current_filter() );
 
 		return $value;
 	}
 
+	/**
+	 * Keep a log.
+	 *
+	 * Logs to system log or WP Debug log if WP_DEBUG is true.
+	 * Log to Display requires WPES_DEBUG to be defined and true.
+	 * Plugin local file logging requires presence of a file `log` in the plugin root folder.
+	 *
+	 * @param string $text The line to log.
+	 */
 	public static function log( $text ) {
-		// to enable logging, create a writable file "log" in the plugin dir
+		$text = trim( $text );
+
+		// to enable logging, create a writable file "log" in the plugin dir.
 		if ( defined( 'WPES_DEBUG' ) ) {
-			print "LOG: $text\n";
+			print wp_kses_post( "LOG: $text\n" );
+
+			return;
+		}
+
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
+			error_log( "WP_Email_Essentials: $text" );
 
 			return;
 		}
 
 		static $fp;
-		if ( file_exists( __DIR__ . '/log' ) && is_writable( __DIR__ . '/log' ) ) {
+		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_read_fopen
+		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_read_fwrite
+		if ( file_exists( __DIR__ . '/../log' ) && is_writable( __DIR__ . '/../log' ) ) {
 			if ( ! $fp ) {
-				$fp = fopen( __DIR__ . '/log', 'a' );
+				$fp = fopen( __DIR__ . '/../log', 'a' );
 			}
 			if ( $fp ) {
-				fwrite( $fp, date( 'r' ) . ' WPES: ' . trim( $text ) . "\n" );
+				// phpcs:ignore WordPress.DateTime.RestrictedFunctions.date_date -- NO we want localized time.
+				fwrite( $fp, date( 'r' ) . ' WP_Email_Essentials: ' . $text . "\n" );
 			}
 		}
-
-		// error_log(' WPES: ' . $text);
+		// phpcs:enable WordPress.WP.AlternativeFunctions.file_system_read_fopen
+		// phpcs:enable WordPress.WP.AlternativeFunctions.file_system_read_fwrite
 	}
 
+	/**
+	 * Inject elements in existing admin panels.
+	 */
 	public static function maybe_inject_admin_settings() {
 		$host = wp_parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
-		if ( basename( $_SERVER['PHP_SELF'] ) == 'options-general.php' && ! @$_GET['page'] ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- no form processing, just checking...
+		if ( 'options-general.php' === basename( $_SERVER['PHP_SELF'] ) && ! ( $_GET['page'] ?? '' ) ) {
 			?>
 			<script>
-				jQuery("#admin_email,#new_admin_email").after('<p class="description"><?php print sprintf( __( 'You can configure alternative administrators <a href="%s">here</a>.', 'wpes' ), add_query_arg( [ 'page' => 'wpes-admins' ], admin_url( 'admin.php' ) ) ); ?></p>');
+				jQuery("#admin_email,#new_admin_email").after('<p class="description"><?php print wp_kses_post( sprintf( __( 'You can configure alternative administrators <a href="%s">here</a>.', 'wpes' ), add_query_arg( [ 'page' => 'wpes-admins' ], admin_url( 'admin.php' ) ) ) ); ?></p>');
 			</script>
 			<?php
 		}
@@ -2011,7 +2170,8 @@ class Plugin {
 				break;
 		}
 
-		if ( basename( $_SERVER['PHP_SELF'] ) == 'admin.php' && @$_GET['page'] == 'wpcf7' ) {
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- no form processing, just checking...
+		if ( 'admin.php' === basename( $_SERVER['PHP_SELF'] ) && 'wpcf7' === ( $_GET['page'] ?? false ) ) {
 			?>
 			<script>
 				jQuery(document).ready(function () {
@@ -2095,55 +2255,82 @@ class Plugin {
 		}
 	}
 
+	/**
+	 * Get the IP using Ajax.
+	 */
 	public static function ajax_get_ip() {
-		print $_SERVER['REMOTE_ADDR'];
+		print esc_attr( self::server_remote_addr() );
 		exit;
 	}
 
 	/**
-	 * This function takes a css-string and compresses it, removing
-	 * unneccessary whitespace, colons, removing unneccessary px/em
-	 * declarations etc.
+	 * This function takes a css-string and compresses it, removing unneccessary whitespace, colons, removing unneccessary px/em declarations etc.
 	 *
-	 * @param string $css
+	 * @param string $css The CSS to monify.
 	 *
 	 * @return string compressed css content
+	 *
 	 * @author Steffen Becker
 	 */
-	public static function minifyCss( $css ) {
-		// some of the following functions to minimize the css-output are directly taken
-		// from the awesome CSS JS Booster: https://github.com/Schepp/CSS-JS-Booster
-		// all credits to Christian Schaefer: http://twitter.com/derSchepp
-		// remove comments
+	public static function minify_css( $css ) {
+		// some of the following functions to minimize the css-output are directly taken.
+		// from the awesome CSS JS Booster: https://github.com/Schepp/CSS-JS-Booster .
+		// all credits to Christian Schaefer: http://twitter.com/derSchepp .
+		// remove comments.
 		$css = preg_replace( '!/\*[^*]*\*+([^/][^*]*\*+)*/!', '', $css );
-		// backup values within single or double quotes
+		// backup values within single or double quotes.
 		preg_match_all( '/(\'[^\']*?\'|"[^"]*?")/ims', $css, $hit, PREG_PATTERN_ORDER );
-		for ( $i = 0; $i < count( $hit[1] ); $i ++ ) {
+		$j = count( $hit[1] );
+		for ( $i = 0; $i < $j; $i ++ ) {
 			$css = str_replace( $hit[1][ $i ], '##########' . $i . '##########', $css );
 		}
-		// remove traling semicolon of selector's last property
+		// remove traling semicolon of selector's last property.
 		$css = preg_replace( '/;[\s\r\n\t]*?}[\s\r\n\t]*/ims', "}\r\n", $css );
-		// remove any whitespace between semicolon and property-name
+		// remove any whitespace between semicolon and property-name.
 		$css = preg_replace( '/;[\s\r\n\t]*?([\r\n]?[^\s\r\n\t])/ims', ';$1', $css );
-		// remove any whitespace surrounding property-colon
+		// remove any whitespace surrounding property-colon.
 		$css = preg_replace( '/[\s\r\n\t]*:[\s\r\n\t]*?([^\s\r\n\t])/ims', ':$1', $css );
-		// remove any whitespace surrounding selector-comma
+		// remove any whitespace surrounding selector-comma.
 		$css = preg_replace( '/[\s\r\n\t]*,[\s\r\n\t]*?([^\s\r\n\t])/ims', ',$1', $css );
-		// remove any whitespace surrounding opening parenthesis
+		// remove any whitespace surrounding opening parenthesis.
 		$css = preg_replace( '/[\s\r\n\t]*{[\s\r\n\t]*?([^\s\r\n\t])/ims', '{$1', $css );
-		// remove any whitespace between numbers and units
+		// remove any whitespace between numbers and units.
 		$css = preg_replace( '/([\d\.]+)[\s\r\n\t]+(px|em|pt|%)/ims', '$1$2', $css );
-		// shorten zero-values
+		// shorten zero-values.
 		$css = preg_replace( '/([^\d\.]0)(px|em|pt|%)/ims', '$1', $css );
-		// constrain multiple whitespaces
+		// constrain multiple whitespaces.
 		$css = preg_replace( '/\p{Zs}+/ims', ' ', $css );
-		// remove newlines
+		// remove newlines.
 		$css = str_replace( [ "\r\n", "\r", "\n" ], '', $css );
-		// Restore backupped values within single or double quotes
-		for ( $i = 0; $i < count( $hit[1] ); $i ++ ) {
+		// Restore backupped values within single or double quotes.
+		$j = count( $hit[1] );
+		for ( $i = 0; $i < $j; $i ++ ) {
 			$css = str_replace( '##########' . $i . '##########', $hit[1][ $i ], $css );
 		}
 
 		return $css;
+	}
+
+	/**
+	 * Wrapper for php file_get_contents, simplified.
+	 *
+	 * @param string $filename The file to read.
+	 *
+	 * @return false|string
+	 *
+	 * @see \file_get_contents
+	 */
+	protected static function file_get_contents( $filename ) {
+		try {
+			// @phpcs:disable WordPress.WP.AlternativeFunctions.file_system_read_file_get_contents
+			// @phpcs:disable WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+			$return_value = is_file( $filename ) && is_readable( $filename ) ? file_get_contents( $filename ) : false;
+			// @phpcs:enable WordPress.WP.AlternativeFunctions.file_system_read_file_get_contents
+			// @phpcs:enable WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+		} catch ( \Exception $e ) {
+			$return_value = false;
+		}
+
+		return $return_value;
 	}
 }

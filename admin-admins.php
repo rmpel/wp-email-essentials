@@ -15,7 +15,7 @@ $wpes_config          = get_option( 'mail_key_admins', array() );
 $wpes_mail_keys       = Plugin::mail_key_database();
 $wpes_wordpress_admin = get_option( 'admin_email' );
 ?>
-<div class="wrap">
+<div class="wrap wpes-wrap">
 	<div class="icon32 icon32-posts-group" id="icon-edit">
 		<br/>
 	</div>
@@ -33,6 +33,7 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 
 	<form id="outpost" method='POST' action="">
 		<input type="hidden" name="form_id" value="wpes-admins"/>
+		<?php wp_nonce_field( 'wp-email-essentials--admins', 'wpes-nonce' ); ?>
 		<table>
 			<thead>
 			<th><?php esc_html_e( 'Mail Key', 'wpes' ); ?></th>

@@ -27,7 +27,7 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 // @phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 ?>
-<div class="wrap">
+<div class="wrap wpes-wrap">
 	<div class="icon32 icon32-posts-group" id="icon-edit">
 		<br/>
 	</div>
@@ -37,6 +37,7 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 				flex-direction: row;
 				justify-content: space-between;
 			}
+
 			#mail-viewer {
 				position: relative;
 				border: 1px solid grey;
@@ -213,14 +214,16 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 		<?php
 		if ( false !== $wpes_view_prev_page ) {
 			?>
-			<a class="button"
+			<a
+				class="button"
 				href="<?php print esc_attr( add_query_arg( '_page', $wpes_view_prev_page ) ); ?>">
 					&lt; Previous page</a> <?php } ?></span>
 		<span>
 		<?php
 		if ( false !== $wpes_view_next_page ) {
 			?>
-			<a class="button"
+			<a
+				class="button"
 				href="<?php print esc_attr( add_query_arg( '_page', $wpes_view_next_page ) ); ?>">
 					Next page &gt;</a> <?php } ?></span>
 	</div>
@@ -239,10 +242,10 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 				// @phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- All data is sanitized before injection.
 				$wpes_view_emails_list = $wpdb->get_results( "SELECT subject, sender, thedatetime, recipient, ID, body, alt_body, headers, status, `debug`, errinfo, eml FROM {$wpdb->prefix}wpes_hist ORDER BY $wpes_view_order_field $wpes_view_order_direction LIMIT $wpes_view_first_item,$wpes_view_items_per_page" );
 				$wpes_view_email_stati = array(
-					History::MAIL_NEW => __( 'Sent ??', 'wpes' ),
-					History::MAIL_SENT => __( 'Sent Ok', 'wpes' ),
-					History::MAIL_FAILED => __( 'Failed', 'wpes' ),
-					History::MAIL_OPENED => __( 'Opened' ),
+					History::MAIL_NEW    => _x( 'Sent ??', 'Email log: this email is Sent', 'wpes' ),
+					History::MAIL_SENT   => _x( 'Sent Ok', 'Email log: this email is Sent OK', 'wpes' ),
+					History::MAIL_FAILED => _x( 'Failed', 'Email log: this email failed sending', 'wpes' ),
+					History::MAIL_OPENED => _x( 'Opened', 'Email log: this email is Opened by the receiver', 'wpes' ),
 				);
 				foreach ( $wpes_view_emails_list as $wpes_view_email ) {
 					?>

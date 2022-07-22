@@ -23,7 +23,7 @@ if ( ! get_option( 'moderation_notify' ) ) {
 	unset( $wpes_moderator_recipients['moderator'] );
 }
 ?>
-<div class="wrap">
+<div class="wrap wpes-wrap">
 	<div class="icon32 icon32-posts-group" id="icon-edit">
 		<br/>
 	</div>
@@ -40,6 +40,7 @@ if ( ! get_option( 'moderation_notify' ) ) {
 	?>
 	<form id="outpost" method='POST' action="">
 		<input type="hidden" name="form_id" value="wpes-moderators"/>
+		<?php wp_nonce_field( 'wp-email-essentials--moderators', 'wpes-nonce' ); ?>
 		<table>
 			<thead>
 			<th>Action</th>
