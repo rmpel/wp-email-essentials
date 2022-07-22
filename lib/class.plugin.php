@@ -52,6 +52,7 @@ class Plugin {
 			'init',
 			function () {
 				load_plugin_textdomain( 'wpes', false, dirname( plugin_basename( __FILE__ ) ) . '/lang' );
+				wp_register_style( 'wpes', plugins_url( 'public/wpes-admin.css', __DIR__ ), [], filemtime( __DIR__ . '/../public/wpes-admin.css' ), 'all' );
 			}
 		);
 
@@ -144,7 +145,43 @@ class Plugin {
 			$root_path = self::nice_path( $home_path );
 		}
 
+		// Support Deployer style paths.
+		if ( preg_match( '@/releases/([0-9]+)/@', $root_path, $matches ) ) {
+			$path_named_current = str_replace( '/releases/' . $matches[1] . '/', '/current/', $root_path );
+			if ( is_dir( $path_named_current ) && realpath( $path_named_current ) === realpath( $root_path ) ) {
+				$root_path = $path_named_current;
+			}
+		}
+
 		return $root_path;
+	}
+
+	/**
+	 * Suggested safe path for hidden data
+	 *
+	 * @param string $item A directory name.
+	 */
+	public static function suggested_safe_path_for( $item ) {
+		$root             = self::root_path(); // The public_html folder.
+		$parent           = dirname( $root ); // the outside-webspace-safe-folder.
+		$might_be_current = basename( $parent );
+		if ( 'current' === $might_be_current ) {
+			// probably a deployer set-up. Go one up.
+			$parent = dirname( $parent );
+		}
+
+		return $parent . '/' . $item;
+	}
+
+	/**
+	 * Check if the path is in the webroot.
+	 *
+	 * @param string $path A path.
+	 *
+	 * @return bool
+	 */
+	public static function path_is_in_web_root( $path ) {
+		return 0 === strpos( realpath( $path ), realpath( self::root_path() ) );
 	}
 
 	/**
@@ -818,10 +855,10 @@ class Plugin {
 			// example; <a href="http://nu.nl">Go to NU.nl</a> becomes:  Go to Nu.nl ( http://nu.nl ).
 			$body = preg_replace( "/<a.+href=([\"'])(.+)(\\1).+>([^<]+)<\/a>/U", "\\4 (\\2)", $body );
 
-			// End of headings to separate lines, preserve the tags, will be dealt with later
+			// End of headings to separate lines, preserve the tags, will be dealt with later.
 			$body = preg_replace( '/(<h[1-6])/Ui', "\n\\1", $body );
 			$body = preg_replace( '/(<\/h[1-6]>)/Ui', "\\1\n", $body );
-			// End of block elements to separate lines, preserve the tags, will be dealt with later
+			// End of block elements to separate lines, preserve the tags, will be dealt with later.
 			$body = preg_replace( '/(<\/(p|table|div)>)/Ui', "\\1\n", $body );
 
 			// remove all HTML except line breaks and line-break-ish.
@@ -850,13 +887,14 @@ class Plugin {
 			// remove newlines where more than two (two newlines make one blank line, remember that).
 			$body = preg_replace( "/[\n]{2,}/", "\n\n", $body );
 
-			// Neat lines
+			// Neat lines.
 			$body = wordwrap(
 				$body,
 				75,
 				"\n",
 				false
 			);
+
 			// set the alternate body.
 			$mailer->AltBody = $body;
 
@@ -1515,6 +1553,7 @@ class Plugin {
 	 * Load the settings template.
 	 */
 	public static function admin_interface() {
+		wp_enqueue_style( 'wpes' );
 		include __DIR__ . '/../admin-interface.php';
 	}
 
@@ -1522,6 +1561,7 @@ class Plugin {
 	 * Load the alternative admins template.
 	 */
 	public static function admin_interface_admins() {
+		wp_enqueue_style( 'wpes' );
 		include __DIR__ . '/../admin-admins.php';
 	}
 
@@ -1529,6 +1569,7 @@ class Plugin {
 	 * Load the moderators template.
 	 */
 	public static function admin_interface_moderators() {
+		wp_enqueue_style( 'wpes' );
 		include __DIR__ . '/../admin-moderators.php';
 	}
 

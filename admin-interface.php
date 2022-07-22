@@ -436,7 +436,14 @@ $wpes_config = Plugin::get_config();
 				</tr>
 				<tr>
 					<td colspan="4">
-						<strong><?php print wp_kses_post( sprintf( __( 'It is highly advised to pick a folder path <u>outside</u> your website, for example: <code>%s/.smime/</code> to prevent stealing your identity.', 'wpes' ), dirname( ABSPATH ) ) ); ?></strong><br/>
+						<?php
+						if ( Plugin::path_is_in_web_root( $wpes_config['certificate_folder'] ) ) {
+							?>
+							<strong><?php print wp_kses_post( sprintf( __( 'It is highly advised to pick a folder path <u>outside</u> your website, for example: <code>%s</code> to prevent stealing your identity.', 'wpes' ), Plugin::suggested_safe_path_for( '.smime' ) ) ); ?></strong>
+							<br/>
+							<?php
+						}
+						?>
 						<?php print wp_kses_post( __( 'You can also type a relative path (any path not starting with a / is a relative path), this will be evaluated against ABSPATH (the root of your WordPress).', 'wpes' ) ); ?>
 						<br/>
 						<?php print wp_kses_post( __( 'The naming convention is: certificate: <code>email@addre.ss.crt</code>, private key: <code>email@addre.ss.key</code>, (optional) passphrase: <code>email@addre.ss.pass</code>.', 'wpes' ) ); ?>
@@ -516,7 +523,14 @@ $wpes_config = Plugin::get_config();
 			</tr>
 			<tr>
 				<td colspan="4">
-					<strong><?php print wp_kses_post( sprintf( __( 'It is highly advised to pick a folder path <u>outside</u> your website, for example: <code>%s/.dkim/</code> to prevent stealing your identity.', 'wpes' ), dirname( ABSPATH ) ) ); ?></strong><br/>
+					<?php
+					if ( Plugin::path_is_in_web_root( $wpes_config['dkimfolder'] ) ) {
+						?>
+						<strong><?php print wp_kses_post( sprintf( __( 'It is highly advised to pick a folder path <u>outside</u> your website, for example: <code>%s</code> to prevent stealing your identity.', 'wpes' ), Plugin::suggested_safe_path_for( '.dkim' ) ) ); ?></strong>
+						<br/>
+						<?php
+					}
+					?>
 					<?php print wp_kses_post( __( 'You can also type a relative path (any path not starting with a / is a relative path), this will be evaluated against ABSPATH (the root of your WordPress).', 'wpes' ) ); ?>
 					<br/>
 					<?php print wp_kses_post( __( 'The naming convention is: certificate: <code>domain.tld.crt</code>, private key: <code>domain.tld.key</code>, DKIM Selector: <code>domain.tld.selector</code>, (optional) passphrase: <code>domain.tld.pass</code>.', 'wpes' ) ); ?>
