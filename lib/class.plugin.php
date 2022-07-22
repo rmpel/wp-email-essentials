@@ -1239,7 +1239,7 @@ class Plugin {
 		 */
 		$name_part = wp_strip_all_tags( $rfc );
 		// remove the name-part from the original and the email part is known.
-		$email_part = str_replace( $name_part, '', $rfc );
+		$email_part = preg_replace( '/' . preg_quote( $name_part, '/' ) . '/', '', $rfc, 1 );
 
 		// strip illegal characters;.
 		// the name part could have had escaped quotes (like "I have a quote \" here" <some@email.com> ).
