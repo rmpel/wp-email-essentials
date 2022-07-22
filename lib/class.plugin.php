@@ -807,6 +807,9 @@ class Plugin {
 				list( $junk, $body ) = explode( $bodytag, $body );
 			}
 
+			// remove all line breaks.
+			$body = str_replace( "\n", '', $body );
+
 			// images to alt tags.
 			// example; <img src="/logo.png" alt="company logo" /> becomes  company logo.
 			$body = preg_replace( "/<img.+alt=([\"'])(.+)(\\1).+>/U", "\\2", $body );
@@ -814,6 +817,12 @@ class Plugin {
 			// links to link-text+url.
 			// example; <a href="http://nu.nl">Go to NU.nl</a> becomes:  Go to Nu.nl ( http://nu.nl ).
 			$body = preg_replace( "/<a.+href=([\"'])(.+)(\\1).+>([^<]+)<\/a>/U", "\\4 (\\2)", $body );
+
+			// End of headings to separate lines, preserve the tags, will be dealt with later
+			$body = preg_replace( '/(<h[1-6])/Ui', "\n\\1", $body );
+			$body = preg_replace( '/(<\/h[1-6]>)/Ui', "\\1\n", $body );
+			// End of block elements to separate lines, preserve the tags, will be dealt with later
+			$body = preg_replace( '/(<\/(p|table|div)>)/Ui', "\\1\n", $body );
 
 			// remove all HTML except line breaks and line-break-ish.
 			$body = strip_tags( $body, '<br><tr><li>' );
@@ -841,6 +850,13 @@ class Plugin {
 			// remove newlines where more than two (two newlines make one blank line, remember that).
 			$body = preg_replace( "/[\n]{2,}/", "\n\n", $body );
 
+			// Neat lines
+			$body = wordwrap(
+				$body,
+				75,
+				"\n",
+				false
+			);
 			// set the alternate body.
 			$mailer->AltBody = $body;
 
