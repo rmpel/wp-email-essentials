@@ -21,11 +21,28 @@ jQuery(document).ready(function ($) {
         $(".not-" + target_id).toggle(!$(this).is(':checked'));
       }).trigger('change');
     });
+    var preventInfinite = false;
     $(".on-regexp-test").each(function () {
       // we need 'function' here for 'this'.
       (function (field, regexp, label) {
         $('#' + field).on('change keyup blur paste', function () {
-          label.toggle(null !== ($(this).val() || "").match(new RegExp(regexp, 'i')));
+          var value = $(this).val() || null;
+
+          if ($(this).is('[type=checkbox],[type=radio]')) {
+            if (!preventInfinite) {
+              preventInfinite = true;
+              var name = $(this).attr('name');
+              var siblings = $(this).closest('table').find('[name="' + name + '"]').not(this);
+              siblings.trigger('change');
+              preventInfinite = false;
+            }
+
+            if (!$(this).is(':checked')) {
+              value = null;
+            }
+          }
+
+          label.toggle(null !== (value || "").match(new RegExp(regexp, 'i')));
         }).trigger('change');
       })($(this).attr('data-field'), $(this).attr('data-regexp'), $(this));
     });
@@ -33,7 +50,7 @@ jQuery(document).ready(function ($) {
 
   if ($(".wpes-emails").length > 0) {
     /**
-     * Emails panel
+     * E-mails panel
      */
     $(".email-item").on('click', function (e) {
       // we need 'function' here for 'this'.

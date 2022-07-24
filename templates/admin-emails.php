@@ -1,6 +1,6 @@
 <?php
 /**
- * View: email log.
+ * View: e-mail log.
  *
  * @package WP_Email_Essentials
  */
@@ -28,10 +28,10 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 
 ?>
 <div class="wrap wpes-wrap wpes-emails">
-	<div class="icon32 icon32-posts-group" id="icon-edit">
-		<br/>
-	</div>
-	<h2>WP-Email-Essentials - Email history</h2>
+	<h2 class="dashicons-before dashicons-email-alt"> <?php print wp_kses_post( Plugin::plugin_data()['Name'] ); ?>
+		<em><?php print wp_kses_post( Plugin::plugin_data()['Version'] ); ?></em>
+		- <?php esc_html_e( 'E-mail History', 'wpes' ); ?>
+	</h2>
 	<?php
 	if ( Plugin::$message ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
@@ -90,10 +90,10 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 				// @phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- All data is sanitized before injection.
 				$wpes_view_emails_list = $wpdb->get_results( "SELECT subject, sender, thedatetime, recipient, ID, body, alt_body, headers, status, `debug`, errinfo, eml FROM {$wpdb->prefix}wpes_hist ORDER BY $wpes_view_order_field $wpes_view_order_direction LIMIT $wpes_view_first_item,$wpes_view_items_per_page" );
 				$wpes_view_email_stati = array(
-					History::MAIL_NEW    => _x( 'Sent ??', 'Email log: this email is Sent', 'wpes' ),
-					History::MAIL_SENT   => _x( 'Sent Ok', 'Email log: this email is Sent OK', 'wpes' ),
-					History::MAIL_FAILED => _x( 'Failed', 'Email log: this email failed sending', 'wpes' ),
-					History::MAIL_OPENED => _x( 'Opened', 'Email log: this email is Opened by the receiver', 'wpes' ),
+					History::MAIL_NEW    => _x( 'Sent ??', 'E-mail log: this e-mail is Sent', 'wpes' ),
+					History::MAIL_SENT   => _x( 'Sent Ok', 'E-mail log: this e-mail is Sent OK', 'wpes' ),
+					History::MAIL_FAILED => _x( 'Failed', 'E-mail log: this e-mail Failed sending', 'wpes' ),
+					History::MAIL_OPENED => _x( 'Opened', 'E-mail log: this e-mail is Opened by the receiver', 'wpes' ),
 				);
 				foreach ( $wpes_view_emails_list as $wpes_view_email ) {
 					?>

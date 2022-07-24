@@ -1,199 +1,211 @@
 .wpes-wrap {
-	line-height: 1.8em;
+  line-height: 1.8em;
+  .dashicons-before:before {
+	font-size: 30px;
+	width: 30px;
+  }
+  h2 {
+	em {
+	  font-style: normal;
+	  opacity: 0.5;
+	}
+  }
+
+  .wpes-table {
+	tr {
+	  td, th {
+		padding: 0 20px 0 0;
+
+		&.last {
+		  padding: 0;
+		}
+	  }
+	}
+
+	td {
+	  h3 {
+		margin-top: 0;
+	  }
+
+	  vertical-align: top;
+	}
+
+	td, th {
+	  width: 25%;
+	  vertical-align: top;
+	  text-align: left;
+
+	  &[colspan="2"] {
+		width: 50%;
+	  }
+
+	  &[colspan="3"] {
+		width: 75%;
+	  }
+	}
+  }
 }
 
 /**
  Settings panel
  */
 .wpes-settings {
-	.wpes-table {
-		tr {
-			td, th {
-				padding: 0 20px 0 0;
 
-				&.last {
-					padding: 0;
-				}
-			}
-		}
-
-		td {
-			h3 {
-				margin-top: 0;
-			}
-
-			vertical-align: top;
-		}
-
-		td, th {
-			width: 25%;
-			vertical-align: top;
-			text-align: left;
-
-			&[colspan="2"] {
-				width: 50%;
-			}
-
-			&[colspan="3"] {
-				width: 75%;
-			}
-		}
-	}
 }
 
 /**
  Admins panel
  */
 .wpes-admin {
-	.a-regexp {
-		width: 300px;
+  .a-regexp {
+	width: 300px;
 
 
-		&.error {
-			border-color: red;
-			background: #ff9e8b;
-		}
-
-		&.match {
-			border-color: #00a800;
-			background: #97e396;
-		}
+	&.error {
+	  border-color: red;
+	  background: #ff9e8b;
 	}
 
-	.a-fail.match {
-		background-color: #80ff8e
+	&.match {
+	  border-color: #00a800;
+	  background: #97e396;
 	}
+  }
+
+  .a-fail.match {
+	background-color: #80ff8e
+  }
 }
 
 /**
- Emails panel
+ E-mails panel
  */
 .wpes-emails {
-	.pager {
-		display: flex;
-		flex-direction: row;
-		justify-content: space-between;
+  .pager {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+  }
+
+  #mail-viewer {
+	position: relative;
+	border: 1px solid grey;
+	height: 600px;
+	width: 100%;
+
+	.top-panel {
+	  position: relative;
+	  height: 30%;
+	  overflow: auto;
+	  width: 100%;
+	  max-width: 100%;
 	}
 
-	#mail-viewer {
-		position: relative;
-		border: 1px solid grey;
-		height: 600px;
-		width: 100%;
+	#mail-index {
+	  margin: 0;
+	  padding: 0;
+	  list-style: none;
+	  display: table;
 
-		.top-panel {
-			position: relative;
-			height: 30%;
-			overflow: auto;
-			width: 100%;
-			max-width: 100%;
+	  li {
+		margin: 0;
+		padding: 0;
+		line-height: 16px;
+		cursor: pointer;
+		display: table-row;
+
+		&:nth-child(2n+1) {
+		  background: #e0e0e0;
 		}
 
-		#mail-index {
-			margin: 0;
-			padding: 0;
-			list-style: none;
-			display: table;
+		&:hover {
+		  background: darkgrey;
+		  color: white;
 
-			li {
-				margin: 0;
-				padding: 0;
-				line-height: 16px;
-				cursor: pointer;
-				display: table-row;
-
-				&:nth-child(2n+1) {
-					background: #e0e0e0;
-				}
-
-				&:hover {
-					background: darkgrey;
-					color: white;
-
-					.dashicons {
-						color: white;
-					}
-				}
-
-				.eml, .thedatetime, .recipient, .sender, .subject, .status {
-					overflow: hidden;
-					display: table-cell;
-					border-right: 1px solid grey;
-					padding: 3px;
-					height: 100%;
-					width: 20%;
-				}
-
-				.eml {
-					width: auto;
-				}
-
-				.thedatetime {
-					width: 12%;
-				}
-
-				.subject {
-					width: 25%;
-				}
-
-				.status {
-					width: 20%;
-					border-right: none;
-				}
-			}
-
-			#email-header {
-				background: grey;
-				color: white;
-				font-weight: bold;
-			}
-
-			li.active {
-				background: black;
-				color: white;
-				font-weight: bold;
-
-				.thedatetime, .recipient, .sender, .subject, .status {
-					overflow-y: auto;
-					white-space: initial;
-				}
-			}
+		  .dashicons {
+			color: white;
+		  }
 		}
 
-		.debug, .body, .alt_body, .headers {
-			display: none;
-			height: 0;
-			width: 0;
+		.eml, .thedatetime, .recipient, .sender, .subject, .status {
+		  overflow: hidden;
+		  display: table-cell;
+		  border-right: 1px solid grey;
+		  padding: 3px;
+		  height: 100%;
+		  width: 20%;
 		}
 
-		.show-debug .debug, .show-body .body, .show-alt-body .alt_body, .show-headers .headers {
-			display: block;
-			height: 100%;
-			width: 100%;
+		.eml {
+		  width: auto;
 		}
+
+		.thedatetime {
+		  width: 12%;
+		}
+
+		.subject {
+		  width: 25%;
+		}
+
+		.status {
+		  width: 20%;
+		  border-right: none;
+		}
+	  }
+
+	  #email-header {
+		background: grey;
+		color: white;
+		font-weight: bold;
+	  }
+
+	  li.active {
+		background: black;
+		color: white;
+		font-weight: bold;
+
+		.thedatetime, .recipient, .sender, .subject, .status {
+		  overflow-y: auto;
+		  white-space: initial;
+		}
+	  }
 	}
 
-	#mail-data-viewer {
-		position: absolute;
-		top: 30%;
-		left: 0;
-		right: 0;
-		height: 69%;
-		border-top: 1px solid grey;
-		overflow: auto;
-
-		.email-data.show-debug, .show-body, .show-alt-body, .show-headers {
-			height: 100%;
-			width: 100%;
-		}
+	.debug, .body, .alt_body, .headers {
+	  display: none;
+	  height: 0;
+	  width: 0;
 	}
+
+	.show-debug .debug, .show-body .body, .show-alt-body .alt_body, .show-headers .headers {
+	  display: block;
+	  height: 100%;
+	  width: 100%;
+	}
+  }
+
+  #mail-data-viewer {
+	position: absolute;
+	top: 30%;
+	left: 0;
+	right: 0;
+	height: 69%;
+	border-top: 1px solid grey;
+	overflow: auto;
+
+	.email-data.show-debug, .show-body, .show-alt-body, .show-headers {
+	  height: 100%;
+	  width: 100%;
+	}
+  }
 }
 
 /**
  Moderators panel
  */
 .wpes-moderators {
-	#outpost input[type=text] {
-		width: 400px;
-	}
+  #outpost input[type=text] {
+	width: 400px;
+  }
 }

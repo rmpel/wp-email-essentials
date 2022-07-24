@@ -1,34 +1,41 @@
 .wpes-wrap {
   line-height: 1.8em;
 }
-
-/**
- Settings panel
- */
-.wpes-settings .wpes-table tr td, .wpes-settings .wpes-table tr th {
+.wpes-wrap .dashicons-before:before {
+  font-size: 30px;
+  width: 30px;
+}
+.wpes-wrap h2 em {
+  font-style: normal;
+  opacity: 0.5;
+}
+.wpes-wrap .wpes-table tr td, .wpes-wrap .wpes-table tr th {
   padding: 0 20px 0 0;
 }
-.wpes-settings .wpes-table tr td.last, .wpes-settings .wpes-table tr th.last {
+.wpes-wrap .wpes-table tr td.last, .wpes-wrap .wpes-table tr th.last {
   padding: 0;
 }
-.wpes-settings .wpes-table td {
+.wpes-wrap .wpes-table td {
   vertical-align: top;
 }
-.wpes-settings .wpes-table td h3 {
+.wpes-wrap .wpes-table td h3 {
   margin-top: 0;
 }
-.wpes-settings .wpes-table td, .wpes-settings .wpes-table th {
+.wpes-wrap .wpes-table td, .wpes-wrap .wpes-table th {
   width: 25%;
   vertical-align: top;
   text-align: left;
 }
-.wpes-settings .wpes-table td[colspan="2"], .wpes-settings .wpes-table th[colspan="2"] {
+.wpes-wrap .wpes-table td[colspan="2"], .wpes-wrap .wpes-table th[colspan="2"] {
   width: 50%;
 }
-.wpes-settings .wpes-table td[colspan="3"], .wpes-settings .wpes-table th[colspan="3"] {
+.wpes-wrap .wpes-table td[colspan="3"], .wpes-wrap .wpes-table th[colspan="3"] {
   width: 75%;
 }
 
+/**
+ Settings panel
+ */
 /**
  Admins panel
  */
@@ -48,7 +55,7 @@
 }
 
 /**
- Emails panel
+ E-mails panel
  */
 .wpes-emails .pager {
   display: flex;

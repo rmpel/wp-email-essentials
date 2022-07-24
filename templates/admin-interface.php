@@ -12,12 +12,15 @@ if ( ! current_user_can( 'manage_options' ) ) {
 }
 global $current_user;
 $wpes_config = Plugin::get_config();
+
+$wpes_host = Plugin::get_hostname_by_blogurl();
+
 ?>
 <div class="wrap wpes-wrap wpes-settings">
-	<div class="icon32 icon32-posts-group" id="icon-edit">
-		<br/>
-	</div>
-	<h2>WP-Email-Essentials</h2>
+	<h2 class="dashicons-before dashicons-email-alt"> <?php print wp_kses_post( Plugin::plugin_data()['Name'] ); ?>
+		<em><?php print wp_kses_post( Plugin::plugin_data()['Version'] ); ?></em>
+		- <?php esc_html_e( 'E-mail Configuration', 'wpes' ); ?>
+	</h2>
 	<?php
 	if ( Plugin::$message ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
@@ -34,6 +37,199 @@ $wpes_config = Plugin::get_config();
 		<table class="wpes-table">
 			<tr>
 				<td colspan="4" class="last">
+					<h3><?php print wp_kses_post( __( 'Basic information', 'wpes' ) ); ?>:</h3>
+				</td>
+			</tr>
+			<tr>
+				<th>
+					<label for="from-name"><?php print wp_kses_post( __( 'Default from name', 'wpes' ) ); ?></label>
+				</th>
+				<td>
+					<input
+						type="text" class="widefat" name="settings[from_name]"
+						value="<?php print esc_attr( $wpes_config['from_name'] ); ?>"
+						placeholder="WordPress"
+						id="from-name"/>
+				</td>
+				<td colspan="2" rowspan="2">
+					<?php print wp_kses_post( sprintf( __( 'Out of the box, WordPress will use name "WordPress" and e-mail "wordpress@%s" as default sender. This is far from optimal. Your first step is therefore to set an appropriate name and e-mail address.', 'wpes' ), $wpes_host ) ); ?>
+				</td>
+			</tr>
+			<tr>
+				<th>
+					<label for="from-email"><?php print wp_kses_post( __( 'Default from e-mail', 'wpes' ) ); ?></label>
+				</th>
+				<td>
+					<input
+						type="text" class="widefat" name="settings[from_email]"
+						value="<?php print esc_attr( $wpes_config['from_email'] ); ?>"
+						placeholder="wordpress@<?php print esc_attr( $wpes_host ); ?>"
+						id="from-email"/>
+				</td>
+			</tr>
+			<tr class="on-regexp-test" data-regexp="(no-?reply)@" data-field="from-email">
+				<td colspan="4" class="last">
+					<strong
+						style="color:darkred"><?php print wp_kses_post( __( 'Under GDPR, from May 25th, 2018, using a no-reply@ (or any variation of a not-responded-to e-mail address) is prohibited. Please make sure the default sender address is valid and used in the setting below.', 'wpes' ) ); ?></strong>
+				</td>
+			</tr>
+			<?php
+			if ( $wpes_config['spf_lookup_enabled'] ) {
+				// SPF match.
+				?>
+				<?php if ( ! Plugin::i_am_allowed_to_send_in_name_of( $wpes_config['from_email'] ) ) { ?>
+					<tr>
+						<th>
+						</th>
+						<td
+							colspan="3"
+							class=last><?php print wp_kses_post( __( 'SPF Records are checked', 'wpes' ) ); ?>
+							: <?php print wp_kses_post( __( 'you are NOT allowed to send mail with this domain.', 'wpes' ) ); ?>
+							<br/>
+							<?php print wp_kses_post( __( 'If you really need to use this sender e-mail address, you need to change the SPF record to include the sending-IP of this server', 'wpes' ) ); ?>
+							;<br/>
+							<?php print wp_kses_post( __( 'Old', 'wpes' ) ); ?>:
+							<code><?php print wp_kses_post( Plugin::get_spf( $wpes_config['from_email'], false, true ) ); ?></code><br/>
+							<?php print wp_kses_post( __( 'New', 'wpes' ) ); ?>:
+							<code><?php print wp_kses_post( Plugin::get_spf( $wpes_config['from_email'], true, true ) ); ?></code>
+						</td>
+					</tr>
+					<?php
+				} else {
+					?>
+					<tr>
+						<td></td>
+						<td colspan="3" class=last><?php print wp_kses_post( __( 'SPF Record', 'wpes' ) ); ?>:
+							<code><?php print wp_kses_post( Plugin::get_spf( $wpes_config['from_email'], false, true ) ); ?></code>
+						</td>
+					</tr>
+					<?php
+				}
+			} else {
+				// domain match.
+				if ( ! Plugin::i_am_allowed_to_send_in_name_of( $wpes_config['from_email'] ) ) {
+					?>
+					<tr>
+						<th>
+						</th>
+						<td
+							colspan="3"
+							class=last><?php print wp_kses_post( __( 'You are NOT allowed to send mail with this domain; it should match the domainname of the website.', 'wpes' ) ); ?>
+							<br/>
+							<?php print wp_kses_post( __( 'If you really need to use this sender e-mail address, you need to switch to SPF-record checking and make sure the SPF for this domain matches this server.', 'wpes' ) ); ?>
+						</td>
+					</tr>
+					<?php
+				}
+			}
+			?>
+			<tr>
+				<td colspan="4" class="last">
+					<h4><?php print wp_kses_post( __( 'How to validate sender?', 'wpes' ) ); ?></h4>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="4" class="last">
+					<?php print wp_kses_post( __( 'You have 2 options', 'wpes' ) ); ?>:
+					<ul>
+						<li><input
+								type="radio" name="settings[spf_lookup_enabled]" value="0"
+								<?php checked( ! isset( $wpes_config['spf_lookup_enabled'] ) || ! $wpes_config['spf_lookup_enabled'] ); ?>
+								id="spf_lookup_enabled_0"/>
+							<label for="spf_lookup_enabled_0">
+								<?php print wp_kses_post( __( '<strong>Domain name</strong>: Use a simple match on hostname; any e-mail address that matches the base domainname of this website is considered valid.', 'wpes' ) ); ?>
+							</label>
+						</li>
+						<li><input
+								type="radio" name="settings[spf_lookup_enabled]" value="1"
+								<?php checked( isset( $wpes_config['spf_lookup_enabled'] ) && $wpes_config['spf_lookup_enabled'] ); ?>
+								id="spf_lookup_enabled_1"/>
+							<label for="spf_lookup_enabled_1">
+								<?php print wp_kses_post( __( '<strong>SPF</strong>: Use SPF records to validate the sender. If the SPF record of the domain of the e-mail address used as sender matches the IP-address this website is hosted on, the e-mail address is considered valid.', 'wpes' ) ); ?>
+							</label>
+						</li>
+					</ul>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="4" class="last">
+					<hr/>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="4" class="last">
+					<h3><?php print wp_kses_post( __( 'What to do in case the sender is not valid for this domain?', 'wpes' ) ); ?></h3>
+				</td>
+			</tr>
+			<tr>
+				<th>
+					<label
+						for="make_from_valid"><?php print wp_kses_post( __( 'Fix sender-address?', 'wpes' ) ); ?></label>
+				</th>
+				<td colspan="3" class="last">
+					<?php print wp_kses_post( __( 'E-mails sent as different domain will probably be marked as spam. Use the options here to fix the sender-address to always match the sending domain.', 'wpes' ) ); ?>
+					<br/>
+					<?php print wp_kses_post( __( 'The actual sender of the e-mail will be used as <code>Reply-To</code>; you can still use the Reply button in your e-mail application to send a reply easily.', 'wpes' ) ); ?>
+				</td>
+			</tr>
+			<tr>
+				<td><?php esc_html_e( 'When the sender e-mail address...', 'wpes' ); ?></td>
+				<td colspan="3">
+					<input
+						id="wpes-settings-make_from_valid_when-when_sender_invalid"
+						type="radio"
+						name="settings[make_from_valid_when]"
+						value="when_sender_invalid" <?php checked( 'when_sender_invalid', $wpes_config['make_from_valid_when'] ); ?>
+					><label
+						class="on-regexp-test" data-field="spf_lookup_enabled_0" data-regexp="0"
+						for="wpes-settings-make_from_valid_when-when_sender_invalid"><?php print wp_kses_post( __( 'is not on the website domain...', 'wpes' ) ); ?>
+					</label><label
+						class="on-regexp-test" data-field="spf_lookup_enabled_1" data-regexp="1"
+						for="wpes-settings-make_from_valid_when-when_sender_invalid"><?php print wp_kses_post( __( 'is not allowed by SPF from this website...', 'wpes' ) ); ?>
+					</label>
+					<br/>
+					<input
+						id="wpes-settings-make_from_valid_when-when_sender_not_as_set"
+						type="radio"
+						name="settings[make_from_valid_when]"
+						value="when_sender_not_as_set" <?php checked( 'when_sender_not_as_set', $wpes_config['make_from_valid_when'] ); ?>
+					><label
+						for="wpes-settings-make_from_valid_when-when_sender_not_as_set"><?php print wp_kses_post( __( 'is not the "Default from e-mail" as set above...', 'wpes' ) ); ?></label>
+				</td>
+			</tr>
+			<tr>
+				<td></td>
+				<td colspan="3">
+					<select class="widefat" name="settings[make_from_valid]" id="make_from_valid">
+						<option
+							value=""><?php print wp_kses_post( __( 'Keep the possibly-invalid sender as is. (might cause your mails to be marked as spam!)', 'wpes' ) ); ?></option>
+						<option disabled>────────────────────────────────────────────────────────────</option>
+						<option value="-at-" <?php selected( '-at-', $wpes_config['make_from_valid'] ); ?>>
+							<?php print esc_html( sprintf( __( 'Rewrite e-mail@addre.ss to e-mail-at-addre-dot-ss@%s', 'wpes' ), $wpes_host ) ); ?>
+						</option>
+						<option value="noreply" <?php selected( 'noreply', $wpes_config['make_from_valid'] ); ?>>
+							<?php print esc_html( sprintf( __( 'Rewrite e-mail@addre.ss to noreply@%s', 'wpes' ), $wpes_host ) ); ?>
+							<?php print esc_html( __( '(Not GDPR Compliant)', 'wpes' ) ); ?>
+						</option>
+						<?php
+						$wpes_default_sender_mail = Plugin::wp_mail_from( $wpes_config['from_email'] );
+						if ( Plugin::i_am_allowed_to_send_in_name_of( $wpes_default_sender_mail ) ) {
+							?>
+							<option value="default" <?php selected( 'default', $wpes_config['make_from_valid'] ); ?>>
+								<?php print esc_html( sprintf( __( 'Rewrite e-mail@addre.ss to %s', 'wpes' ), $wpes_default_sender_mail ) ); ?>
+							</option>
+						<?php } ?>
+					</select>
+				</td>
+			</tr>
+			<tr>
+				<th colspan="4" class="last">
+					<hr/>
+				</th>
+			</tr>
+
+			<tr>
+				<td colspan="4" class="last">
 					<h3><?php print wp_kses_post( __( 'E-mail History', 'wpes' ) ); ?>:</h3>
 				</td>
 			</tr>
@@ -44,7 +240,7 @@ $wpes_config = Plugin::get_config();
 						<?php checked( $wpes_config['enable_history'] ); ?>
 						id="enable_history"/>
 					<label
-						for="enable_history"><?php print wp_kses_post( __( 'Enable Email History', 'wpes' ) ); ?></label>
+						for="enable_history"><?php print wp_kses_post( __( 'Enable E-mail History', 'wpes' ) ); ?></label>
 				</th>
 				<td colspan="3"></td class=last>
 			</tr>
@@ -52,12 +248,12 @@ $wpes_config = Plugin::get_config();
 				<td colspan="4" class="last">
 					<?php print wp_kses_post( __( '<strong>Warning: </strong> Storing e-mails in your database is a BAD idea and illegal in most countries. Use this for DEBUGGING only!', 'wpes' ) ); ?>
 					<br/>
-					<?php print wp_kses_post( __( 'Enabling the history feature will also add a tracker to all outgoing emails to check receipt.', 'wpes' ) ); ?>
+					<?php print wp_kses_post( __( 'Enabling the history feature will also add a tracker to all outgoing e-mails to check receipt.', 'wpes' ) ); ?>
 					<br/>
-					<?php print wp_kses_post( __( 'Disabling this feature will delete the mail-store.', 'wpes' ) ); ?>
+					<?php print wp_kses_post( __( 'Disabling this feature will delete the e-mail history datbase tables.', 'wpes' ) ); ?>
 					<br/>
 					<strong
-						style="color: darkred"><?php print wp_kses_post( __( 'If you insist on storing emails, please note that you need to implement the appropriate protocols for compliance with GDPR. The responsibility lies with the owner of the website, not the creator or hosting company.', 'wpes' ) ); ?></strong>
+						style="color: darkred"><?php print wp_kses_post( __( 'If you insist on storing e-mails, please note that you need to implement the appropriate protocols for compliance with GDPR. The responsibility lies with the owner of the website, not the creator or hosting company.', 'wpes' ) ); ?></strong>
 				</th>
 			</tr>
 			<tr>
@@ -205,176 +401,6 @@ $wpes_config = Plugin::get_config();
 				</th>
 			</tr>
 			<tr>
-				<th>
-					<label for="from-name"><?php print wp_kses_post( __( 'Default from name', 'wpes' ) ); ?></label>
-				</th>
-				<td>
-					<input
-						type="text" class="widefat" name="settings[from_name]"
-						value="<?php print esc_attr( $wpes_config['from_name'] ); ?>"
-						id="from-name"/>
-				</td>
-			</tr>
-			<tr>
-				<th>
-					<label for="from-email"><?php print wp_kses_post( __( 'Default from e-mail', 'wpes' ) ); ?></label>
-				</th>
-				<td class="last">
-					<input
-						type="text" class="widefat" name="settings[from_email]"
-						value="<?php print esc_attr( $wpes_config['from_email'] ); ?>"
-						id="from-email"/>
-				</td>
-			</tr>
-			<tr class="on-regexp-test" data-regexp="(no-?reply)@" data-field="from-email">
-				<td colspan="4" class="last">
-					<strong
-						style="color:darkred"><?php print wp_kses_post( __( 'Under GDPR, from May 25th, 2018, using a no-reply@ (or any variation of a not-responded-to email address) is prohibited. Please make sure the default sender address is valid and used in the setting below.', 'wpes' ) ); ?></strong>
-				</td>
-			</tr>
-			<?php
-			if ( $wpes_config['spf_lookup_enabled'] ) {
-				// SPF match.
-				?>
-				<?php if ( ! Plugin::i_am_allowed_to_send_in_name_of( $wpes_config['from_email'] ) ) { ?>
-					<tr>
-						<th>
-						</th>
-						<td colspan="3"
-							class=last><?php print wp_kses_post( __( 'SPF Records are checked', 'wpes' ) ); ?>
-							: <?php print wp_kses_post( __( 'you are NOT allowed to send mail with this domain.', 'wpes' ) ); ?>
-							<br/>
-							<?php print wp_kses_post( __( 'If you really need to use this sender e-mail address, you need to change the SPF record to include the sending-IP of this server', 'wpes' ) ); ?>
-							;<br/>
-							<?php print wp_kses_post( __( 'Old', 'wpes' ) ); ?>:
-							<code><?php print wp_kses_post( Plugin::get_spf( $wpes_config['from_email'], false, true ) ); ?></code><br/>
-							<?php print wp_kses_post( __( 'New', 'wpes' ) ); ?>:
-							<code><?php print wp_kses_post( Plugin::get_spf( $wpes_config['from_email'], true, true ) ); ?></code>
-						</td>
-					</tr>
-					<?php
-				} else {
-					?>
-					<tr>
-						<td></td>
-						<td colspan="3" class=last><?php print wp_kses_post( __( 'SPF Record', 'wpes' ) ); ?>:
-							<code><?php print wp_kses_post( Plugin::get_spf( $wpes_config['from_email'], false, true ) ); ?></code>
-						</td>
-					</tr>
-					<?php
-				}
-			} else {
-				// domain match.
-				if ( ! Plugin::i_am_allowed_to_send_in_name_of( $wpes_config['from_email'] ) ) {
-					?>
-					<tr>
-						<th>
-						</th>
-						<td colspan="3"
-							class=last><?php print wp_kses_post( __( 'You are NOT allowed to send mail with this domain; it should match the domainname of the website.', 'wpes' ) ); ?>
-							<br/>
-							<?php print wp_kses_post( __( 'If you really need to use this sender e-mail address, you need to switch to SPF-record checking and make sure the SPF for this domain matches this server.', 'wpes' ) ); ?>
-						</td>
-					</tr>
-					<?php
-				}
-			}
-			?>
-			<tr>
-				<td colspan="4" class="last">
-					<h3><?php print wp_kses_post( __( 'How to validate sender?', 'wpes' ) ); ?></h3>
-				</td>
-			</tr>
-			<tr>
-				<td colspan="4" class="last">
-					<?php print wp_kses_post( __( 'You have 2 options', 'wpes' ) ); ?>:
-					<ul>
-						<li><input
-								type="radio" name="settings[spf_lookup_enabled]" value="1"
-								<?php checked( isset( $wpes_config['spf_lookup_enabled'] ) && $wpes_config['spf_lookup_enabled'] ); ?>
-								id="spf_lookup_enabled_1"/>
-							<label for="spf_lookup_enabled_1">
-								<?php print wp_kses_post( __( '<strong>SPF</strong>: Use SPF records to validate the sender. If the SPF record of the domain of the email address used as sender matches the IP-address this website is hosted on, the email address is considered valid.', 'wpes' ) ); ?>
-							</label>
-						</li>
-						<li><input
-								type="radio" name="settings[spf_lookup_enabled]" value="0"
-								<?php checked( ! isset( $wpes_config['spf_lookup_enabled'] ) || ! $wpes_config['spf_lookup_enabled'] ); ?>
-								id="spf_lookup_enabled_0"/>
-							<label for="spf_lookup_enabled_0">
-								<?php print wp_kses_post( __( '<strong>Domain name</strong>: Use a simple match on hostname; any email adress that matches the base domainname of this website is considered valid.', 'wpes' ) ); ?>
-							</label>
-						</li>
-					</ul>
-				</td>
-			</tr>
-			<tr>
-				<td colspan="4" class="last">
-					<hr/>
-				</td>
-			</tr>
-			<tr>
-				<td colspan="4" class="last">
-					<h3><?php print wp_kses_post( __( 'What to do in case the sender is not valid for this domain?', 'wpes' ) ); ?></h3>
-				</td>
-			</tr>
-			<tr>
-				<th>
-					<label
-						for="make_from_valid"><?php print wp_kses_post( __( 'Fix sender-address?', 'wpes' ) ); ?></label>
-				</th>
-				<td colspan="3" class="last">
-					<?php print wp_kses_post( __( 'E-mails sent as different domain will probably be marked as spam. Fix the sender-address to always match the sending domain and send original From address as Reply-To: header?', 'wpes' ) ); ?>
-				</td>
-			</tr>
-			<tr>
-				<td></td>
-				<td colspan="3">
-					<?php
-					$wpes_host = wp_parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
-					$wpes_host = preg_replace( '/^www[0-9]*\./', '', $wpes_host );
-					?>
-					<select class="wide" name="settings[make_from_valid_when]">
-						<option
-							value="when_sender_invalid" <?php selected( 'when_sender_invalid', $wpes_config['make_from_valid_when'] ); ?>
-						><?php print wp_kses_post( __( 'When sender email domain/SPF does not match', 'wpes' ) ); ?></option>
-						<option
-							value="when_sender_not_as_set" <?php selected( 'when_sender_not_as_set', $wpes_config['make_from_valid_when'] ); ?>
-						><?php print wp_kses_post( __( 'When sender email is not equal to above', 'wpes' ) ); ?></option>
-					</select>
-				</td>
-			</tr>
-			<tr>
-				<td></td>
-				<td colspan="3">
-					<select class="wide" name="settings[make_from_valid]" id="make_from_valid">
-						<option
-							value=""><?php print wp_kses_post( __( 'Keep the possibly-invalid sender as is. (might cause your mails to be marked as spam!)', 'wpes' ) ); ?></option>
-						<option disabled>────────────────────────────────────────────────────────────</option>
-						<option value="-at-" <?php selected( '-at-', $wpes_config['make_from_valid'] ); ?>>
-							<?php print esc_html( sprintf( __( 'Rewrite email@addre.ss to email-at-addre-dot-ss@%s', 'wpes' ), $wpes_host ) ); ?>
-						</option>
-						<option value="noreply" <?php selected( 'noreply', $wpes_config['make_from_valid'] ); ?>>
-							<?php print esc_html( sprintf( __( 'Rewrite email@addre.ss to noreply@%s', 'wpes' ), $wpes_host ) ); ?>
-							<?php print esc_html( __( '(Not GDPR Compliant)', 'wpes' ) ); ?>
-						</option>
-						<?php
-						$wpes_default_sender_mail = Plugin::wp_mail_from( $wpes_config['from_email'] );
-						if ( Plugin::i_am_allowed_to_send_in_name_of( $wpes_default_sender_mail ) ) {
-							?>
-							<option value="default" <?php selected( 'default', $wpes_config['make_from_valid'] ); ?>>
-								<?php print esc_html( sprintf( __( 'Rewrite email@addre.ss to %s', 'wpes' ), $wpes_default_sender_mail ) ); ?>
-							</option>
-						<?php } ?>
-					</select>
-				</td>
-			</tr>
-			<tr>
-				<th colspan="4" class="last">
-					<hr/>
-				</th>
-			</tr>
-			<tr>
 				<td colspan="1" rowspan="2">
 					<h3><?php print wp_kses_post( __( 'E-mail content', 'wpes' ) ); ?>:</h3>
 				</td>
@@ -457,7 +483,7 @@ $wpes_config = Plugin::get_config();
 							type="checkbox" name="settings[enable_smime]" value="1"
 							<?php checked( isset( $wpes_config['enable_smime'] ) && $wpes_config['enable_smime'] ); ?>
 							id="enable-smime"/><label
-							for="enable-smime"><?php print wp_kses_post( __( 'Sign emails with S/MIME certificate', 'wpes' ) ); ?></label>
+							for="enable-smime"><?php print wp_kses_post( __( 'Sign e-mails with S/MIME certificate', 'wpes' ) ); ?></label>
 					</td>
 					<td class="on-enable-smime">
 						<label
@@ -484,9 +510,9 @@ $wpes_config = Plugin::get_config();
 						<br/>
 						<?php
 						print wp_kses_post( __( 'The file-naming convention is', 'wpes' ) ) . ':<br/>';
-						print wp_kses_post( __( 'certificate: <code>email@addre.ss.crt</code>', 'wpes' ) ) . ',<br/>';
-						print wp_kses_post( __( 'private key: <code>email@addre.ss.key</code>', 'wpes' ) ) . ',<br/>';
-						print wp_kses_post( __( '(optional) passphrase: <code>email@addre.ss.pass</code>', 'wpes' ) ) . '.';
+						print wp_kses_post( __( 'certificate: <code>e-mail@addre.ss.crt</code>', 'wpes' ) ) . ',<br/>';
+						print wp_kses_post( __( 'private key: <code>e-mail@addre.ss.key</code>', 'wpes' ) ) . ',<br/>';
+						print wp_kses_post( __( '(optional) passphrase: <code>e-mail@addre.ss.pass</code>', 'wpes' ) ) . '.';
 						?>
 					</td>
 				</tr>
@@ -548,7 +574,7 @@ $wpes_config = Plugin::get_config();
 						type="checkbox" name="settings[enable_dkim]" value="1"
 						<?php checked( isset( $wpes_config['enable_dkim'] ) && $wpes_config['enable_dkim'] ); ?>
 						id="enable-dkim"/><label
-						for="enable-dkim"><?php print wp_kses_post( __( 'Sign emails with DKIM certificate', 'wpes' ) ); ?></label>
+						for="enable-dkim"><?php print wp_kses_post( __( 'Sign e-mails with DKIM certificate', 'wpes' ) ); ?></label>
 				</td>
 				<td class="on-enable-dkim">
 					<label
@@ -682,11 +708,11 @@ $wpes_config = Plugin::get_config();
 						$wpes_admin        = get_option( 'admin_email', false );
 						$wpes_sample_email = [
 							'to'      => $wpes_admin,
-							'subject' => __( 'WP-Email-Essentials Test-email', 'wpes' ),
+							'subject' => Plugin::dummy_subject(),
 						];
 						$wpes_sample_email = Plugin::alternative_to( $wpes_sample_email );
 						$wpes_admin        = reset( $wpes_sample_email['to'] );
-						// translators: %1$s: a link to the options panel, %2$s: an email address.
+						// translators: %1$s: a link to the options panel, %2$s: an e-mail address.
 						print wp_kses_post( sprintf( __( 'Sample mail will be sent to the <a href="%1$s">Site Administrator</a>; <b>%2$s</b>.', 'wpes' ), admin_url( 'options-general.php' ), $wpes_admin ) );
 						?>
 					</em>
@@ -730,23 +756,23 @@ $wpes_config = Plugin::get_config();
 				<td colspan="2"><code>array $settings</code></td class=last>
 			</tr>
 			<tr>
-				<td><?php esc_html_e( 'Email subject', 'wpes' ); ?></td>
+				<td><?php esc_html_e( 'E-mail subject', 'wpes' ); ?></td>
 				<td><code>wpes_subject</code></td>
 				<td colspan="2"><code>string $subject</code>, <code>PHPMailer $mailer</code></td class=last>
 			</tr>
 			<tr class="on-smtp-is_html">
-				<td><?php esc_html_e( 'Email <head>', 'wpes' ); ?></td>
+				<td><?php esc_html_e( 'E-mail <head>', 'wpes' ); ?></td>
 				<td><code>wpes_head</code></td>
 				<td colspan="2"><code>string $head_content</code>, <code>PHPMailer $mailer</code></td class=last>
 			</tr>
 			<tr class="on-smtp-is_html">
-				<td><?php esc_html_e( 'Email <body>', 'wpes' ); ?></td>
+				<td><?php esc_html_e( 'E-mail <body>', 'wpes' ); ?></td>
 				<td><code>wpes_body</code></td>
 				<td colspan="2"><code>string $body_content</code>, <code>PHPMailer $mailer</code></td class=last>
 			</tr>
 			<tr class="not-smtp-is_html">
 				<td colspan="4" class="last">
-					<?php print wp_kses_post( __( 'Turn on HTML email to enable e-mail styling.', 'wpes' ) ); ?>
+					<?php print wp_kses_post( __( 'Turn on HTML e-mail to enable e-mail styling.', 'wpes' ) ); ?>
 				</td>
 			</tr>
 			<tr>
@@ -761,15 +787,16 @@ $wpes_config = Plugin::get_config();
 		<th class="last">
 			<?php
 			print wp_kses_post(
-				Plugin::get_config()['is_html'] ? __( 'Example Email (actual HTML) - with your filters applied', 'wpes' ) : __( 'Example Email', 'wpes' )
+				Plugin::get_config()['is_html'] ? __( 'Example E-mail (actual HTML) - with your filters applied', 'wpes' ) : __( 'Example E-mail', 'wpes' )
 			);
 			?>
 		</th>
 	</tr>
 	<tr>
 		<td class="last">
-			<iframe style="width: 100%; min-width: 700px; height: auto; min-height: 600px;"
-					src="<?php print esc_attr( add_query_arg( 'iframe', 'content' ) ); ?>"></iframe>
+			<iframe
+				style="width: 100%; min-width: 700px; height: auto; min-height: 600px;"
+				src="<?php print esc_attr( add_query_arg( 'iframe', 'content' ) ); ?>"></iframe>
 		</td>
 	</tr>
 </table>

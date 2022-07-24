@@ -24,10 +24,10 @@ if ( ! get_option( 'moderation_notify' ) ) {
 }
 ?>
 <div class="wrap wpes-wrap wpes-moderators">
-	<div class="icon32 icon32-posts-group" id="icon-edit">
-		<br/>
-	</div>
-	<h2>WP-Email-Essentials - <?php esc_html_e( 'Alternative Moderators', 'wpes' ); ?></h2>
+	<h2 class="dashicons-before dashicons-email-alt"> <?php print wp_kses_post( Plugin::plugin_data()['Name'] ); ?>
+		<em><?php print wp_kses_post( Plugin::plugin_data()['Version'] ); ?></em>
+		- <?php esc_html_e( 'Alternative Moderators', 'wpes' ); ?>
+	</h2>
 	<?php
 	if ( Plugin::$message ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
@@ -62,7 +62,7 @@ if ( ! get_option( 'moderation_notify' ) ) {
 								<label
 									for="key-<?php print esc_attr( $wpes_post_type ); ?>-<?php print esc_attr( $wpes_moderator_recipient ); ?>-<?php print esc_attr( $wpes_moderator_key ); ?>">
 									<?php
-									// translators: %1$s: email type like notification or request, %2$s: comment type like comment or pingback, %3$s: post_type .
+									// translators: %1$s: e-mail type like notification or request, %2$s: comment type like comment or pingback, %3$s: post_type .
 									print wp_kses_post( sprintf( __( '<em>%1$s</em> to author on <em>%2$s</em> on <em>%3$s</em>', 'wpes' ), $wpes_moderator_action, $wpes_moderator_key, $wpes_post_type ) ) . ':';
 									?>
 								</label>
@@ -94,7 +94,7 @@ if ( ! get_option( 'moderation_notify' ) ) {
 	</form>
 	<p>
 		<?php
-		print wp_kses_post( sprintf( __( '%s is allowed to disable sending the email.', 'wpes' ), '<code>:blackhole:</code>' ) );
+		print wp_kses_post( sprintf( __( '%s is allowed to disable sending the e-mail.', 'wpes' ), '<code>:blackhole:</code>' ) );
 		?>
 	</p>
 	<p>

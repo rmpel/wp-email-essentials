@@ -52,6 +52,7 @@ class Plugin {
 		if ( ! $plugin_data ) {
 			$plugin_data = get_plugin_data( __DIR__ . '/../wp-email-essentials.php' );
 		}
+
 		return $plugin_data;
 	}
 
@@ -1433,7 +1434,7 @@ class Plugin {
 					$wpes_admin        = get_option( 'admin_email', false );
 					$wpes_sample_email = [
 						'to'      => $wpes_admin,
-						'subject' => __( 'WP-Email-Essentials Test-email', 'wpes' ),
+						'subject' => self::dummy_subject(),
 					];
 					$wpes_sample_email = self::alternative_to( $wpes_sample_email );
 					$wpes_admin        = reset( $wpes_sample_email['to'] );
@@ -1658,7 +1659,16 @@ class Plugin {
 	}
 
 	/**
-	 * Generate dummy content for sample email.
+	 * Generate dummy subject for sample e-mail.
+	 *
+	 * @return string
+	 */
+	public static function dummy_subject() {
+		return __( 'WP-Email-Essentials Test-e-mail', 'wpes' );
+	}
+
+	/**
+	 * Generate dummy content for sample e-mail.
 	 *
 	 * @return string
 	 */
@@ -2149,7 +2159,7 @@ Item 2
 			sprintf( __( '[%s] Password Reset' ), $blogname )        => 'password_reset_email',
 			sprintf( __( '[%s] Password Changed' ), $blogname )      => 'password_changed_email',
 			sprintf( __( '[%s] Password Lost/Changed' ), $blogname ) => 'password_lost_changed_email',
-			__( 'WP-Email-Essentials Test-email', 'wpes' )           => 'wpes_email_test',
+			self::dummy_subject()                                    => 'wpes_email_test',
 		];
 		// @phpcs:enable WordPress.WP.I18n.MissingArgDomain
 
@@ -2367,19 +2377,19 @@ Item 2
 				});
 			</script>
 			<style>
-							.wpes-err-add {
+				.wpes-err-add {
 
-							}
+				}
 
-							.wpes-err-add em {
-								font-style: inherit;
-							}
+				.wpes-err-add em {
+					font-style: inherit;
+				}
 
-							.wpes-err-add em.quote {
-								background: lightgray;
-								font-family: monospace;
-								font-weight: bold;
-							}
+				.wpes-err-add em.quote {
+					background: lightgray;
+					font-family: monospace;
+					font-weight: bold;
+				}
 			</style>
 			<?php
 		}

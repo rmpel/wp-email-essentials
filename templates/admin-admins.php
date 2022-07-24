@@ -14,11 +14,12 @@ global $current_user;
 $wpes_config          = get_option( 'mail_key_admins', array() );
 $wpes_mail_keys       = Plugin::mail_key_database();
 $wpes_wordpress_admin = get_option( 'admin_email' );
-var_dump(Plugin::plugin_data());exit;
 ?>
 <div class="wrap wpes-wrap wpes-admins">
 	<h2 class="dashicons-before dashicons-email-alt"> <?php print wp_kses_post( Plugin::plugin_data()['Name'] ); ?>
-		- <?php esc_html_e( 'Alternative Admins', 'wpes' ); ?></h2>
+		<em><?php print wp_kses_post( Plugin::plugin_data()['Version'] ); ?></em>
+		- <?php esc_html_e( 'Alternative Admins', 'wpes' ); ?>
+	</h2>
 	<?php
 	if ( Plugin::$message ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
@@ -33,7 +34,7 @@ var_dump(Plugin::plugin_data());exit;
 	<form id="outpost" method='POST' action="">
 		<input type="hidden" name="form_id" value="wpes-admins"/>
 		<?php wp_nonce_field( 'wp-email-essentials--admins', 'wpes-nonce' ); ?>
-		<table>
+		<table class="wpes-table">
 			<thead>
 			<th><?php esc_html_e( 'Mail Key', 'wpes' ); ?></th>
 			<th><?php esc_html_e( 'Send to', 'wpes' ); ?></th>
@@ -53,6 +54,7 @@ var_dump(Plugin::plugin_data());exit;
 					<td>
 						<input
 							type="text" name="settings[keys][<?php print esc_attr( $wpes_mail_key ); ?>]"
+							class="widefat"
 							placeholder="<?php print esc_attr( $wpes_wordpress_admin ); ?>"
 							value="<?php print esc_attr( $wpes_config[ $wpes_mail_key ] ); ?>"
 							id="key-<?php print esc_attr( $wpes_mail_key ); ?>"/>
@@ -74,12 +76,13 @@ var_dump(Plugin::plugin_data());exit;
 						<input
 							type="text"
 							name="settings[regexp][<?php print esc_attr( $wpes_loop_iterator_0 ); ?>][regexp]"
-							class="a-regexp"
+							class="a-regexp widefat"
 							value="<?php print esc_attr( $wpes_regexp ); ?>"/>
 					</td>
 					<td>
 						<input
 							type="text" name="settings[regexp][<?php print esc_attr( $wpes_loop_iterator_0 ); ?>][key]"
+							class="widefat"
 							value="<?php print esc_attr( $wpes_mail_key ); ?>"/>
 					</td>
 				</tr>
@@ -93,12 +96,12 @@ var_dump(Plugin::plugin_data());exit;
 						<input
 							type="text"
 							name="settings[regexp][<?php print esc_attr( $wpes_loop_iterator_1 + $wpes_loop_iterator_0 ); ?>][regexp]"
-							class="a-regexp"
+							class="a-regexp widefat"
 							value=""/>
 					</td>
 					<td>
 						<input
-							type="text"
+							type="text" class="widefat"
 							name="settings[regexp][<?php print esc_attr( $wpes_loop_iterator_1 + $wpes_loop_iterator_0 ); ?>][key]"
 							value=""/>
 					</td>
@@ -112,17 +115,31 @@ var_dump(Plugin::plugin_data());exit;
 				</td>
 			</tr>
 			<tr>
-				<td>
+				<td colspan="2">
 					<em> *)
 						<?php
 						// translators: %1$s: the regexp barrier "/" .
-						print wp_kses_post( sprintf( __( 'You must include the barriers, so start with %1$s and end with %1$s', 'wpes' ), '<code>/</code>' ) );
+						print wp_kses_post( sprintf( __( 'You must include the barriers, so start with %1$s and end with %1$s.', 'wpes' ), '<code>/</code>' ) );
+						?>
+						<br/>
+						<?php
+						print wp_kses_post( sprintf( __( 'You can add the %1$s flag to create a case-insensitive match (like so: %2$s).', 'wpes' ), '<code>i</code>', '<code>/some[expression]/i</code>' ) );
+						?>
+						<br/>
+						<?php
+						print wp_kses_post( __( 'If you are unfamiliar with regular expressions, you can ignore this section, ask for help or learn the magic and power of regular expressions yourself.', 'wpes' ) );
 						?>
 					</em>
 				</td>
 			</tr>
 			<tr class="header">
-				<th><?php esc_html_e( 'Unmatched subjects', 'wpes' ); ?></th>
+				<th colspan="2"><?php esc_html_e( 'Unmatched subjects', 'wpes' ); ?></th>
+			</tr>
+			<tr>
+				<td colspan="2">
+					<?php print wp_kses_post( __( 'This is a list of e-mail subjects of e-mails that have been sent to the site administrator.', 'wpes' ) ); ?>
+					<?php print wp_kses_post( __( 'You can use the table above to input regular expressions for e-mails that should have gone to an alternative e-mail address.', 'wpes' ) ); ?>
+				</td>
 			</tr>
 			<?php
 			$wpes_missed_subjects = get_option( 'mail_key_fails', array() );
