@@ -53,6 +53,7 @@ class Plugin {
 			function () {
 				load_plugin_textdomain( 'wpes', false, dirname( plugin_basename( __FILE__ ) ) . '/lang' );
 				wp_register_style( 'wpes', plugins_url( 'public/wpes-admin.css', __DIR__ ), [], filemtime( __DIR__ . '/../public/wpes-admin.css' ), 'all' );
+				wp_register_script( 'wpes', plugins_url( 'public/wpes-admin.js', __DIR__ ), [], filemtime( __DIR__ . '/../public/wpes-admin.js' ), true );
 			}
 		);
 
@@ -1571,27 +1572,37 @@ class Plugin {
 	}
 
 	/**
+	 * Template view
+	 *
+	 * @param string $tpl The template to load.
+	 */
+	public static function view( $tpl ) {
+		// Sanitize path traversal.
+		$tpl = basename( "./$tpl" );
+		wp_enqueue_style( 'wpes' );
+		wp_enqueue_script( 'wpes' );
+		require __DIR__ . '/../' . $tpl . '.php';
+	}
+
+	/**
 	 * Load the settings template.
 	 */
 	public static function admin_interface() {
-		wp_enqueue_style( 'wpes' );
-		include __DIR__ . '/../admin-interface.php';
+		self::view( 'admin-interface' );
 	}
 
 	/**
 	 * Load the alternative admins template.
 	 */
 	public static function admin_interface_admins() {
-		wp_enqueue_style( 'wpes' );
-		include __DIR__ . '/../admin-admins.php';
+		self::view( 'admin-admins' );
 	}
 
 	/**
 	 * Load the moderators template.
 	 */
 	public static function admin_interface_moderators() {
-		wp_enqueue_style( 'wpes' );
-		include __DIR__ . '/../admin-moderators.php';
+		self::view( 'admin-moderators' );
 	}
 
 	/**

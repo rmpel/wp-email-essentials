@@ -23,7 +23,7 @@ if ( ! get_option( 'moderation_notify' ) ) {
 	unset( $wpes_moderator_recipients['moderator'] );
 }
 ?>
-<div class="wrap wpes-wrap">
+<div class="wrap wpes-wrap wpes-moderators">
 	<div class="icon32 icon32-posts-group" id="icon-edit">
 		<br/>
 	</div>
@@ -109,8 +109,3 @@ if ( ! get_option( 'moderation_notify' ) ) {
 		</a>
 	</p>
 </div>
-<style>
-	#outpost input[type=text] {
-		width: 400px;
-	}
-</style>

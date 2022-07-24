@@ -13,7 +13,7 @@ if ( ! current_user_can( 'manage_options' ) ) {
 global $current_user;
 $wpes_config = Plugin::get_config();
 ?>
-<div class="wrap wpes-wrap">
+<div class="wrap wpes-wrap wpes-settings">
 	<div class="icon32 icon32-posts-group" id="icon-edit">
 		<br/>
 	</div>
@@ -78,12 +78,14 @@ $wpes_config = Plugin::get_config();
 						id="smtp-enabled"/><label
 						for="smtp-enabled"><?php print wp_kses_post( __( 'Enable sending mail over SMTP?', 'wpes' ) ); ?></label>
 				</th>
-				<th colspan="2" class="last not-smtp-enabled">
+				<th colspan="2" rowspan="8" class="last on-smtp-enabled">
 					<?php
 					print wp_kses_post( __( 'Using an SMTP improves reliability, helps reducing the chance of your e-mails being marked as spam and gives the option to use an external mail service like MailJet, MailGun, SparkPost etc.', 'wpes' ) );
 					?>
 				</th>
-				<th colspan="2" rowspan="8" class="last on-smtp-enabled">
+			</tr>
+			<tr class="last not-smtp-enabled">
+				<th colspan="4">
 					<?php
 					print wp_kses_post( __( 'Using an SMTP improves reliability, helps reducing the chance of your e-mails being marked as spam and gives the option to use an external mail service like MailJet, MailGun, SparkPost etc.', 'wpes' ) );
 					?>
@@ -771,24 +773,4 @@ $wpes_config = Plugin::get_config();
 		</td>
 	</tr>
 </table>
-<script>
-	jQuery(document).ready(function ($) {
-		var keys = 'enable_history,smtp-enabled,enable-smime,enable-dkim,smtp-is_html'.split(',');
-		for (var key in keys) {
-			var i = keys[key];
-			$("#" + i).on('change', function (e) {
-				var i = e.target.id;
-				$(".on-" + i).toggle($(this).is(':checked'));
-				$(".not-" + i).toggle(!$(this).is(':checked'));
-			}).trigger('change');
-		}
-		$(".on-regexp-test").each(function () {
-			(function (field, regexp, label) {
-				$('#' + field).on('change keyup blur paste', function () {
-					label.toggle(null !== ($(this).val() || "").match(new RegExp(regexp, 'i')));
-				}).trigger('change');
-			})($(this).attr('data-field'), $(this).attr('data-regexp'), $(this));
-		});
-	});
 
-</script>

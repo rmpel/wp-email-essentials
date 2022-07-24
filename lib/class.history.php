@@ -170,8 +170,7 @@ class History {
 	 * The admin interface.
 	 */
 	public static function admin_interface() {
-		wp_enqueue_style( 'wpes' );
-		include __DIR__ . '/../admin-emails.php';
+		Plugin::view( 'admin-emails' );
 	}
 
 	/**

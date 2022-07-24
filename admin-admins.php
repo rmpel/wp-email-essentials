@@ -15,7 +15,7 @@ $wpes_config          = get_option( 'mail_key_admins', array() );
 $wpes_mail_keys       = Plugin::mail_key_database();
 $wpes_wordpress_admin = get_option( 'admin_email' );
 ?>
-<div class="wrap wpes-wrap">
+<div class="wrap wpes-wrap wpes-admins">
 	<div class="icon32 icon32-posts-group" id="icon-edit">
 		<br/>
 	</div>
@@ -146,52 +146,4 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 		</table>
 	</form>
 </div>
-<script>
-	jQuery(document).ready(function () {
-		var t = function () {
-			if (/^\/[\s\S]+\/[i]?$/.test((jQuery(this).val() || ""))) {
-				var that = this;
-				var re = jQuery(that).val();
 
-				re = re.split(re.substr(0, 1));
-				re = new RegExp(re[1], re[2]);
-
-				jQuery(".a-fail").each(function () {
-					jQuery(this).toggleClass('match', re.test((jQuery(this).text() || "")));
-				});
-			} else {
-				jQuery(".a-fail").removeClass('match');
-			}
-		};
-		jQuery(".a-regexp").bind('blur', function () {
-			var val = (jQuery(this).val() || "");
-			if ("" === val) {
-				return jQuery(this).removeClass('error match');
-			}
-			jQuery(this).toggleClass('error', !/^\/[\s\S]+\/[i]?$/.test(val)).not('.error').addClass('match');
-		}).bind('focus', function (e) {
-			jQuery(".a-fail,.a-regexp").removeClass('match');
-			jQuery(this).removeClass('error match');
-			t.apply(this, [e]);
-		}).bind('keyup', t);
-	});
-</script>
-<style>
-	.a-regexp {
-		width: 300px;
-	}
-
-	.a-regexp.error {
-		border-color: red;
-		background: #ff9e8b;
-	}
-
-	.a-regexp.match {
-		border-color: #00a800;
-		background: #97e396;
-	}
-
-	.a-fail.match {
-		background-color: #80ff8e
-	}
-</style>
