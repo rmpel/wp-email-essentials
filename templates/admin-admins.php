@@ -121,11 +121,11 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 						// translators: %1$s: the regexp barrier "/" .
 						print wp_kses_post( sprintf( __( 'You must include the boundaries, so start with %1$s and end with %1$s.', 'wpes' ), '<code>/</code>' ) );
 						?>
-						<br/>
+						<br />
 						<?php
 						print wp_kses_post( sprintf( __( 'You can add the %1$s flag to create a case-insensitive match (like so: %2$s).', 'wpes' ), '<code>i</code>', '<code>/some[expression]/i</code>' ) );
 						?>
-						<br/>
+						<br />
 						<?php
 						print wp_kses_post( __( 'If you are unfamiliar with regular expressions, you can ignore this section, ask for help or learn the magic and power of regular expressions yourself.', 'wpes' ) );
 						?>
