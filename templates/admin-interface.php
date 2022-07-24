@@ -250,7 +250,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 					<br/>
 					<?php print wp_kses_post( __( 'Enabling the history feature will also add a tracker to all outgoing e-mails to check receipt.', 'wpes' ) ); ?>
 					<br/>
-					<?php print wp_kses_post( __( 'Disabling this feature will delete the e-mail history datbase tables.', 'wpes' ) ); ?>
+					<?php print wp_kses_post( __( 'Disabling this feature will delete the e-mail history database tables.', 'wpes' ) ); ?>
 					<br/>
 					<strong
 						style="color: darkred"><?php print wp_kses_post( __( 'If you insist on storing e-mails, please note that you need to implement the appropriate protocols for compliance with GDPR. The responsibility lies with the owner of the website, not the creator or hosting company.', 'wpes' ) ); ?></strong>
@@ -433,7 +433,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 						$wpes_encoding_table         = array_map(
 							function ( $item ) {
 								// translators: %s: a content-encoding, like UTF-8.
-								return sprintf( __( 'From: %s', 'wpes' ), strtoupper( $item ) );
+								return sprintf( _x( 'From: %s', 'E.g.: From: UTF-8', 'wpes' ), strtoupper( $item ) );
 							},
 							$wpes_encoding_table
 						);
@@ -506,7 +506,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 							<?php
 						}
 						?>
-						<?php print wp_kses_post( __( 'You can also type a relative path (any path not starting with a / is a relative path), this will be evaluated against ABSPATH (the root of your WordPress).', 'wpes' ) ); ?>
+						<?php print wp_kses_post( __( 'You can also type a relative path (any path not starting with a / is a relative path), this will be evaluated against the document-root of your website.', 'wpes' ) ); ?>
 						<br/>
 						<?php
 						print wp_kses_post( __( 'The file-naming convention is', 'wpes' ) ) . ':<br/>';

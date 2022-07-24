@@ -1403,8 +1403,8 @@ class Plugin {
 	 */
 	public static function admin_menu() {
 		add_menu_page(
-			'WP-Email-Essentials',
-			'Email Essentials',
+			Plugin::plugin_data()['Name'],
+			Plugin::plugin_data()['Name'],
 			'manage_options',
 			'wp-email-essentials',
 			[ self::class, 'admin_interface' ],
@@ -1441,7 +1441,7 @@ class Plugin {
 
 					$result      = wp_mail(
 						$wpes_admin,
-						__( 'WP-Email-Essentials Test-email', 'wpes' ),
+						self::dummy_subject(),
 						self::dummy_content(),
 						[ 'X-Priority: 1' ]
 					);
@@ -1484,8 +1484,8 @@ class Plugin {
 
 		add_submenu_page(
 			'wp-email-essentials',
-			'WP-Email-Essentials - Alternative Admins',
-			'Alternative admins',
+			Plugin::plugin_data()['Name'] . ' - ' . __( 'Alternative Admins', 'wpes' ),
+			__( 'Alternative Admins', 'wpes' ),
 			'manage_options',
 			'wpes-admins',
 			[
@@ -1537,8 +1537,8 @@ class Plugin {
 
 		add_submenu_page(
 			'wp-email-essentials',
-			'WP-Email-Essentials - Alternative Moderators',
-			'Alternative Moderators',
+			Plugin::plugin_data()['Name'] . ' - ' . __( 'Alternative Moderators', 'wpes' ),
+			__( 'Alternative Moderators', 'wpes' ),
 			'manage_options',
 			'wpes-moderators',
 			[
@@ -1664,7 +1664,7 @@ class Plugin {
 	 * @return string
 	 */
 	public static function dummy_subject() {
-		return __( 'WP-Email-Essentials Test-e-mail', 'wpes' );
+		return self::plugin_data()['Name'] . ' ' . __( 'Test-e-mail', 'wpes' );
 	}
 
 	/**
@@ -1738,12 +1738,14 @@ Item 2
 		if ( ! $from ) {
 			$url = add_query_arg( 'page', 'wp-email-essentials', admin_url( 'tools.php' ) );
 			if ( $onpage ) {
-				$class   = 'updated';
-				$message = __( 'WP-Email-Essentials is not yet configured. Please fill out the form below.', 'wpes' );
+				$class = 'updated';
+				// translators: %s: Plugin name
+				$message = sprintf( __( '%s is not yet configured. Please fill out the form below.', 'wpes' ), Plugin::plugin_data()['Name'] );
 				echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 			} else {
-				$class   = 'error';
-				$message = sprintf( __( 'WP-Email-Essentials is not yet configured. Please go <a href="%s">here</a>.', 'wpes' ), esc_attr( $url ) );
+				$class = 'error';
+				// translators: %1$s: Plugin name, %2$s: settings URL.
+				$message = sprintf( __( '%1$s is not yet configured. Please go <a href="%2$s">here</a>.', 'wpes' ), Plugin::plugin_data()['Name'], esc_attr( $url ) );
 				echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 			}
 
@@ -2155,11 +2157,11 @@ Item 2
 		// @phpcs:disable WordPress.WP.I18n.MissingArgDomain
 		// WordPress strings, do NOT use own text-domain here, this construction is here because these are WP translated strings.
 		$keys = [
-			sprintf( __( '[%s] New User Registration' ), $blogname ) => 'new_user_registration_admin_email',
-			sprintf( __( '[%s] Password Reset' ), $blogname )        => 'password_reset_email',
-			sprintf( __( '[%s] Password Changed' ), $blogname )      => 'password_changed_email',
-			sprintf( __( '[%s] Password Lost/Changed' ), $blogname ) => 'password_lost_changed_email',
-			self::dummy_subject()                                    => 'wpes_email_test',
+			sprintf( _x( '[%s] New User Registration', 'translators: ignore this.' ), $blogname ) => 'new_user_registration_admin_email',
+			sprintf( _x( '[%s] Password Reset', 'translators: ignore this.' ), $blogname )        => 'password_reset_email',
+			sprintf( _x( '[%s] Password Changed', 'translators: ignore this.' ), $blogname )      => 'password_changed_email',
+			sprintf( _x( '[%s] Password Lost/Changed', 'translators: ignore this.' ), $blogname ) => 'password_lost_changed_email',
+			self::dummy_subject()                                                                 => 'wpes_email_test',
 		];
 		// @phpcs:enable WordPress.WP.I18n.MissingArgDomain
 
@@ -2297,16 +2299,20 @@ Item 2
 		}
 		switch ( $config['make_from_valid'] ) {
 			case 'noreply':
-				$text = sprintf( __( 'But <strong>please do not worry</strong>! <a href="%1$s" target="_blank">WP-Email-Essentials</a> will set <em class="noreply">noreply@%2$s</em> as sender and set <em>this email address</em> as Reply-To header.', 'wpes' ), admin_url( 'tools.php' ) . '?page=wp-email-essentials', $host );
+				// translators: %1$s: a URL, %2$s: the plugin name, %3$s: website hostname.
+				$text = sprintf( __( 'But <strong>please do not worry</strong>! <a href="%1$s" target="_blank">%2$s</a> will set <em class="noreply">noreply@%3$s</em> as sender and set <em>this email address</em> as Reply-To header.', 'wpes' ), admin_url( 'tools.php' ) . '?page=wp-email-essentials', self::plugin_data()['Name'], $host );
 				break;
 			case 'default':
-				$text = sprintf( __( 'But <strong>please do not worry</strong>! <a href="%1$s" target="_blank">WP-Email-Essentials</a> will set <em class="default">%2$s</em> as sender and set <em>this email address</em> as Reply-To header.', 'wpes' ), admin_url( 'tools.php' ) . '?page=wp-email-essentials', self::wp_mail_from( $config['from_email'] ) );
+				// translators: %1$s: a URL, %2$s: the plugin name, %3$s: email address.
+				$text = sprintf( __( 'But <strong>please do not worry</strong>! <a href="%1$s" target="_blank">%2$s</a> will set <em class="default">%3$s</em> as sender and set <em>this email address</em> as Reply-To header.', 'wpes' ), admin_url( 'tools.php' ) . '?page=wp-email-essentials', self::plugin_data()['Name'], self::wp_mail_from( $config['from_email'] ) );
 				break;
 			case '-at-':
-				$text = sprintf( __( 'But <strong>please do not worry</strong>! <a href="%s" target="_blank">WP-Email-Essentials</a> will set <em class="at-">example-email-at-youtserver-dot-com</em> as sender and set <em>this address</em> as Reply-To header.', 'wpes' ), admin_url( 'tools.php' ) . '?page=wp-email-essentials' );
+				// translators: %1$s: a URL, %2$s: the plugin name,
+				$text = sprintf( __( 'But <strong>please do not worry</strong>! <a href="%1$s" target="_blank">%2$s</a> will set <em class="at-">example-email-at-youtserver-dot-com</em> as sender and set <em>this address</em> as Reply-To header.', 'wpes' ), admin_url( 'tools.php' ) . '?page=wp-email-essentials', self::plugin_data()['Name'] );
 				break;
 			default:
-				$text = sprintf( __( 'You can fix this here, or you can let <a href="%s" target="_blank">WP-Email-Essentials</a> fix this automatically upon sending the email.', 'wpes' ), admin_url( 'tools.php' ) . '?page=wp-email-essentials' );
+				// translators: %1$s: a URL, %2$s: the plugin name,
+				$text = sprintf( __( 'You can fix this here, or you can let <a href="%1$s" target="_blank">%2$s</a> fix this automatically upon sending the email.', 'wpes' ), admin_url( 'tools.php' ) . '?page=wp-email-essentials', self::plugin_data()['Name'] );
 				break;
 		}
 

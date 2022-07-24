@@ -119,7 +119,7 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 					<em> *)
 						<?php
 						// translators: %1$s: the regexp barrier "/" .
-						print wp_kses_post( sprintf( __( 'You must include the barriers, so start with %1$s and end with %1$s.', 'wpes' ), '<code>/</code>' ) );
+						print wp_kses_post( sprintf( __( 'You must include the boundaries, so start with %1$s and end with %1$s.', 'wpes' ), '<code>/</code>' ) );
 						?>
 						<br/>
 						<?php

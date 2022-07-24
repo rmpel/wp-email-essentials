@@ -94,7 +94,8 @@ if ( ! get_option( 'moderation_notify' ) ) {
 	</form>
 	<p>
 		<?php
-		print wp_kses_post( sprintf( __( '%s is allowed to disable sending the e-mail.', 'wpes' ), '<code>:blackhole:</code>' ) );
+		// translators: %s: a special token.
+		print wp_kses_post( sprintf( _x( '%s is allowed to disable sending the e-mail.', 'A blackhole special token is allowed...', 'wpes' ), '<code>:blackhole:</code>' ) );
 		?>
 	</p>
 	<p>
