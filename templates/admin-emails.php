@@ -154,7 +154,7 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 				?>
 				<div class="email-data" id="email-data-<?php print esc_attr( $wpes_view_email->ID ); ?>">
 					<span class="headers"><pre><?php print esc_html( $wpes_view_email->headers ); ?></pre></span>
-					<span class="alt_body"><pre><?php print wp_kses_post( nl2br( $wpes_view_email->alt_body ) ); ?></pre></span>
+					<span class="alt_body"><pre><?php print wp_kses_post( $wpes_view_email->alt_body ); ?></pre></span>
 					<span class="body">
 					<iframe
 						class="autofit" width="100%" height="100%" border="0" frameborder="0"

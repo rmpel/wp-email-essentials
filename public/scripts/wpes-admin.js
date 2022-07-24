@@ -13,17 +13,16 @@ jQuery(document).ready(function ($) {
      * Settings panel
      */
     var keys = 'enable_history,smtp-enabled,enable-smime,enable-dkim,smtp-is_html'.split(',');
-
-    for (var key in keys) {
-      var i = keys[key];
-      $("#" + i).on('change', function (e) {
-        var i = e.target.id;
-        $(".on-" + i).toggle($(this).is(':checked'));
-        $(".not-" + i).toggle(!$(this).is(':checked'));
+    keys.forEach(function (selector) {
+      $("#" + selector).on('change', function (e) {
+        // we need 'function' here for 'this'.
+        var target_id = e.target.id;
+        $(".on-" + target_id).toggle($(this).is(':checked'));
+        $(".not-" + target_id).toggle(!$(this).is(':checked'));
       }).trigger('change');
-    }
-
+    });
     $(".on-regexp-test").each(function () {
+      // we need 'function' here for 'this'.
       (function (field, regexp, label) {
         $('#' + field).on('change keyup blur paste', function () {
           label.toggle(null !== ($(this).val() || "").match(new RegExp(regexp, 'i')));
@@ -37,37 +36,40 @@ jQuery(document).ready(function ($) {
      * Emails panel
      */
     $(".email-item").on('click', function (e) {
+      // we need 'function' here for 'this'.
       if ($(e.target).is('a.dashicons-download')) {
         e.stopPropagation();
         return true;
       }
 
       var alt = e.altKey || false;
-      $(this).addClass('active').siblings().removeClass('show-body').removeClass('show-debug').removeClass('show-headers').removeClass('show-alt-body').removeClass('active');
+      $(this).addClass('active').siblings().removeClass('active').removeClass(function (index, className) {
+        return (className.match(/(^|\s)show-\S+/g) || []).join(' ');
+      });
       var id = '#' + $(".email-item.active").attr('id').replace('email-', 'email-data-');
       var that = $(id);
-      $('#mail-data-viewer .email-data').removeClass('show-body').removeClass('show-debug').removeClass('show-headers').removeClass('show-alt-body');
+      $('#mail-data-viewer .email-data').removeClass(function (index, className) {
+        return (className.match(/(^|\s)show-\S+/g) || []).join(' ');
+      }); // Click to cycle through the views.
+
+      var this_and_that = $(this).add(that);
 
       if (alt) {
-        $(this).removeClass('show-body').removeClass('show-alt-body').removeClass('show-headers').addClass('show-debug');
-        $(that).removeClass('show-body').removeClass('show-alt-body').removeClass('show-headers').addClass('show-debug');
+        this_and_that.removeClass('show-body').removeClass('show-alt-body').removeClass('show-headers').addClass('show-debug');
       } else if ($(this).is('.show-body')) {
-        $(this).removeClass('show-body').addClass('show-headers');
-        $(that).removeClass('show-body').addClass('show-headers');
+        this_and_that.removeClass('show-body').addClass('show-headers');
       } else if ($(this).is('.show-headers')) {
-        $(this).removeClass('show-headers').addClass('show-alt-body');
-        $(that).removeClass('show-headers').addClass('show-alt-body');
+        this_and_that.removeClass('show-headers').addClass('show-alt-body');
       } else if ($(this).is('.show-alt-body')) {
-        $(this).removeClass('show-alt-body').addClass('show-body');
-        $(that).removeClass('show-alt-body').addClass('show-body');
+        this_and_that.removeClass('show-alt-body').addClass('show-body');
       } else {
-        $(this).addClass('show-body');
-        $(that).addClass('show-body');
+        this_and_that.addClass('show-body');
       }
 
       $(window).trigger('resize');
     });
     $(window).bind('resize', function () {
+      // we need 'function' here for 'this'.
       $(".autofit").each(function () {
         $(this).css('width', $(this).parent().innerWidth());
         $(this).css('height', $(this).parent().innerHeight());
@@ -80,6 +82,7 @@ jQuery(document).ready(function ($) {
      * Admins panel
      */
     var t = function t() {
+      // we need 'function' here for 'this'.
       if (/^\/[\s\S]+\/[i]?$/.test($(this).val() || "")) {
         var that = this;
         var re = $(that).val();
@@ -94,6 +97,7 @@ jQuery(document).ready(function ($) {
     };
 
     $(".a-regexp").bind('blur', function () {
+      // we need 'function' here for 'this'.
       var val = $(this).val() || "";
 
       if ("" === val) {
@@ -102,6 +106,7 @@ jQuery(document).ready(function ($) {
 
       $(this).toggleClass('error', !/^\/[\s\S]+\/[i]?$/.test(val)).not('.error').addClass('match');
     }).bind('focus', function (e) {
+      // we need 'function' here for 'this'.
       $(".a-fail,.a-regexp").removeClass('match');
       $(this).removeClass('error match');
       t.apply(this, [e]);

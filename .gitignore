@@ -1,5 +1,1 @@
-.svn
-smime-certificates/websites@clearsite.nl.crt
-smime-certificates/websites@clearsite.nl.key
-smime-certificates/websites@clearsite.nl.p12
-smime-certificates/websites@clearsite.nl.p7s
+node_modules
