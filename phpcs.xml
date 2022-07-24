@@ -15,6 +15,9 @@
 	<!-- Exclude minified Javascript files. -->
 	<exclude-pattern>*.min.js</exclude-pattern>
 
+	<!-- Exclude a sample tool -->
+	<exclude-pattern>generate_dkim.*</exclude-pattern>
+
 	<!-- Include the WordPress-Extra standard. -->
 	<rule ref="WordPress-Extra">
 		<!--
@@ -31,6 +34,7 @@
 
 		<exclude name="WordPress.WP.I18n.MissingTranslatorsComment"/>
 		<exclude name="Generic.Arrays.DisallowShortArraySyntax.Found"/>
+		<exclude name="WordPress.PHP.DisallowShortTernary.Found"/>
 		<exclude name="WordPress.Files.FileName.InvalidClassFileName"/>
 		<!--
 		<exclude name="WordPress.WhiteSpace.ControlStructureSpacing"/>

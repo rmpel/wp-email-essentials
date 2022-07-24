@@ -1,575 +1,110 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WP Email Essentials\n"
-"POT-Creation-Date: 2018-03-31 14:40+0200\n"
-"PO-Revision-Date: 2018-03-31 14:54+0200\n"
-"Last-Translator: Remon Pel <remon@clearsite.nl>\n"
+"POT-Creation-Date: 2022-07-24 13:17+0200\n"
+"PO-Revision-Date: 2022-07-24 13:21+0200\n"
+"Last-Translator: Remon Pel <remon@acato.nl>\n"
 "Language-Team: Clearsite Webdesigners <support@clearsite.nl>\n"
 "Language: nl_NL\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"X-Generator: Poedit 2.0.2\n"
-"X-Poedit-Basepath: ..\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Poedit-KeywordsList: __;_t;_e;esc_attr__\n"
+"X-Generator: Poedit 3.0.1\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-KeywordsList: __;_e;_x:1,2c;esc_html__;esc_html_x:1,2c;esc_html_e;"
+"esc_attr__;esc_attr_e;esc_attr__x:1,2c;esc_textarea__;esc_textarea_e;"
+"esc_textarea_x:1,2c;_n:1,2;esc_attr_e\n"
 "X-Poedit-SearchPath-0: .\n"
+"X-Poedit-SearchPathExcluded-0: bower_components\n"
+"X-Poedit-SearchPathExcluded-1: node_modules\n"
 
-#: admin-admins.php:3 admin-emails.php:3 admin-interface.php:3
-msgid "Uh uh uh! You didn't say the magic word!"
-msgstr "Nee, nee! … NEE!. Dit mag je niet doen, sorry."
-
-#: admin-admins.php:14
-msgid "Alternative Admins"
-msgstr "Alternatieve Administrator-adressen"
-
-#: admin-admins.php:25
-msgid "Mail Key"
-msgstr "Email sleutel"
-
-#: admin-admins.php:26 admin-admins.php:48
-msgid "Send to"
-msgstr "Verstuur aan"
-
-#: admin-admins.php:47
-msgid "RegExp matched against subject"
-msgstr "RegExp voor testen van onderwerp"
-
-#: admin-admins.php:78 admin-interface.php:426 wp-email-essentials.php:885
-#: wp-email-essentials.php:946
-msgid "Save settings"
-msgstr "Instellingen opslaan"
-
-#: admin-admins.php:86
-msgid "Unmatched subjects"
-msgstr "Niet-afgevangen onderwerpen"
-
-#: admin-emails.php:188
-msgid "Date/Time"
-msgstr "Datum/Tijd"
-
-#: admin-emails.php:189
-msgid "Recipient"
-msgstr "Ontvanger"
-
-#: admin-emails.php:190
-msgid "Sender"
-msgstr "Verzender"
-
-#: admin-emails.php:191
-msgid "Subject"
-msgstr "Onderwerp"
-
-#: admin-emails.php:192
-msgid "Status"
-msgstr "Status"
-
-#: admin-emails.php:197
-msgid "Sent ??"
-msgstr "Verstuurd ??"
-
-#: admin-emails.php:198
-msgid "Sent Ok"
-msgstr "Goed verzonden"
-
-#: admin-emails.php:199
-msgid "Failed"
-msgstr "Mislukt"
-
-#: admin-interface.php:33
+#: lib/class.history.php:161 lib/class.history.php:162
+#: templates/admin-emails.php:33 templates/admin-interface.php:233
 msgid "E-mail History"
 msgstr "E-mail historie"
 
-#: admin-interface.php:40
-msgid "Enable Email History"
-msgstr "E-mail Historie inschakelen"
-
-#: admin-interface.php:46
-msgid ""
-"<strong>Warning: </strong> Storing e-mails in your database is a BAD idea "
-"and illegal in most countries. Use this for DEBUGGING only!"
-msgstr ""
-"<b>Waarschuwing: </b> Het opslaan van e-mails in je database is een SLECHT "
-"idee en in de meeste landen illegaal. Gebruik dit enkel voor DEBUG "
-"doeleinden!"
-
-#: admin-interface.php:47
-msgid "Disabling this feature will delete the mail-store."
-msgstr "Het uitschakelen van deze functie wist alle opgeslagen data."
-
-#: admin-interface.php:48
-msgid ""
-"<strong style=\"color: darkred\">If you insist on storing emails, please "
-"note that you need to implement the appropriate protocols for compliance "
-"with GDPR. The responsibility lies with the owner of the website, not the "
-"creator or hosting company.</strong>"
-msgstr ""
-"<strong style=\"color: darkred\">Als je zeker bent dat je de mails wilt "
-"opslaan, zorg dan dat je de toepasselijke protocollen implementeert volgens "
-"de GDPR richtlijnen. De verantwoordelijkheid hiervoor en elk verbonden "
-"risico is voor de eigenaar van de website, niet voor de bouwer of de hoster."
-"</strong>"
-
-#: admin-interface.php:58
-msgid "E-mail Settings"
-msgstr "E-mail Instellingen"
-
-#: admin-interface.php:63
-msgid "phpMailer Timeout"
-msgstr "phpMailer time-out"
-
-#: admin-interface.php:68
-msgid "1 minute"
-msgstr "1 minuut"
-
-#: admin-interface.php:69
-msgid "5 minutes (default)"
-msgstr "5 minuten (standaard)"
-
-#: admin-interface.php:70
-msgid "10 minutes (for very slow hosts"
-msgstr "10 minuten ("
-
-#: admin-interface.php:86
-msgid "Enable sending mail over SMTP?"
-msgstr "Verstuur emails middels een SMTP verbinding?"
-
-#: admin-interface.php:91
-msgid "Hostname or -ip"
-msgstr "Servernaam of -ip"
-
-#: admin-interface.php:98
-msgid "SMTP Port"
-msgstr "SMTP Poort"
-
-#: admin-interface.php:107
-msgid "Username"
-msgstr "Gebruikersnaam"
-
-#: admin-interface.php:115
-msgid "Password"
-msgstr "Wachtwoord"
-
-#: admin-interface.php:125
-msgid "Secure?"
-msgstr "Beveiligde verbinding?"
-
-#: admin-interface.php:129
-msgid "No"
-msgstr "Nee"
-
-#: admin-interface.php:131 admin-interface.php:142
-msgid "Use encrypted connection"
-msgstr "Gebruik beveiligde verbinding"
-
-#: admin-interface.php:132
-msgid "strict SSL verify"
-msgstr "Strenge SSL controle"
-
-#: admin-interface.php:135 admin-interface.php:146
-msgid "SSL"
-msgstr "SSL"
-
-#: admin-interface.php:139 admin-interface.php:150
-msgid "StartTLS"
-msgstr "StartTLS"
-
-#: admin-interface.php:143
-msgid "allow self-signed SSL"
-msgstr "self-signed SSL toegestaan"
-
-#: admin-interface.php:164
-msgid "Split mail with more than one Recepient into separate mails?"
-msgstr "Verstuur emails met meerdere geadresseerden als separatie emails?"
-
-#: admin-interface.php:169
-msgid ""
-"Under GDPR, from May 25th, 2018, using a no-reply@ (or any variation of a "
-"not-responded-to email address) is prohibited. Please make sure the default "
-"sender address is valid and used in the setting below."
-msgstr ""
-"Binnen de GDPR wetgeving, per 25 mei 2018, is het niet langer toegestaan een "
-"no-reply@ adres (of andere variatie van een hier-wordt-niet-op-geantwoord-e-"
-"mailadres) te gebruiken. Zorg ervoor dat de standaard afzender geldig is en "
-"dat deze wordt gebruikt in de instellingen hieronder."
-
-#: admin-interface.php:174
-msgid "Default from name"
-msgstr "Standaard afzender naam"
-
-#: admin-interface.php:182
-msgid "Default from e-mail"
-msgstr "Standaard afzender email"
-
-#: admin-interface.php:196
-msgid "SPF Records are checked"
-msgstr "SPF-records zijn gecontroleerd"
-
-#: admin-interface.php:197
-msgid "you are NOT allowed to send mail with this domain."
-msgstr "het is NIET toegestaan dat deze afzender wordt gebruikt."
-
-#: admin-interface.php:198
-msgid ""
-"If you really need to use this sender e-mail address, you need to change the "
-"SPF record to include the sending-IP of this server"
-msgstr ""
-"Als je echt deze afzender moet/wilt gebruiken, verander dan het SPF record "
-"zodat deze server daar toestemming voor heeft"
-
-#: admin-interface.php:199
-msgid "Old"
-msgstr "Oud"
-
-#: admin-interface.php:201
-msgid "New"
-msgstr "Nieuw"
-
-#: admin-interface.php:208
-msgid "SPF Record"
-msgstr "SPF-Record"
-
-#: admin-interface.php:220
-msgid ""
-"You are NOT allowed to send mail with this domain; it should match the "
-"domainname of the website."
-msgstr ""
-"het is NIET toegestaan dat deze afzender wordt gebruikt, het behoort een "
-"adres te zijn eindigend op @domeinnaam-van-deze-website"
-
-#: admin-interface.php:221
-msgid ""
-"If you really need to use this sender e-mail address, you need to switch to "
-"SPF-record checking and make sure the SPF for this domain matches this "
-"server."
-msgstr ""
-"Als je echt deze afzender moet/wilt gebruiken, gebruik dan de SPF-record-"
-"validatie-methode en verander dan het SPF record zodat deze server daarin "
-"vermeld wordt."
-
-#: admin-interface.php:228
-msgid "How to validate sender?"
-msgstr "Hoe afzenders valideren?"
-
-#: admin-interface.php:233
-msgid "You have 2 options"
-msgstr "Er zijn 2 mogelijkheden"
-
-#: admin-interface.php:238
-msgid ""
-"<strong>SPF</strong>: Use SPF records to validate the sender. If the SPF "
-"record of the domain of the email address used as sender matches the IP-"
-"address this website is hosted on, the email address is considered valid."
-msgstr ""
-"<strong>SPF</strong>: Gebruik SPF-record validatie om te bepalen of de "
-"server waar deze website op draait toestemming heeft om emails te verzenden "
-"namens de genoemde domeinnaam."
-
-#: admin-interface.php:244
-msgid ""
-"<strong>Domain name</strong>: Use a simple match on hostname; any email "
-"adress that matches the base domainname of this website is considered valid."
-msgstr ""
-"<strong>Domein validatie</strong>: Kijk alleen naar het domeinnaam van de "
-"website versus de domeinnaam in het gebruikte e-mailadres."
-
-#: admin-interface.php:257
-msgid "What to do in case the sender is not valid for this domain?"
-msgstr "Wat te doen als de afzender niet valide is voor deze website?"
-
-#: admin-interface.php:262
-msgid "Fix sender-address?"
-msgstr "Ongeldige afzender adressen aanpassen?"
-
-#: admin-interface.php:265
-msgid ""
-"E-mails sent as different domain will probably be marked as spam. Fix the "
-"sender-address to always match the sending domain and send original From "
-"address as Reply-To: header?"
-msgstr ""
-"Emails verzonden als vanaf een afwijkend domein hebben grote kans om als "
-"spam gemarkeerd te worden. Wil je dat WP-Email-Essentials het adres als "
-"Reply-To: header instelt en het adres aanpast?"
-
-#: admin-interface.php:267
-msgid ""
-"No, send with possibly-invalid sender as is. (might cause your mails to be "
-"marked as spam!)"
-msgstr ""
-"Nee, verstuur de email met de mogelijk-ongeldige afzender als zodanig. "
-"(hiermee worden de emails mogelijk als spam gemarkeerd!)"
-
-#: admin-interface.php:278
-#, php-format
-msgid "Rewrite email@addre.ss to email-at-addre-dot-ss@%s"
-msgstr "Herschrijf email@adr.es naar email-at-adr-dot-es@%s"
-
-#: admin-interface.php:281
-#, php-format
-msgid "Rewrite email@addre.ss to noreply@%s"
-msgstr "Herschrijf email@adr.es naar noreply@%s"
-
-#: admin-interface.php:288
-#, php-format
-msgid "Rewrite email@addre.ss to %s"
-msgstr "Herschrijf email@adr.es naar %s"
-
-#: admin-interface.php:300
-msgid "E-mail content"
-msgstr "E-mail inhoud"
-
-#: admin-interface.php:307
-msgid "Send as HTML? (Will convert non-html body to html-ish body)"
-msgstr ""
-"Versturen als HTML? (Dit converteert niet-HTML emails naar HTML-achtige "
-"emails)"
-
-#: admin-interface.php:314
-msgid ""
-"Convert CSS to Inline Styles (for Outlook Online, Yahoo Mail, Google Mail, "
-"Hotmail)"
-msgstr ""
-"Converteer CSS naar Inline Stijl (voor Outlook Online, Yahoo Mail, Google "
-"Mail, Hotmail)"
-
-#: admin-interface.php:318
-msgid "Content pre-coding (for lack of a better word)"
-msgstr "Content her-codering"
-
-#: admin-interface.php:320
-msgid ""
-"Some servers have f*cked-up content-encoding settings, resulting in wrongly "
-"encoded diacritics. If you expect a character like &eacute; and all you get "
-"is something like &euro;&tilde;&Itilde;, experiment with this setting."
-msgstr ""
-"Op sommige webservers is de content-encoding zeer slecht geregeld, "
-"resulterend in verkeerd gecodeerde diakritische tekens. Als je letters als "
-"&eacute; verwacht en al wat je krijgt ie iets als &euro;&tilde&ltilte;, "
-"probeer dan deze instelling."
-
-#: admin-interface.php:325
-msgid "No precoding (default)"
-msgstr "Geen her-codering (standaard)"
-
-#: admin-interface.php:326
-msgid "Autodetect with mb_check_encoding()"
-msgstr "Automatisch detecteren middels mb_check_encoding()"
-
-#: admin-interface.php:338
-msgid ""
-"Derive plain-text alternative? (Will derive text-ish body from html body as "
-"AltBody)"
-msgstr ""
-"Genereer normale-tekst-alternatief? (Dit maakt een tekst-achtige variant van "
-"de HTML Body voor gebruik als AltBody)"
-
-#: admin-interface.php:345
-msgid "Process the body with <code>do_shortcode()</code>"
-msgstr "Gebruik <code>do_shortcode()</code> op de e-mail inhoud"
-
-#: admin-interface.php:357
-msgid "Digital E-mail Signing (S/MIME)"
-msgstr "Digitale ondertekening middels S/MIME"
-
-#: admin-interface.php:364
-msgid "Sign emails with S/MIME certificate"
-msgstr "Onderteken de emails met een S/MIME certificaat"
-
-#: admin-interface.php:369
-msgid "S/MIME Certificate/Private-Key path"
-msgstr "Bestandspad naar S/MIME Certificaat en Prive-sleutel-bestaand"
-
-#: admin-interface.php:378
-#, php-format
-msgid ""
-"It is highly advised to pick a folder path <u>outside</u> your website, for "
-"example: <code>%s/.smime/</code> to prevent stealing your identity."
-msgstr ""
-"Het is sterk aanbevolen om een map te kiezen <u>buiten</u> je website, "
-"bijvoorbeeld <code>%s/.smime/</code> om te voorkomen dat je identiteit wordt "
-"gestolen."
-
-#: admin-interface.php:379
-msgid ""
-"You can also type a relative path (any path not starting with a / is a "
-"relative path), this will be evaluated against ABSPATH (the root of your "
-"wordpress)."
-msgstr ""
-"Je kunt de map-locatie ook relatief opgeven, bijvoorbeeld ../.smime, welke "
-"wordt geëvalueerd t.o.v. ABSPATH, de basis-locatie van WordPress."
-
-#: admin-interface.php:381
-msgid ""
-"The naming convention is: certificate: <code>email@addre.ss.crt</code>, "
-"private key: <code>email@addre.ss.key</code>, (optional) passphrase: "
-"<code>email@addre.ss.pass</code>."
-msgstr ""
-"De naamgeving van bestanden is: certificaat: <code>email@adr.es.crt</code>, "
-"privé-sleutel-bestand: <code>email@adr.es.key</code>, (optioneel) wachtwoord-"
-"bestand: <code>email@adr.es.pass</code>."
-
-#: admin-interface.php:395
-#, php-format
-msgid "Set folder <code>%s</code> not found."
-msgstr "Ingestelde map <code>%s</code> niet gevonden."
-
-#: admin-interface.php:397
-#, php-format
-msgid "Expanded path: <code>%s</code>"
-msgstr "Volledig pad: <code>%s</code>"
-
-#: admin-interface.php:399
-#, php-format
-msgid "Evaluated path: <code>%s</code>"
-msgstr "Daadwerkelijk pad: <code>%s</code>"
-
-#: admin-interface.php:407
-#, php-format
-msgid "Found S/MIME identities for the following senders: <code>%s</code>"
-msgstr ""
-"S/MIME identiteiten gevonden voor de volgende email-afzenders: <code>%s</"
-"code>"
-
-#: admin-interface.php:428 wp-email-essentials.php:629
-#: wp-email-essentials.php:896
-msgid "Print debug output of sample mail"
-msgstr "Geef debug informatie over verzonden test-email"
-
-#: admin-interface.php:429 wp-email-essentials.php:612
-#: wp-email-essentials.php:897
-msgid "Send sample mail"
-msgstr "Verstuur test-email"
-
-#: admin-interface.php:431
-#, php-format
-msgid ""
-"Sample mail will be sent to the <a href=\"%s\">Site Administrator</a>; <b>"
-"%s</b>."
-msgstr ""
-"Test-email zal worden verzonden naar <a href=\"%s\">de website "
-"administrator</a>; <b>%s</b>"
-
-#: admin-interface.php:441
-msgid "E-mail styling, and filters for HTML head/body"
-msgstr "E-mail stijl, en filters voor HTML head/body"
-
-#: admin-interface.php:447
-msgid "Filters"
-msgstr "Filters"
-
-#: admin-interface.php:450
-#, php-format
-msgid "DEFAULTS can be overruled with WordPress filter %s, parameters: %s"
-msgstr ""
-"STANDAARD WAARDEN kunnen worden aangepast middels WordPress filter %s, "
-"parameters: %s"
-
-#: admin-interface.php:452
-#, php-format
-msgid "SETTINGS can be overruled with WordPress filter %s, parameters: %s"
-msgstr ""
-"INSTELLINGEN kunnen worden aangepast middels WordPress filter %s, parameters "
-"%s"
-
-#: admin-interface.php:454
-#, php-format
-msgid ""
-"Email HEAD can be overruled with WordPress filter %s, parameters: %s, %s"
-msgstr ""
-"STANDAARD WAARDEN kunnen worden aangepast middels WordPress filter %s, "
-"parameters: %s, %s"
-
-#: admin-interface.php:456
-#, php-format
-msgid ""
-"Email BODY can be overruled with WordPress filter %s, parameters: %s, %s"
-msgstr ""
-"STANDAARD WAARDEN kunnen worden aangepast middels WordPress filter %s, "
-"parameters: %s, %s"
-
-#: admin-interface.php:473 wp-email-essentials.php:916
-msgid "Sample email subject"
-msgstr "Voorbeeld email onderwerp"
-
-#: admin-interface.php:477
-msgid ""
-"If HTML enabled: You can use WordPress filters to augment the HEAD and BODY "
-"sections of the HTML e-mail. To add information to the HEAD (or change the "
-"title) hook to filter wpes_head. For the body, hook to wpes_body"
-msgstr ""
-"Indien HTML ingeschakeld: Je kunt de WordPress filters gebruiken om de HEAD "
-"en BODY onderdelen van de HTML e-mail te verrijken of aan te passen. Om "
-"informatie toe te voegen aan de HEAD, gebruik filter wpes_head. Voor de "
-"email BODY, gebruik wpes_body"
-
-#: admin-interface.php:480
-msgid "Example Email (actual HTML) - with your filters applied"
-msgstr "Voorbeeld Email (de daadwerkelijke HTML) met jouw filters toegepast"
-
-#: wp-email-essentials.php:87
+#: lib/class.plugin.php:266
 msgid "anonymous"
 msgstr "anoniem"
 
-#: wp-email-essentials.php:631
+#: lib/class.plugin.php:920 lib/class.plugin.php:1431
+#: templates/admin-interface.php:703
+msgid "Send sample mail"
+msgstr "Verstuur test-e-mail"
+
+#: lib/class.plugin.php:955 lib/class.plugin.php:1430
+#: templates/admin-interface.php:701
+msgid "Print debug output of sample mail"
+msgstr "Geef debug informatie over verzonden test-e-mail"
+
+#: lib/class.plugin.php:957
 msgid "Dump of PHP Mailer object"
 msgstr "Dump van het PHP Mailer object"
 
-#: wp-email-essentials.php:894
+#: lib/class.plugin.php:1419 lib/class.plugin.php:1502
+#: lib/class.plugin.php:1555 templates/admin-admins.php:113
+#: templates/admin-interface.php:699 templates/admin-moderators.php:88
+msgid "Save settings"
+msgstr "Instellingen opslaan"
+
+#: lib/class.plugin.php:1428
 msgid "Settings saved."
 msgstr "Instellingen opgeslagen."
 
-#: wp-email-essentials.php:901
-msgid "Test-email"
-msgstr "Test-email"
-
-#: wp-email-essentials.php:904
+#: lib/class.plugin.php:1450
 #, php-format
 msgid "Mail sent to %s"
 msgstr "Mail verzonden naar %s"
 
-#: wp-email-essentials.php:906
+#: lib/class.plugin.php:1452
 #, php-format
 msgid "Mail NOT sent to %s"
 msgstr "Mail NIET verzonden naar %s"
 
-#: wp-email-essentials.php:952
+#: lib/class.plugin.php:1465
+msgid "Sample email subject"
+msgstr "Voorbeeld e-mail onderwerp"
+
+#: lib/class.plugin.php:1487 lib/class.plugin.php:1488
+#: templates/admin-admins.php:21
+msgid "Alternative Admins"
+msgstr "Alternatieve Administrator-adressen"
+
+#: lib/class.plugin.php:1519
 msgid "Alternative Admins list saved."
 msgstr "Lijst van alternatieve adressen opgeslagen."
 
-#: wp-email-essentials.php:965
+#: lib/class.plugin.php:1532
 msgid "Subject-RegExp list saved."
 msgstr "Onderwerp-RegExp lijst opgeslagen."
 
-#: wp-email-essentials.php:1068
-msgid ""
-"WP-Email-Essentials is not yet configured. Please fill out the form below."
-msgstr ""
-"WP-Email-Essentials is nog niet geconfigureerd. Vul aub onderstaande "
-"instellingen in."
+#: lib/class.plugin.php:1540 lib/class.plugin.php:1541
+#: templates/admin-moderators.php:29
+msgid "Alternative Moderators"
+msgstr "Lijst van alternatieve moderators"
 
-#: wp-email-essentials.php:1072
+#: lib/class.plugin.php:1579
+msgid "Alternative Moderators list saved."
+msgstr "Lijst van alternatieve moderators opgeslagen."
+
+#: lib/class.plugin.php:1667
+msgid "Test-e-mail"
+msgstr "Test-e-mail"
+
+#: lib/class.plugin.php:1743
 #, php-format
-msgid ""
-"WP-Email-Essentials is not yet configured. Please go <a href=\"%s\">here</a>."
-msgstr ""
-"WP-Email-Essentials is nog niet geconfigureerd, ga a.u.b. naar <a href=\"%s"
-"\">deze pagina</a>."
+msgid "%s is not yet configured. Please fill out the form below."
+msgstr "%s is nog niet geconfigureerd. Vul aub onderstaande instellingen in."
 
-#: wp-email-essentials.php:1084
-msgid ""
-"The S/MIME certificate folder is writable. This is Extremely insecure. "
-"Please reconfigure, make sure the folder is not writable by Apache. If your "
-"server is running suPHP, you cannot make the folder read-only for apache. "
-"Please contact your hosting provider and ask for a more secure hosting "
-"package, one not based on suPHP."
+#: lib/class.plugin.php:1748
+#, php-format
+msgid "%1$s is not yet configured. Please go <a href=\"%2$s\">here</a>."
 msgstr ""
-"Het gekozen S/MIME certificaat pad is beschrijfbaar. Dit is Extreem "
-"onveilig. Kies a.u.b. een andere locatie welke niet schrijfbaar is door "
-"Apache. Gebruikt je server suPHP dan is het ONMOGELIJK de folder alleen-"
-"lezen te maken voor Apache. Contacteer je hosting leverancier en vraag om "
-"een veiliger hosting pakket, welke GEEN gebruik maakt van suPHP."
+"%1$s is nog niet geconfigureerd, ga a.u.b. naar <a href=\"%2$s\">deze "
+"pagina</a>."
 
-#: wp-email-essentials.php:1090
+#: lib/class.plugin.php:1759
 #, php-format
 msgid ""
 "The S/MIME certificate folder is inside the webspace. This is Extremely "
@@ -580,7 +115,7 @@ msgstr ""
 "Extreem onveilig. Kies a.u.b. een andere locatie welke niet binnen de "
 "website-basis %s ligt."
 
-#: wp-email-essentials.php:1098
+#: lib/class.plugin.php:1766
 msgid ""
 "The openssl package for PHP is not installed, incomplete or broken. Please "
 "contact your hosting provider. S/MIME signing is NOT available."
@@ -589,7 +124,7 @@ msgstr ""
 "Neem contact op met je hosting aanbieder. S/MIME ondertekening is NIET "
 "beschikbaar."
 
-#: wp-email-essentials.php:1105
+#: lib/class.plugin.php:1772
 msgid ""
 "Services like MandrillApp or SparkPostMail will break S/MIME signing. Please "
 "use a different SMTP-service if signing is required."
@@ -598,7 +133,7 @@ msgstr ""
 "ondertekening. Gebruik een andere SMTP-dienst indien digitale ondertekening "
 "vereist is."
 
-#: wp-email-essentials.php:1117
+#: lib/class.plugin.php:1784
 #, php-format
 msgid ""
 "There is no certificate for the default sender address <code>%s</code>. The "
@@ -609,7 +144,7 @@ msgstr ""
 "Het vereiste certificaat is meegeleverd met deze plugin, kopieer het a.u.b. "
 "naar de juiste map."
 
-#: wp-email-essentials.php:1121
+#: lib/class.plugin.php:1788
 #, php-format
 msgid ""
 "There is no certificate for the default sender address <code>%s</code>. "
@@ -621,53 +156,892 @@ msgstr ""
 "certificate.php\" target=\"_blank\">hier</a> met de aanvraag van een S/MIME "
 "certificaat."
 
-#: wp-email-essentials.php:1375
+#: lib/class.plugin.php:1800
+#, php-format
+msgid ""
+"The DKIM certificate folder is inside the webspace. This is Extremely "
+"insecure. Please reconfigure, make sure the folder is outside the website-"
+"root %s."
+msgstr ""
+"Het gekozen DKIM certificaat pad is gesitueerd binnen de website. Dit is "
+"Extreem onveilig. Kies a.u.b. een andere locatie welke niet binnen de "
+"website-basis %s ligt."
+
+#: lib/class.plugin.php:2160
+#, php-format
+msgctxt "translators: ignore this."
+msgid "[%s] New User Registration"
+msgstr "[%s] New User Registration"
+
+#: lib/class.plugin.php:2161
+#, php-format
+msgctxt "translators: ignore this."
+msgid "[%s] Password Reset"
+msgstr "[%s] Password Reset"
+
+#: lib/class.plugin.php:2162
+#, php-format
+msgctxt "translators: ignore this."
+msgid "[%s] Password Changed"
+msgstr "[%s] Password Changed"
+
+#: lib/class.plugin.php:2163
+#, php-format
+msgctxt "translators: ignore this."
+msgid "[%s] Password Lost/Changed"
+msgstr "[%s] Password Lost/Changed"
+
+#: lib/class.plugin.php:2291
 #, php-format
 msgid "You can configure alternative administrators <a href=\"%s\">here</a>."
 msgstr "Je kunt alternatieve ontvangers <a href=\"%s\">hier</a> instellen."
 
-#: wp-email-essentials.php:1383
+#: lib/class.plugin.php:2303
 #, php-format
 msgid ""
-"But <strong>please do not worry</strong>! <a href=\"%s\" target=\"_blank"
-"\">WP-Email-Essentials</a> will set <em class=\"noreply\">noreply@%s</em> as "
-"sender and set <em>this email address</em> as Reply-To header."
+"But <strong>please do not worry</strong>! <a href=\"%1$s\" target=\"_blank\">"
+"%2$s</a> will set <em class=\"noreply\">noreply@%3$s</em> as sender and set "
+"<em>this email address</em> as Reply-To header."
 msgstr ""
-"Maar <strong>weest niet bevreesd</strong>! <a href=\"%s\" target=\"_blank"
-"\">WP-Email-Essentials</a> zal <em class=\"noreply\">noreply@%s</em> "
+"Maar <strong>weest niet bevreesd</strong>! <a href=\"%1$s\" target=\"_blank"
+"\">%2$s</a> zal <em class=\"noreply\">noreply@%3$s</em> instellen als "
+"afzender en <em>het hier ingestelde adres</em> gebruiken als Reply-To adres."
+
+#: lib/class.plugin.php:2307
+#, php-format
+msgid ""
+"But <strong>please do not worry</strong>! <a href=\"%1$s\" target=\"_blank\">"
+"%2$s</a> will set <em class=\"default\">%3$s</em> as sender and set <em>this "
+"email address</em> as Reply-To header."
+msgstr ""
+"Maar <strong>weest niet bevreesd</strong>! <a href=\"%1$s\" target=\"_blank"
+"\">%2$s</a> zal <em class=\"default\">%3$s</em> instellen als afzender en "
+"<em>het hier ingestelde adres</em> gebruiken als Reply-To adres."
+
+#: lib/class.plugin.php:2311
+#, php-format
+msgid ""
+"But <strong>please do not worry</strong>! <a href=\"%1$s\" target=\"_blank\">"
+"%2$s</a> will set <em class=\"at-\">example-email-at-youtserver-dot-com</em> "
+"as sender and set <em>this address</em> as Reply-To header."
+msgstr ""
+"Maar <strong>weest niet bevreesd</strong>! <a href=\"%1$s\" target=\"_blank"
+"\">%2$s</a> zal <em class=\"at-\">example-email-at-youtserver-dot-com</em> "
 "instellen als afzender en <em>het hier ingestelde adres</em> gebruiken als "
 "Reply-To adres."
 
-#: wp-email-essentials.php:1386
+#: lib/class.plugin.php:2315
 #, php-format
 msgid ""
-"But <strong>please do not worry</strong>! <a href=\"%s\" target=\"_blank"
-"\">WP-Email-Essentials</a> will set <em class=\"default\">%s</em> as sender "
-"and set <em>this email address</em> as Reply-To header."
+"You can fix this here, or you can let <a href=\"%1$s\" target=\"_blank\">"
+"%2$s</a> fix this automatically upon sending the email."
 msgstr ""
-"Maar <strong>weest niet bevreesd</strong>! <a href=\"%s\" target=\"_blank"
-"\">WP-Email-Essentials</a> zal <em class=\"default\">%s</em> instellen als "
-"afzender en <em>het hier ingestelde adres</em> gebruiken als Reply-To adres."
+"Dit kun je hier oplossen, of je kunt <a href=\"%1$s\" target=\"_blank\">"
+"%2$s</a> het automatisch laten oplossen bij het verzenden van de e-mail."
 
-#: wp-email-essentials.php:1389
-#, php-format
-msgid ""
-"But <strong>please do not worry</strong>! <a href=\"%s\" target=\"_blank"
-"\">WP-Email-Essentials</a> will set <em class=\"at-\">example-email-at-"
-"youtserver-dot-com</em> as sender and set <em>this address</em> as Reply-To "
-"header."
-msgstr ""
-"Maar <strong>weest niet bevreesd</strong>! <a href=\"%s\" target=\"_blank"
-"\">WP-Email-Essentials</a> zal <em class=\"at-\">example-email-at-youtserver-"
-"dot-com</em> instellen als afzender en <em>het hier ingestelde adres</em> "
-"gebruiken als Reply-To adres."
+#: templates/admin-admins.php:11 templates/admin-emails.php:11
+#: templates/admin-interface.php:11 templates/admin-moderators.php:11
+msgid "Uh uh uh! You didn't say the magic word!"
+msgstr "Sorry, je mag hier niet komen!"
 
-#: wp-email-essentials.php:1392
+#: templates/admin-admins.php:39
+msgid "Mail Key"
+msgstr "E-mail sleutel"
+
+#: templates/admin-admins.php:40 templates/admin-admins.php:67
+#: templates/admin-moderators.php:47
+msgid "Send to"
+msgstr "Verstuur aan"
+
+#: templates/admin-admins.php:66
+msgid "RegExp matched against subject"
+msgstr "RegExp voor testen van onderwerp"
+
+#: templates/admin-admins.php:122
+#, php-format
+msgid "You must include the boundaries, so start with %1$s and end with %1$s."
+msgstr ""
+"Je dient de afbakening ook in te voeren, dus begin met %1$s en eindig met "
+"%1$s."
+
+#: templates/admin-admins.php:126
 #, php-format
 msgid ""
-"You can fix this here, or you can let <a href=\"%s\" target=\"_blank\">WP-"
-"Email-Essentials</a> fix this automatically upon sending the email."
+"You can add the %1$s flag to create a case-insensitive match (like so: %2$s)."
 msgstr ""
-"Dit kun je hier oplossen, of je kunt <a href=\"%s\" target=\"_blank\">WP-"
-"Email-Essentials</a> het automatisch laten oplossen bij het verzenden van de "
-"email."
+"Je mag ook de %1$s vlag toevoegen om daarmee een hoofdletter-ongevoelige "
+"match te maken (op deze manier: %2$s)."
+
+#: templates/admin-admins.php:130
+msgid ""
+"If you are unfamiliar with regular expressions, you can ignore this section, "
+"ask for help or learn the magic and power of regular expressions yourself."
+msgstr ""
+"Als je niet bekend bent met reguliere expressies; negeer deze sectie, vraag "
+"om hulp of leer jezelf de magie en kracht van reguliere expressies."
+
+#: templates/admin-admins.php:136
+msgid "Unmatched subjects"
+msgstr "Niet-afgevangen onderwerpen"
+
+#: templates/admin-admins.php:140
+msgid ""
+"This is a list of e-mail subjects of e-mails that have been sent to the site "
+"administrator."
+msgstr ""
+"Dit is een lijst van e-mail onderwerpen van e-mails verzonden aan de website "
+"administrator."
+
+#: templates/admin-admins.php:141
+msgid ""
+"You can use the table above to input regular expressions for e-mails that "
+"should have gone to an alternative e-mail address."
+msgstr ""
+"Je kunt de tabel hierboven gebruiken om deze middels reguliere expressies te "
+"matchen zodat je de e-mails in vervolg naar een andere administrator kunt "
+"sturen."
+
+#: templates/admin-emails.php:83
+msgid "Date/Time"
+msgstr "Datum/Tijd"
+
+#: templates/admin-emails.php:84
+msgid "Recipient"
+msgstr "Ontvanger"
+
+#: templates/admin-emails.php:85
+msgid "Sender"
+msgstr "Verzender"
+
+#: templates/admin-emails.php:86
+msgid "Subject"
+msgstr "Onderwerp"
+
+#: templates/admin-emails.php:87
+msgid "Status"
+msgstr "Status"
+
+#: templates/admin-emails.php:93
+msgctxt "E-mail log: this e-mail is Sent"
+msgid "Sent ??"
+msgstr "Vezonden ??"
+
+#: templates/admin-emails.php:94
+msgctxt "E-mail log: this e-mail is Sent OK"
+msgid "Sent Ok"
+msgstr "Goed verzonden"
+
+#: templates/admin-emails.php:95
+msgctxt "E-mail log: this e-mail Failed sending"
+msgid "Failed"
+msgstr "Mislukt"
+
+#: templates/admin-emails.php:96
+msgctxt "E-mail log: this e-mail is Opened by the receiver"
+msgid "Opened"
+msgstr "Geopend"
+
+#: templates/admin-emails.php:172
+msgid ""
+"A sender with an asterisk is rewritten to the site default sender and used "
+"as Reply-To address."
+msgstr ""
+"E-mails met een afzender met een asterisk zijn verzonden met de ingestelde "
+"afzender en de getoonde afzender staat in het Reply-To veld."
+
+#: templates/admin-interface.php:22
+msgid "E-mail Configuration"
+msgstr "E-mail Configuratie"
+
+#: templates/admin-interface.php:40
+msgid "Basic information"
+msgstr "Basis informatie"
+
+#: templates/admin-interface.php:45
+msgid "Default from name"
+msgstr "Standaard afzender naam"
+
+#: templates/admin-interface.php:55
+#, php-format
+msgid ""
+"Out of the box, WordPress will use name \"WordPress\" and e-mail \"wordpress@"
+"%s\" as default sender. This is far from optimal. Your first step is "
+"therefore to set an appropriate name and e-mail address."
+msgstr ""
+"Zonder aanpassingen zal WordPress de afzender \"WordPress\" met e-mail "
+"\"wordpress@%s\" gebruiken. Dit is verre van optimaal. Je eerste stap is "
+"derhalve het invullen van een goede afzender naam en e-mail adres."
+
+#: templates/admin-interface.php:60
+msgid "Default from e-mail"
+msgstr "Standaard afzender e-mail"
+
+#: templates/admin-interface.php:73
+msgid ""
+"Under GDPR, from May 25th, 2018, using a no-reply@ (or any variation of a "
+"not-responded-to e-mail address) is prohibited. Please make sure the default "
+"sender address is valid and used in the setting below."
+msgstr ""
+"Binnen de GDPR wetgeving, per 25 mei 2018, is het niet langer toegestaan een "
+"no-reply@ adres (of andere variatie van een hier-wordt-niet-op-geantwoord-e-"
+"mailadres) te gebruiken. Zorg ervoor dat de standaard afzender geldig is en "
+"dat deze wordt gebruikt in de instellingen hieronder."
+
+#: templates/admin-interface.php:86
+msgid "SPF Records are checked"
+msgstr "SPF-records zijn gecontroleerd"
+
+#: templates/admin-interface.php:87
+msgid "you are NOT allowed to send mail with this domain."
+msgstr "het is NIET toegestaan dat deze afzender wordt gebruikt."
+
+#: templates/admin-interface.php:89
+msgid ""
+"If you really need to use this sender e-mail address, you need to change the "
+"SPF record to include the sending-IP of this server"
+msgstr ""
+"Als je echt deze afzender moet/wilt gebruiken, verander dan het SPF record "
+"zodat deze server daar toestemming voor heeft"
+
+#: templates/admin-interface.php:91
+msgid "Old"
+msgstr "Oud"
+
+#: templates/admin-interface.php:93
+msgid "New"
+msgstr "Nieuw"
+
+#: templates/admin-interface.php:102
+msgid "SPF Record"
+msgstr "SPF-Record"
+
+#: templates/admin-interface.php:117
+msgid ""
+"You are NOT allowed to send mail with this domain; it should match the "
+"domainname of the website."
+msgstr ""
+"Het is NIET toegestaan dat deze afzender wordt gebruikt, het behoort een "
+"adres te zijn eindigend op @domeinnaam-van-deze-website."
+
+#: templates/admin-interface.php:119
+msgid ""
+"If you really need to use this sender e-mail address, you need to switch to "
+"SPF-record checking and make sure the SPF for this domain matches this "
+"server."
+msgstr ""
+"Als je echt deze afzender moet/wilt gebruiken, gebruik dan de SPF-record-"
+"validatie-methode en verander dan het SPF record zodat deze server daarin "
+"vermeld wordt."
+
+#: templates/admin-interface.php:128
+msgid "How to validate sender?"
+msgstr "Hoe afzenders valideren?"
+
+#: templates/admin-interface.php:133
+msgid "You have 2 options"
+msgstr "Er zijn 2 mogelijkheden"
+
+#: templates/admin-interface.php:140
+msgid ""
+"<strong>Domain name</strong>: Use a simple match on hostname; any e-mail "
+"address that matches the base domainname of this website is considered valid."
+msgstr ""
+"<strong>Domein validatie</strong>: Kijk alleen naar het domeinnaam van de "
+"website versus de domeinnaam in het gebruikte e-mailadres."
+
+#: templates/admin-interface.php:148
+msgid ""
+"<strong>SPF</strong>: Use SPF records to validate the sender. If the SPF "
+"record of the domain of the e-mail address used as sender matches the IP-"
+"address this website is hosted on, the e-mail address is considered valid."
+msgstr ""
+"<strong>SPF</strong>: Gebruik SPF-record validatie om te bepalen of de "
+"server waar deze website op draait toestemming heeft om e-mails te verzenden "
+"namens de genoemde domeinnaam."
+
+#: templates/admin-interface.php:161
+msgid "What to do in case the sender is not valid for this domain?"
+msgstr "Wat te doen als de afzender niet valide is voor deze website?"
+
+#: templates/admin-interface.php:167
+msgid "Fix sender-address?"
+msgstr "Ongeldige afzender adressen aanpassen?"
+
+#: templates/admin-interface.php:170
+msgid ""
+"E-mails sent as different domain will probably be marked as spam. Use the "
+"options here to fix the sender-address to always match the sending domain."
+msgstr ""
+"E-mails verzonden als vanaf een afwijkend domein hebben grote kans om als "
+"spam gemarkeerd te worden. Gebruik deze opties om de afzender aan te passen "
+"naar één die bij het versturende domein past."
+
+#: templates/admin-interface.php:172
+msgid ""
+"The actual sender of the e-mail will be used as <code>Reply-To</code>; you "
+"can still use the Reply button in your e-mail application to send a reply "
+"easily."
+msgstr ""
+"De werkelijke afzender van de e-mail zal worden gebruikt als <code>Reply-To</"
+"code>; de \"beantwoord email\" functie van je e-mail applicatie zal nog "
+"steeds werken."
+
+#: templates/admin-interface.php:176
+msgid "When the sender e-mail address..."
+msgstr "Als het e-mail adres van de afzender..."
+
+#: templates/admin-interface.php:185
+msgid "is not on the website domain..."
+msgstr "niet past bij het domein van de website..."
+
+#: templates/admin-interface.php:188
+msgid "is not allowed by SPF from this website..."
+msgstr "niet is toegestaan op deze website als bepaald door SPF records..."
+
+#: templates/admin-interface.php:197
+msgid "is not the \"Default from e-mail\" as set above..."
+msgstr ""
+"niet het e-mail adres als ingevuld bij \"Standaard afzender e-mail\" is..."
+
+#: templates/admin-interface.php:205
+msgid ""
+"Keep the possibly-invalid sender as is. (might cause your mails to be marked "
+"as spam!)"
+msgstr ""
+"Verstuur de e-mail met de mogelijk-ongeldige afzender als zodanig. (hiermee "
+"worden de emails mogelijk als spam gemarkeerd!)"
+
+#: templates/admin-interface.php:208
+#, php-format
+msgid "Rewrite e-mail@addre.ss to e-mail-at-addre-dot-ss@%s"
+msgstr "Herschrijf e-mail@adr.es naar e-mail-at-adr-dot-es@%s"
+
+#: templates/admin-interface.php:211
+#, php-format
+msgid "Rewrite e-mail@addre.ss to noreply@%s"
+msgstr "Herschrijf e-mail@adr.es naar noreply@%s"
+
+#: templates/admin-interface.php:212
+msgid "(Not GDPR Compliant)"
+msgstr "(Niet toegestaan onder GDPR)"
+
+#: templates/admin-interface.php:219
+#, php-format
+msgid "Rewrite e-mail@addre.ss to %s"
+msgstr "Herschrijf e-mail@adr.es naar %s"
+
+#: templates/admin-interface.php:243
+msgid "Enable E-mail History"
+msgstr "E-mail Historie inschakelen"
+
+#: templates/admin-interface.php:249
+msgid ""
+"<strong>Warning: </strong> Storing e-mails in your database is a BAD idea "
+"and illegal in most countries. Use this for DEBUGGING only!"
+msgstr ""
+"<b>Waarschuwing: </b> Het opslaan van e-mails in je database is een SLECHT "
+"idee en in de meeste landen illegaal. Gebruik dit enkel voor DEBUG "
+"doeleinden!"
+
+#: templates/admin-interface.php:251
+msgid ""
+"Enabling the history feature will also add a tracker to all outgoing e-mails "
+"to check receipt."
+msgstr ""
+"Het inschakelen van de historie functie zal ook een tracker toevoegen aan "
+"alle verzonden e-mails om te zien of de e-mail is geopend."
+
+#: templates/admin-interface.php:253
+msgid "Disabling this feature will delete the e-mail history database tables."
+msgstr "Het uitschakelen van deze functie wist alle opgeslagen data."
+
+#: templates/admin-interface.php:256
+msgid ""
+"If you insist on storing e-mails, please note that you need to implement the "
+"appropriate protocols for compliance with GDPR. The responsibility lies with "
+"the owner of the website, not the creator or hosting company."
+msgstr ""
+"Als je zeker bent dat je de mails wilt opslaan, zorg dan dat je de "
+"toepasselijke protocollen implementeert volgens de GDPR richtlijnen. De "
+"verantwoordelijkheid hiervoor en elk verbonden risico is voor de eigenaar "
+"van de website, niet voor de bouwer of het bedrijf waar je website gehost is."
+
+#: templates/admin-interface.php:266
+msgid "E-mail Settings"
+msgstr "E-mail Instellingen"
+
+#: templates/admin-interface.php:275
+msgid "Enable sending mail over SMTP?"
+msgstr "Verstuur e-mails middels een SMTP verbinding?"
+
+#: templates/admin-interface.php:279 templates/admin-interface.php:286
+msgid ""
+"Using an SMTP improves reliability, helps reducing the chance of your e-"
+"mails being marked as spam and gives the option to use an external mail "
+"service like MailJet, MailGun, SparkPost etc."
+msgstr ""
+"Het gebruik van SMTP verbetert de betrouwbaarheid, helpt met het verminderen "
+"van de kans dat je e-mails als spam gezien worden en geeft je de "
+"mogelijkheid een externe e-mail dienst te gebruiken, als bijvoorbeeld "
+"MailJet, MailGun, SparkPost etc."
+
+#: templates/admin-interface.php:292
+msgid "Hostname or -ip"
+msgstr "Servernaam of -ip"
+
+#: templates/admin-interface.php:303
+msgid "SMTP Port"
+msgstr "SMTP Poort"
+
+#: templates/admin-interface.php:314
+msgid "Username"
+msgstr "Gebruikersnaam"
+
+#: templates/admin-interface.php:325
+msgid "Password"
+msgstr "Wachtwoord"
+
+#: templates/admin-interface.php:337
+msgid "Use encrypted connection?"
+msgstr "Gebruik versleutelde verbinding?"
+
+#: templates/admin-interface.php:341
+msgid "No"
+msgstr "Nee"
+
+#: templates/admin-interface.php:343 templates/admin-interface.php:354
+msgid "Use encrypted connection"
+msgstr "Gebruik beveiligde verbinding"
+
+#: templates/admin-interface.php:344
+msgid "strict SSL verify"
+msgstr "strenge SSL controle"
+
+#: templates/admin-interface.php:347 templates/admin-interface.php:358
+msgid "SSL"
+msgstr "SSL"
+
+#: templates/admin-interface.php:351 templates/admin-interface.php:362
+msgid "StartTLS"
+msgstr "StartTLS"
+
+#: templates/admin-interface.php:355
+msgid "allow self-signed SSL"
+msgstr "self-signed SSL toegestaan"
+
+#: templates/admin-interface.php:369
+msgid "phpMailer Timeout"
+msgstr "phpMailer time-out"
+
+#: templates/admin-interface.php:375
+msgid "1 minute"
+msgstr "1 minuut"
+
+#: templates/admin-interface.php:376
+msgid "5 minutes (default)"
+msgstr "5 minuten (standaard)"
+
+#: templates/admin-interface.php:377
+msgid "10 minutes (for very slow hosts)"
+msgstr "10 minutes (voor langzame e-mail servers)"
+
+#: templates/admin-interface.php:400
+msgid "Split mail with more than one Recipient into separate mails?"
+msgstr "Verstuur e-mails met meerdere geadresseerden als separatie e-mails?"
+
+#: templates/admin-interface.php:405
+msgid "E-mail content"
+msgstr "E-mail inhoud"
+
+#: templates/admin-interface.php:412
+msgid "Send as HTML? (Will convert non-html body to html-ish body)"
+msgstr ""
+"Versturen als HTML? (Dit converteert niet-HTML e-mails naar HTML-achtige "
+"emails)"
+
+#: templates/admin-interface.php:421
+msgid ""
+"Convert CSS to Inline Styles (for Outlook Online, Yahoo Mail, Google Mail, "
+"Hotmail)"
+msgstr ""
+"Converteer CSS naar Inline Stijl (voor Outlook Online, Yahoo Mail, Google "
+"Mail, Hotmail)"
+
+#: templates/admin-interface.php:425
+msgid "Content charset re-coding"
+msgstr "Content karakterset her-codering"
+
+#: templates/admin-interface.php:428
+msgid ""
+"Some servers have f*cked-up content-encoding settings, resulting in wrongly "
+"encoded diacritics. If you expect a character like &eacute; and all you get "
+"is something like &euro;&tilde;&Itilde;, experiment with this setting."
+msgstr ""
+"Op sommige webservers is de content-encoding zeer slecht geregeld, "
+"resulterend in verkeerd gecodeerde diakritische tekens. Als je letters als "
+"&eacute; verwacht en al wat je krijgt ie iets als &euro;&tilde&ltilte;, "
+"probeer dan deze instelling."
+
+#: templates/admin-interface.php:436
+#, php-format
+msgctxt "E.g.: From: UTF-8"
+msgid "From: %s"
+msgstr "Bron-encoding: %s"
+
+#: templates/admin-interface.php:440
+msgid "No charset re-coding (default)"
+msgstr "Geen her-codering (standaard)"
+
+#: templates/admin-interface.php:441
+msgid "Autodetect with mb_check_encoding()"
+msgstr "Automatisch detecteren middels mb_check_encoding()"
+
+#: templates/admin-interface.php:450
+msgid "Content handling"
+msgstr "Content behandeling"
+
+#: templates/admin-interface.php:456
+msgid ""
+"Derive plain-text alternative? (Will derive text-ish body from html body as "
+"AltBody)"
+msgstr ""
+"Genereer normale-tekst-alternatief? (Dit maakt een tekst-achtige variant van "
+"de HTML Body voor gebruik als AltBody)"
+
+#: templates/admin-interface.php:465
+msgid "Process the body with <code>do_shortcode()</code>"
+msgstr "Gebruik <code>do_shortcode()</code> op de e-mail inhoud"
+
+#: templates/admin-interface.php:477
+msgid "Digital E-mail Signing (S/MIME)"
+msgstr "Digitale ondertekening middels S/MIME"
+
+#: templates/admin-interface.php:486
+msgid "Sign e-mails with S/MIME certificate"
+msgstr "Onderteken de e-mails met een S/MIME certificaat"
+
+#: templates/admin-interface.php:490
+msgid "S/MIME Certificate/Private-Key path"
+msgstr "Bestandspad naar S/MIME Certificaat en Prive-sleutel-bestaand"
+
+#: templates/admin-interface.php:504 templates/admin-interface.php:594
+#, php-format
+msgid ""
+"It is highly advised to pick a folder path <u>outside</u> your website, for "
+"example: <code>%s</code> to prevent stealing your identity."
+msgstr ""
+"Het is sterk aanbevolen om een map te kiezen <u>buiten</u> je website, "
+"bijvoorbeeld <code>%s</code> om te voorkomen dat je identiteit wordt "
+"gestolen."
+
+#: templates/admin-interface.php:510
+msgid ""
+"You can also type a relative path (any path not starting with a / is a "
+"relative path), this will be evaluated against the document-root of your "
+"website."
+msgstr ""
+"Je kunt de map-locatie ook relatief opgeven (dus niet met een / beginnend) "
+"welke wordt geëvalueerd t.o.v. de document-root van je website."
+
+#: templates/admin-interface.php:511 templates/admin-interface.php:602
+msgid "The file-naming convention is"
+msgstr "Bestandsnamen dienen als volgt te zijn;"
+
+#: templates/admin-interface.php:512
+msgid "certificate: <code>e-mail@addre.ss.crt</code>"
+msgstr "certificaat: <code>e-mail@addre.ss.crt</code>"
+
+#: templates/admin-interface.php:513
+msgid "private key: <code>e-mail@addre.ss.key</code>"
+msgstr "private key: <code>e-mail@addre.ss.key</code>"
+
+#: templates/admin-interface.php:514
+msgid "(optional) passphrase: <code>e-mail@addre.ss.pass</code>"
+msgstr "(optioneel) wachtwoord: <code>e-mail@addre.ss.pass</code>"
+
+#: templates/admin-interface.php:532 templates/admin-interface.php:666
+#, php-format
+msgid "Set folder <code>%s</code> not found."
+msgstr "Ingestelde map <code>%s</code> niet gevonden."
+
+#: templates/admin-interface.php:534 templates/admin-interface.php:668
+#, php-format
+msgid "Expanded path: <code>%s</code>"
+msgstr "Volledig pad: <code>%s</code>"
+
+#: templates/admin-interface.php:536 templates/admin-interface.php:670
+#, php-format
+msgid "Evaluated path: <code>%s</code>"
+msgstr "Daadwerkelijk pad: <code>%s</code>"
+
+#: templates/admin-interface.php:546
+#, php-format
+msgid "Found S/MIME identities for the following senders: <code>%s</code>"
+msgstr ""
+"S/MIME identiteiten gevonden voor de volgende e-mail-afzenders: <code>%s</"
+"code>"
+
+#: templates/admin-interface.php:567
+msgid "Digital E-mail Signing (DKIM)"
+msgstr "Digitale ondertekening middels DKIM"
+
+#: templates/admin-interface.php:576
+msgid "Sign e-mails with DKIM certificate"
+msgstr "Onderteken de e-mails met DKIM"
+
+#: templates/admin-interface.php:580
+msgid "DKIM Certificate/Private-Key path"
+msgstr "Bestandspad naar DKIM Certificaat en Prive-sleutel-bestaand"
+
+#: templates/admin-interface.php:599
+msgid ""
+"You can also type a relative path (any path not starting with a / is a "
+"relative path), this will be evaluated against ABSPATH (the root of your "
+"WordPress)."
+msgstr ""
+"Je kunt de map-locatie ook relatief opgeven (dus niet met een / beginnend) "
+"welke wordt geëvalueerd t.o.v. ABSPATH, de basis-locatie van WordPress."
+
+#: templates/admin-interface.php:603
+msgid "certificate: <code>domain.tld.crt</code>"
+msgstr "certificaat: <code>domein.tld.crt</code>"
+
+#: templates/admin-interface.php:604
+msgid "private key: <code>domain.tld.key</code>"
+msgstr "private key: <code>domein.tld.key</code>"
+
+#: templates/admin-interface.php:605
+msgid "DKIM Selector: <code>domain.tld.selector</code>"
+msgstr "DKIM Selector: <code>domein.tld.selector</code>"
+
+#: templates/admin-interface.php:606
+msgid "(optional) passphrase: <code>domain.tld.pass</code>"
+msgstr "(optioneel) wachtwoord <code>domein.tld.pass</code>"
+
+#: templates/admin-interface.php:614
+msgid "To generate DKIM keys, use"
+msgstr "Om een DKIM sleutel te genereren volg je de volgende stappen:"
+
+#: templates/admin-interface.php:615 templates/admin-interface.php:617
+msgctxt "A sample password"
+msgid "YOUR-PASSWORD"
+msgstr "WACHTWOORD-NAAR-KEUZE"
+
+#: templates/admin-interface.php:618 templates/admin-interface.php:635
+msgctxt "A sample DKIM selector"
+msgid "DKIM-SELECTOR-FOR-THIS-KEY"
+msgstr "DKIM-SELECTOR-VOOR-DEZE-SLEUTEL"
+
+#: templates/admin-interface.php:626
+msgid ""
+"Upload these files to the specified path on the server and again; this "
+"should not be publicly queriable!!!"
+msgstr ""
+"Upload deze bestanden naar de ingestelde folder op de server en nogmaals; "
+"deze bestanden mogen NIET bereikbaar zijn vanaf het web!!!"
+
+#: templates/admin-interface.php:633
+msgid "Finally, register the domain key in the DNS"
+msgstr "Tenslotte, registreer de DKIM domein sleutel in de DNS"
+
+#: templates/admin-interface.php:635
+msgctxt "A tag that tells the user to get the content of a file"
+msgid "CONTENT-OF"
+msgstr "INHOUD-VAN"
+
+#: templates/admin-interface.php:639
+#, php-format
+msgid ""
+"Remove the lines \"%1$s\" and \"%2$s\" and place the rest of the content on "
+"a single line."
+msgstr ""
+"Verwijder de regels \"%1$s\" en \"%2$s\" en plaats de rest van de inhoud op "
+"één enkele regel."
+
+#: templates/admin-interface.php:649
+#, php-format
+msgid ""
+"Test your settings with <a href=\"%s\" target=\"_blank\">DMARC Analyser</a> "
+"(unaffiliated)"
+msgstr ""
+"Test je instellingen met <a href=\"%s\" target=\"_blank\">DMARC Analyser</a> "
+"(niet geaffilieerd)"
+
+#: templates/admin-interface.php:683
+#, php-format
+msgid "Found DKIM certificates for the following sender-domains: %s"
+msgstr "DKIM identiteiten gevonden voor de volgende e-mail-afzenders: %s"
+
+#: templates/admin-interface.php:715
+#, php-format
+msgid ""
+"Sample mail will be sent to the <a href=\"%1$s\">Site Administrator</a>; <b>"
+"%2$s</b>."
+msgstr ""
+"Test-e-mail zal worden verzonden naar <a href=\"%1$s\">de website "
+"administrator</a>; <b>%2$s</b>"
+
+#: templates/admin-interface.php:728
+msgid "E-mail styling, and filters for HTML head/body"
+msgstr "E-mail stijl, en filters voor HTML head/body"
+
+#: templates/admin-interface.php:734
+msgid ""
+"You can use WordPress filters to augment the HEAD and BODY sections of the "
+"HTML e-mail."
+msgstr ""
+"Je kunt WordPress filters gebruiken om de HEAD en BODY van de HTML e-mail te "
+"verrijken."
+
+#: templates/admin-interface.php:739
+msgid "You can use WordPress filters to change the e-mail."
+msgstr "Je kunt WordPress filters gebruiken om de e-mail aan te passen."
+
+#: templates/admin-interface.php:743
+msgid "Purpose"
+msgstr "Doel"
+
+#: templates/admin-interface.php:744
+msgid "WordPress filter"
+msgstr "WordPress filter"
+
+#: templates/admin-interface.php:745
+msgid "Parameters"
+msgstr "Parameters"
+
+#: templates/admin-interface.php:748
+msgid "Plugin defaults"
+msgstr "Standaard waarden"
+
+#: templates/admin-interface.php:753
+msgid "Plugin settings"
+msgstr "Plugin instellingen"
+
+#: templates/admin-interface.php:758
+msgid "E-mail subject"
+msgstr "E-mail onderwerp"
+
+#: templates/admin-interface.php:763
+msgid "E-mail <head>"
+msgstr "E-mail <head>"
+
+#: templates/admin-interface.php:768
+msgid "E-mail <body>"
+msgstr "E-mail <body>"
+
+#: templates/admin-interface.php:774
+msgid "Turn on HTML e-mail to enable e-mail styling."
+msgstr "Zet HTML e-mail aan om e-mail opmaak te activeren."
+
+#: templates/admin-interface.php:789
+msgid "Example E-mail (actual HTML) - with your filters applied"
+msgstr "Voorbeeld E-mail (werkelijke HTML) - met jouw filters toegepast"
+
+#: templates/admin-interface.php:789
+msgid "Example E-mail"
+msgstr "Voorbeeld e-mail"
+
+#: templates/admin-moderators.php:58
+#, php-format
+msgid "default: owner of %s"
+msgstr "standaard: eigenaar van %s"
+
+#: templates/admin-moderators.php:66
+#, php-format
+msgid "<em>%1$s</em> to author on <em>%2$s</em> on <em>%3$s</em>"
+msgstr "<em>%1$s</em> naar de auteur vanwege <em>%2$s</em> op <em>%3$s</em>"
+
+#: templates/admin-moderators.php:98
+#, php-format
+msgctxt "A blackhole special token is allowed..."
+msgid "%s is allowed to disable sending the e-mail."
+msgstr "Je kunt %s gebruiken om de e-mail geheel niet te verzenden."
+
+#: templates/admin-moderators.php:103
+msgid "Moderation for pingbacks and comments is"
+msgstr "Het modereren van pingbacks en commentaar is"
+
+#: templates/admin-moderators.php:104
+msgid "enabled"
+msgstr "ingeschakeld"
+
+#: templates/admin-moderators.php:104
+msgid "disabled"
+msgstr "uitgeschakeld"
+
+#: templates/admin-moderators.php:108
+msgid "Change this setting"
+msgstr "Deze Instelling wijzigen"
+
+#, fuzzy
+#~| msgid "Alternative Admins"
+#~ msgid "Alternative admins"
+#~ msgstr "Alternatieve Administrator-adressen"
+
+#~ msgid "Secure?"
+#~ msgstr "Beveiligde verbinding?"
+
+#~ msgid "Content pre-coding (for lack of a better word)"
+#~ msgstr "Content her-codering"
+
+#~ msgid ""
+#~ "The naming convention is: certificate: <code>email@addre.ss.crt</code>, "
+#~ "private key: <code>email@addre.ss.key</code>, (optional) passphrase: "
+#~ "<code>email@addre.ss.pass</code>."
+#~ msgstr ""
+#~ "De naamgeving van bestanden is: certificaat: <code>email@adr.es.crt</"
+#~ "code>, privé-sleutel-bestand: <code>email@adr.es.key</code>, (optioneel) "
+#~ "wachtwoord-bestand: <code>email@adr.es.pass</code>."
+
+#~ msgid "Filters"
+#~ msgstr "Filters"
+
+#, php-format
+#~ msgid "DEFAULTS can be overruled with WordPress filter %s, parameters: %s"
+#~ msgstr ""
+#~ "STANDAARD WAARDEN kunnen worden aangepast middels WordPress filter %s, "
+#~ "parameters: %s"
+
+#, php-format
+#~ msgid "SETTINGS can be overruled with WordPress filter %s, parameters: %s"
+#~ msgstr ""
+#~ "INSTELLINGEN kunnen worden aangepast middels WordPress filter %s, "
+#~ "parameters %s"
+
+#, php-format
+#~ msgid ""
+#~ "Email HEAD can be overruled with WordPress filter %s, parameters: %s, %s"
+#~ msgstr ""
+#~ "STANDAARD WAARDEN kunnen worden aangepast middels WordPress filter %s, "
+#~ "parameters: %s, %s"
+
+#, php-format
+#~ msgid ""
+#~ "Email BODY can be overruled with WordPress filter %s, parameters: %s, %s"
+#~ msgstr ""
+#~ "STANDAARD WAARDEN kunnen worden aangepast middels WordPress filter %s, "
+#~ "parameters: %s, %s"
+
+#~ msgid ""
+#~ "If HTML enabled: You can use WordPress filters to augment the HEAD and "
+#~ "BODY sections of the HTML e-mail. To add information to the HEAD (or "
+#~ "change the title) hook to filter wpes_head. For the body, hook to "
+#~ "wpes_body"
+#~ msgstr ""
+#~ "Indien HTML ingeschakeld: Je kunt de WordPress filters gebruiken om de "
+#~ "HEAD en BODY onderdelen van de HTML e-mail te verrijken of aan te passen. "
+#~ "Om informatie toe te voegen aan de HEAD, gebruik filter wpes_head. Voor "
+#~ "de email BODY, gebruik wpes_body"
+
+#~ msgid ""
+#~ "The S/MIME certificate folder is writable. This is Extremely insecure. "
+#~ "Please reconfigure, make sure the folder is not writable by Apache. If "
+#~ "your server is running suPHP, you cannot make the folder read-only for "
+#~ "apache. Please contact your hosting provider and ask for a more secure "
+#~ "hosting package, one not based on suPHP."
+#~ msgstr ""
+#~ "Het gekozen S/MIME certificaat pad is beschrijfbaar. Dit is Extreem "
+#~ "onveilig. Kies a.u.b. een andere locatie welke niet schrijfbaar is door "
+#~ "Apache. Gebruikt je server suPHP dan is het ONMOGELIJK de folder alleen-"
+#~ "lezen te maken voor Apache. Contacteer je hosting leverancier en vraag om "
+#~ "een veiliger hosting pakket, welke GEEN gebruik maakt van suPHP."
