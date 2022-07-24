@@ -82,7 +82,7 @@ class CSS_Inliner {
 	 * @return string
 	 */
 	public function get_css_from_html( $html ) {
-		$css   = array();
+		$css   = [];
 		$start = 0;
 		$pos   = strpos( strtolower( $html ), '<style', $start );
 		// phpcs:ignore Squiz.PHP.DisallowSizeFunctionsInLoops.Found -- How about you mind your own business and let the professionals do their work...

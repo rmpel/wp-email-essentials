@@ -140,7 +140,7 @@ class Queue {
 			);
 
 			// do not send mail, but to prevent errors, keep the array in same.
-			add_action( 'phpmailer_init', array( 'WP_Email_Essentials_Queue', 'stop_mail' ), PHP_INT_MIN );
+			add_action( 'phpmailer_init', [ 'WP_Email_Essentials_Queue', 'stop_mail' ], PHP_INT_MIN );
 		}
 
 		return $mail_data;
@@ -192,17 +192,17 @@ class Queue {
 	public static function get_mail_priority( $mail_array ) {
 		$headers = self::processed_mail_headers( $mail_array['headers'] );
 
-		$prio_fields = array( 'x-priority', 'x-msmail-priority', 'importance' );
+		$prio_fields = [ 'x-priority', 'x-msmail-priority', 'importance' ];
 		foreach ( $prio_fields as $field ) {
 			if ( isset( $headers[ $field ] ) ) {
 				$value = strtolower( $headers[ $field ] );
 				$prio  = strtr(
 					$value,
-					array(
+					[
 						'high'   => 1,
 						'normal' => 3,
 						'low'    => 5,
-					)
+					]
 				);
 				$prio  = intval( $prio );
 				if ( $prio ) {
@@ -230,7 +230,7 @@ class Queue {
 		$headers_assoc = [];
 		foreach ( $headers as $_key => $value ) {
 			if ( is_numeric( $_key ) ) {
-				list( $key, $value ) = explode( ':', $value, 2 );
+				[ $key, $value ] = explode( ':', $value, 2 );
 				if ( ! $value ) {
 					$headers_assoc[] = $key;
 				} else {
@@ -414,7 +414,7 @@ class Queue {
 	 */
 	private static function set_status( $mail_id, $status ) {
 		global $wpdb;
-		$wpdb->update( "{$wpdb->prefix}wpes_queue", array( 'status' => $status ), array( 'id' => $mail_id ) );
+		$wpdb->update( "{$wpdb->prefix}wpes_queue", [ 'status' => $status ], [ 'id' => $mail_id ] );
 	}
 
 	/**
@@ -423,7 +423,7 @@ class Queue {
 	 * @param WPES_PHPMailer $phpmailer The mailer object.
 	 */
 	public static function stop_mail( &$phpmailer ) {
-		remove_action( 'phpmailer_init', array( 'WP_Email_Essentials_Queue', 'stop_mail' ), PHP_INT_MIN );
+		remove_action( 'phpmailer_init', [ 'WP_Email_Essentials_Queue', 'stop_mail' ], PHP_INT_MIN );
 		$phpmailer = new Fake_Sender();
 	}
 }

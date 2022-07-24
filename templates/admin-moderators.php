@@ -12,12 +12,12 @@ if ( ! current_user_can( 'manage_options' ) ) {
 }
 
 global $current_user;
-$wpes_config               = get_option( 'mail_key_moderators', array() );
-$wpes_moderator_keys       = array( 'pingback', 'comment' );
-$wpes_moderator_recipients = array(
+$wpes_config               = get_option( 'mail_key_moderators', [] );
+$wpes_moderator_keys       = [ 'pingback', 'comment' ];
+$wpes_moderator_recipients = [
 	'author'    => 'notification',
 	'moderator' => 'moderation request',
-);
+];
 if ( ! get_option( 'moderation_notify' ) ) {
 	// moderations disabled, so only show notification.
 	unset( $wpes_moderator_recipients['moderator'] );

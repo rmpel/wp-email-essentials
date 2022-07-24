@@ -89,12 +89,12 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 				<?php
 				// @phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- All data is sanitized before injection.
 				$wpes_view_emails_list = $wpdb->get_results( "SELECT subject, sender, thedatetime, recipient, ID, body, alt_body, headers, status, `debug`, errinfo, eml FROM {$wpdb->prefix}wpes_hist ORDER BY $wpes_view_order_field $wpes_view_order_direction LIMIT $wpes_view_first_item,$wpes_view_items_per_page" );
-				$wpes_view_email_stati = array(
+				$wpes_view_email_stati = [
 					History::MAIL_NEW    => _x( 'Sent ??', 'E-mail log: this e-mail is Sent', 'wpes' ),
 					History::MAIL_SENT   => _x( 'Sent Ok', 'E-mail log: this e-mail is Sent OK', 'wpes' ),
 					History::MAIL_FAILED => _x( 'Failed', 'E-mail log: this e-mail Failed sending', 'wpes' ),
 					History::MAIL_OPENED => _x( 'Opened', 'E-mail log: this e-mail is Opened by the receiver', 'wpes' ),
-				);
+				];
 				foreach ( $wpes_view_emails_list as $wpes_view_email ) {
 					?>
 					<li class="email-item" id="email-<?php print esc_attr( $wpes_view_email->ID ); ?>">
@@ -124,7 +124,7 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 		<div id="mail-data-viewer">
 			<?php
 			$wpes_mailer = new WPES_PHPMailer();
-			$wpes_css    = apply_filters_ref_array( 'wpes_css', array( '', &$wpes_mailer ) );
+			$wpes_css    = apply_filters_ref_array( 'wpes_css', [ '', &$wpes_mailer ] );
 
 			foreach ( $wpes_view_emails_list as $wpes_view_email ) {
 				// @phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- phpMailer thing. cannot help it.

@@ -63,7 +63,7 @@ class Plugin {
 		add_action(
 			'init',
 			function () {
-				load_plugin_textdomain( 'wpes', false, dirname( plugin_basename( __FILE__ ) ) . '/lang' );
+				load_plugin_textdomain( 'wpes', false, dirname( plugin_basename( __DIR__ ) ) . '/lang' );
 				wp_register_style( 'wpes', plugins_url( 'public/styles/wpes-admin.css', __DIR__ ), [], filemtime( __DIR__ . '/../public/styles/wpes-admin.css' ), 'all' );
 				wp_register_script( 'wpes', plugins_url( 'public/scripts/wpes-admin.js', __DIR__ ), [], filemtime( __DIR__ . '/../public/scripts/wpes-admin.js' ), true );
 			}
@@ -654,7 +654,7 @@ class Plugin {
 					}
 
 					if ( 'a' === $section || 'aaaa' === $section || 'a/' === substr( $section, 0, 2 ) ) {
-						list ( $_, $_domain ) = explode( '/', "$section/$domain" );
+						[ $_, $_domain ] = explode( '/', "$section/$domain" );
 						if ( IP::is_4( $ip ) ) {
 							$m_ip = self::dns_get_record( $_domain, DNS_A, true );
 							if ( IP::a_4_is_4( $m_ip, $ip ) ) {
@@ -853,8 +853,8 @@ class Plugin {
 				$bodystart = strpos( $body, '>', $btag );
 				$bodytag   = substr( $body, $btag, $bodystart - $btag + 1 );
 
-				list( $body, $junk ) = explode( '</body', $body );
-				list( $junk, $body ) = explode( $bodytag, $body );
+				[ $body, $junk ] = explode( '</body', $body );
+				[ $junk, $body ] = explode( $bodytag, $body );
 			}
 
 			// remove all line breaks.
@@ -930,7 +930,7 @@ class Plugin {
 		if ( $config['enable_smime'] ) {
 			$id = self::get_smime_identity( $from );
 			if ( $id ) {
-				list( $crt, $key, $pass ) = $id;
+				[ $crt, $key, $pass ] = $id;
 
 				$mailer->sign( $crt, $key, $pass );
 			}
@@ -940,7 +940,7 @@ class Plugin {
 		if ( $config['enable_dkim'] ) {
 			$id = self::get_dkim_identity( $from );
 			if ( $id ) {
-				list( $crt, $key, $pass, $selector, $domain ) = $id;
+				[ $crt, $key, $pass, $selector, $domain ] = $id;
 
 				$mailer->DKIM_domain     = $domain;
 				$mailer->DKIM_private    = $key;
@@ -1199,7 +1199,7 @@ class Plugin {
 		$return = array_merge( $defaults, $settings );
 
 		if ( $return['smtp'] && false !== strpos( $return['smtp']['host'], ':' ) ) {
-			list ( $wpes_host, $wpes_port ) = explode( ':', $return['smtp']['host'] );
+			[ $wpes_host, $wpes_port ] = explode( ':', $return['smtp']['host'] );
 
 			if ( is_numeric( $wpes_port ) ) {
 				$return['smtp']['port'] = $wpes_port;
@@ -1235,7 +1235,7 @@ class Plugin {
 			];
 
 			if ( false !== strpos( $settings['smtp']['host'], ':' ) ) {
-				list ( $host, $port ) = explode( ':', $settings['smtp']['host'] );
+				[ $host, $port ] = explode( ':', $settings['smtp']['host'] );
 				if ( is_numeric( $port ) ) {
 					$settings['smtp']['port'] = $port;
 					$settings['smtp']['host'] = $host;
@@ -1403,8 +1403,8 @@ class Plugin {
 	 */
 	public static function admin_menu() {
 		add_menu_page(
-			Plugin::plugin_data()['Name'],
-			Plugin::plugin_data()['Name'],
+			self::plugin_data()['Name'],
+			self::plugin_data()['Name'],
 			'manage_options',
 			'wp-email-essentials',
 			[ self::class, 'admin_interface' ],
@@ -1484,7 +1484,7 @@ class Plugin {
 
 		add_submenu_page(
 			'wp-email-essentials',
-			Plugin::plugin_data()['Name'] . ' - ' . __( 'Alternative Admins', 'wpes' ),
+			self::plugin_data()['Name'] . ' - ' . __( 'Alternative Admins', 'wpes' ),
 			__( 'Alternative Admins', 'wpes' ),
 			'manage_options',
 			'wpes-admins',
@@ -1537,7 +1537,7 @@ class Plugin {
 
 		add_submenu_page(
 			'wp-email-essentials',
-			Plugin::plugin_data()['Name'] . ' - ' . __( 'Alternative Moderators', 'wpes' ),
+			self::plugin_data()['Name'] . ' - ' . __( 'Alternative Moderators', 'wpes' ),
 			__( 'Alternative Moderators', 'wpes' ),
 			'manage_options',
 			'wpes-moderators',
@@ -1739,13 +1739,13 @@ Item 2
 			$url = add_query_arg( 'page', 'wp-email-essentials', admin_url( 'tools.php' ) );
 			if ( $onpage ) {
 				$class = 'updated';
-				// translators: %s: Plugin name
-				$message = sprintf( __( '%s is not yet configured. Please fill out the form below.', 'wpes' ), Plugin::plugin_data()['Name'] );
+				// translators: %s: Plugin name.
+				$message = sprintf( __( '%s is not yet configured. Please fill out the form below.', 'wpes' ), self::plugin_data()['Name'] );
 				echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 			} else {
 				$class = 'error';
 				// translators: %1$s: Plugin name, %2$s: settings URL.
-				$message = sprintf( __( '%1$s is not yet configured. Please go <a href="%2$s">here</a>.', 'wpes' ), Plugin::plugin_data()['Name'], esc_attr( $url ) );
+				$message = sprintf( __( '%1$s is not yet configured. Please go <a href="%2$s">here</a>.', 'wpes' ), self::plugin_data()['Name'], esc_attr( $url ) );
 				echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 			}
 
@@ -2307,11 +2307,11 @@ Item 2
 				$text = sprintf( __( 'But <strong>please do not worry</strong>! <a href="%1$s" target="_blank">%2$s</a> will set <em class="default">%3$s</em> as sender and set <em>this email address</em> as Reply-To header.', 'wpes' ), admin_url( 'tools.php' ) . '?page=wp-email-essentials', self::plugin_data()['Name'], self::wp_mail_from( $config['from_email'] ) );
 				break;
 			case '-at-':
-				// translators: %1$s: a URL, %2$s: the plugin name,
+				// translators: %1$s: a URL, %2$s: the plugin name.
 				$text = sprintf( __( 'But <strong>please do not worry</strong>! <a href="%1$s" target="_blank">%2$s</a> will set <em class="at-">example-email-at-youtserver-dot-com</em> as sender and set <em>this address</em> as Reply-To header.', 'wpes' ), admin_url( 'tools.php' ) . '?page=wp-email-essentials', self::plugin_data()['Name'] );
 				break;
 			default:
-				// translators: %1$s: a URL, %2$s: the plugin name,
+				// translators: %1$s: a URL, %2$s: the plugin name.
 				$text = sprintf( __( 'You can fix this here, or you can let <a href="%1$s" target="_blank">%2$s</a> fix this automatically upon sending the email.', 'wpes' ), admin_url( 'tools.php' ) . '?page=wp-email-essentials', self::plugin_data()['Name'] );
 				break;
 		}

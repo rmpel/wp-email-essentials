@@ -85,11 +85,11 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 							colspan="3"
 							class=last><?php print wp_kses_post( __( 'SPF Records are checked', 'wpes' ) ); ?>
 							: <?php print wp_kses_post( __( 'you are NOT allowed to send mail with this domain.', 'wpes' ) ); ?>
-							<br />
+							<br/>
 							<?php print wp_kses_post( __( 'If you really need to use this sender e-mail address, you need to change the SPF record to include the sending-IP of this server', 'wpes' ) ); ?>
-							;<br />
+							;<br/>
 							<?php print wp_kses_post( __( 'Old', 'wpes' ) ); ?>:
-							<code><?php print wp_kses_post( Plugin::get_spf( $wpes_config['from_email'], false, true ) ); ?></code><br />
+							<code><?php print wp_kses_post( Plugin::get_spf( $wpes_config['from_email'], false, true ) ); ?></code><br/>
 							<?php print wp_kses_post( __( 'New', 'wpes' ) ); ?>:
 							<code><?php print wp_kses_post( Plugin::get_spf( $wpes_config['from_email'], true, true ) ); ?></code>
 						</td>
@@ -115,7 +115,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 						<td
 							colspan="3"
 							class=last><?php print wp_kses_post( __( 'You are NOT allowed to send mail with this domain; it should match the domainname of the website.', 'wpes' ) ); ?>
-							<br />
+							<br/>
 							<?php print wp_kses_post( __( 'If you really need to use this sender e-mail address, you need to switch to SPF-record checking and make sure the SPF for this domain matches this server.', 'wpes' ) ); ?>
 						</td>
 					</tr>
@@ -168,7 +168,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 				</th>
 				<td colspan="3" class="last">
 					<?php print wp_kses_post( __( 'E-mails sent as different domain will probably be marked as spam. Use the options here to fix the sender-address to always match the sending domain.', 'wpes' ) ); ?>
-					<br />
+					<br/>
 					<?php print wp_kses_post( __( 'The actual sender of the e-mail will be used as <code>Reply-To</code>; you can still use the Reply button in your e-mail application to send a reply easily.', 'wpes' ) ); ?>
 				</td>
 			</tr>
@@ -187,7 +187,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 						class="on-regexp-test" data-field="spf_lookup_enabled_1" data-regexp="1"
 						for="wpes-settings-make_from_valid_when-when_sender_invalid"><?php print wp_kses_post( __( 'is not allowed by SPF from this website...', 'wpes' ) ); ?>
 					</label>
-					<br />
+					<br/>
 					<input
 						id="wpes-settings-make_from_valid_when-when_sender_not_as_set"
 						type="radio"
@@ -247,11 +247,11 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 			<tr class="last on-enable_history">
 				<td colspan="4" class="last">
 					<?php print wp_kses_post( __( '<strong>Warning: </strong> Storing e-mails in your database is a BAD idea and illegal in most countries. Use this for DEBUGGING only!', 'wpes' ) ); ?>
-					<br />
+					<br/>
 					<?php print wp_kses_post( __( 'Enabling the history feature will also add a tracker to all outgoing e-mails to check receipt.', 'wpes' ) ); ?>
-					<br />
+					<br/>
 					<?php print wp_kses_post( __( 'Disabling this feature will delete the e-mail history database tables.', 'wpes' ) ); ?>
-					<br />
+					<br/>
 					<strong
 						style="color: darkred"><?php print wp_kses_post( __( 'If you insist on storing e-mails, please note that you need to implement the appropriate protocols for compliance with GDPR. The responsibility lies with the owner of the website, not the creator or hosting company.', 'wpes' ) ); ?></strong>
 				</th>
@@ -371,11 +371,11 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 				<td>
 					<select id="timeout" name="settings[timeout]">
 						<?php
-						$wpes_timeouts = array(
+						$wpes_timeouts = [
 							60  => __( '1 minute', 'wpes' ),
 							300 => __( '5 minutes (default)', 'wpes' ),
 							600 => __( '10 minutes (for very slow hosts)', 'wpes' ),
-						);
+						];
 						if ( ! isset( $wpes_config['timeout'] ) || ! $wpes_config['timeout'] ) {
 							$wpes_config['timeout'] = 300;
 						}
@@ -425,7 +425,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 				<th><?php print wp_kses_post( __( 'Content charset re-coding', 'wpes' ) ); ?></th>
 				<td colspan="3" class="last">
 					<label
-						for="content-precoding"><?php print wp_kses_post( __( 'Some servers have f*cked-up content-encoding settings, resulting in wrongly encoded diacritics. If you expect a character like &eacute; and all you get is something like &euro;&tilde;&Itilde;, experiment with this setting.', 'wpes' ) ); ?></label><br />
+						for="content-precoding"><?php print wp_kses_post( __( 'Some servers have f*cked-up content-encoding settings, resulting in wrongly encoded diacritics. If you expect a character like &eacute; and all you get is something like &euro;&tilde;&Itilde;, experiment with this setting.', 'wpes' ) ); ?></label><br/>
 					<select id="content-precoding" name="settings[content_precode]">
 						<?php
 						$wpes_encoding_table         = explode( ',', '0,auto,' . Plugin::ENCODINGS );
@@ -502,7 +502,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 						if ( Plugin::path_is_in_web_root( $wpes_config['certificate_folder'] ) ) {
 							?>
 							<strong><?php print wp_kses_post( sprintf( __( 'It is highly advised to pick a folder path <u>outside</u> your website, for example: <code>%s</code> to prevent stealing your identity.', 'wpes' ), Plugin::suggested_safe_path_for( '.smime' ) ) ); ?></strong>
-							<br />
+							<br/>
 							<?php
 						}
 						?>
@@ -517,7 +517,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 				</tr>
 				<?php
 				if ( isset( $wpes_config['certfolder'] ) ) {
-					$wpes_smime_identities         = array();
+					$wpes_smime_identities         = [];
 					$wpes_smime_certificate_folder = $wpes_config['certificate_folder'];
 					if ( is_dir( $wpes_smime_certificate_folder ) ) {
 						$wpes_smime_files      = glob( $wpes_smime_certificate_folder . '/*.crt' );
@@ -592,12 +592,12 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 					if ( Plugin::path_is_in_web_root( $wpes_config['dkimfolder'] ) ) {
 						?>
 						<strong><?php print wp_kses_post( sprintf( __( 'It is highly advised to pick a folder path <u>outside</u> your website, for example: <code>%s</code> to prevent stealing your identity.', 'wpes' ), Plugin::suggested_safe_path_for( '.dkim' ) ) ); ?></strong>
-						<br />
+						<br/>
 						<?php
 					}
 					?>
 					<?php print wp_kses_post( __( 'You can also type a relative path (any path not starting with a / is a relative path), this will be evaluated against ABSPATH (the root of your WordPress).', 'wpes' ) ); ?>
-					<br />
+					<br/>
 					<?php
 					print wp_kses_post( __( 'The file-naming convention is', 'wpes' ) ) . ':<br />';
 					print wp_kses_post( __( 'certificate: <code>domain.tld.crt</code>', 'wpes' ) ) . ',<br />';
@@ -631,14 +631,14 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 				<td></td>
 				<td colspan="3" class="last">
 					<?php esc_html_e( 'Finally, register the domain key in the DNS', 'wpes' ); ?>
-					<br />
+					<br/>
 					<?php print wp_kses_post( '<code>' . _x( 'DKIM-SELECTOR-FOR-THIS-KEY', 'A sample DKIM selector', 'wpes' ) . '._domainkey.domain.tld. IN TXT "v=DKIM1; k=rsa; p=' . _x( 'CONTENT-OF', 'A tag that tells the user to get the content of a file', 'wpes' ) . '-domain.tld.crt"</code>' ); ?>
-					<br />
+					<br/>
 					<?php
 					// translators: %1$s and %2$s are sample content lines to be removed from the key.
 					print esc_html( sprintf( __( 'Remove the lines "%1$s" and "%2$s" and place the rest of the content on a single line.', 'wpes' ), '-----BEGIN PUBLIC KEY-----', '-----END PUBLIC KEY-----' ) );
 					?>
-					<br />
+					<br/>
 				</td>
 			</tr>
 			<tr class="on-enable-dkim">
@@ -652,7 +652,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 			</tr>
 			<?php
 			if ( isset( $wpes_config['dkimfolder'] ) ) {
-				$wpes_dkim_identities         = array();
+				$wpes_dkim_identities         = [];
 				$wpes_dkim_certificate_folder = $wpes_config['dkim_certificate_folder'];
 				if ( is_dir( $wpes_dkim_certificate_folder ) ) {
 					$wpes_dkim_identities = Plugin::list_dkim_identities();

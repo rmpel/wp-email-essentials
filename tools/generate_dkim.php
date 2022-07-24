@@ -4,10 +4,10 @@ $domain   = $argv[1] ?? 'remonpel.nl';
 $selector = 'website-' . substr( md5( random_bytes( 32 ) ), rand( 0, 24 ), 7 );
 
 $key = openssl_pkey_new(
-	array(
+	[
 		'private_key_bits' => 2048,
 		'private_key_type' => OPENSSL_KEYTYPE_RSA,
-	)
+	]
 );
 
 $public_key = openssl_pkey_get_details( $key )['key'];

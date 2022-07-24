@@ -158,8 +158,8 @@ class History {
 	public static function admin_menu() {
 		add_submenu_page(
 			'wp-email-essentials',
-			Plugin::plugin_data()['Name'] . ' - ' . __('E-mail History', 'wpes'),
-			'E-mail History',
+			Plugin::plugin_data()['Name'] . ' - ' . __( 'E-mail History', 'wpes' ),
+			__( 'E-mail History', 'wpes' ),
 			'manage_options',
 			'wpes-emails',
 			[ self::class, 'admin_interface' ]

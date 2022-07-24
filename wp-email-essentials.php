@@ -15,7 +15,7 @@ namespace WP_Email_Essentials;
  * Author: Remon Pel
  * Author URI: http://remonpel.nl
  * Version: 4.0.0
- * Requires PHP: 5.6
+ * Requires PHP: 7.1
  * Requires at least: 4.8.3
  */
 
