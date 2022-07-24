@@ -1,0 +1,209 @@
+.wpes-wrap {
+  line-height: 1.8em;
+}
+
+/**
+ Settings panel
+ */
+.wpes-table tr th, .wpes-table tr td {
+  padding: 0 20px 0 0;
+}
+
+.wpes-table tr th.last, .wpes-table tr td.last {
+  padding: 0;
+}
+
+.wpes-table td h3 {
+  margin-top: 0;
+}
+
+.wpes-table th {
+  text-align: left;
+}
+
+.wpes-table th, .wpes-table td {
+  width: 25%;
+  vertical-align: top;
+}
+
+.wpes-table th[colspan="2"], .wpes-table td[colspan="2"] {
+  width: 50%;
+}
+
+.wpes-table th[colspan="3"], .wpes-table td[colspan="3"] {
+  width: 750%;
+}
+
+/**
+ Admins panel
+ */
+.a-regexp {
+  width: 300px;
+}
+
+.a-regexp.error {
+  border-color: red;
+  background: #ff9e8b;
+}
+
+.a-regexp.match {
+  border-color: #00a800;
+  background: #97e396;
+}
+
+.a-fail.match {
+  background-color: #80ff8e;
+}
+
+/**
+ Emails panel
+ */
+.pager {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+#mail-viewer {
+  position: relative;
+  border: 1px solid grey;
+  height: 600px;
+  width: 100%;
+}
+
+#mail-viewer .top-panel {
+  position: relative;
+  height: 30%;
+  overflow: auto;
+  width: 100%;
+  max-width: 100%;
+}
+
+#mail-viewer #mail-index {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: table;
+}
+
+#mail-viewer #mail-index li {
+  margin: 0;
+  padding: 0;
+  line-height: 16px;
+  cursor: pointer;
+  display: table-row;
+}
+
+#mail-viewer #mail-index #email-header {
+  background: grey;
+  color: white;
+  foxnt-weight: bold;
+}
+
+#mail-viewer #mail-index li:nth-child(2n+1) {
+  background: #e0e0e0;
+}
+
+#mail-viewer #mail-index li.active {
+  background: black;
+  color: white;
+  font-weight: bold;
+}
+
+#mail-viewer #mail-index li:hover {
+  background: darkgrey;
+  color: white;
+}
+
+#mail-viewer #mail-index li:hover .dashicons {
+  color: white;
+}
+
+#mail-data-viewer {
+  position: absolute;
+  top: 30%;
+  left: 0;
+  right: 0;
+  height: 69%;
+  border-top: 1px solid grey;
+  overflow: auto;
+}
+
+#mail-data-viewer .email-data.show-debug,
+#mail-data-viewer .show-body,
+#mail-data-viewer .show-alt-body,
+#mail-data-viewer .show-headers {
+  height: 100%;
+  width: 100%;
+}
+
+#mail-viewer #mail-index li .thedatetime,
+#mail-viewer #mail-index li .recipient,
+#mail-viewer #mail-index li .sender,
+#mail-viewer #mail-index li .subject,
+#mail-viewer #mail-index li .eml,
+#mail-viewer #mail-index li .status {
+  overflow: hidden;
+  /*white-space: nowrap;*/
+  display: table-cell;
+  border-right: 1px solid grey;
+  padding: 3px;
+  height: 100%;
+}
+
+#mail-viewer #mail-index li.active .thedatetime,
+#mail-viewer #mail-index li.active .recipient,
+#mail-viewer #mail-index li.active .sender,
+#mail-viewer #mail-index li.active .subject,
+#mail-viewer #mail-index li.active .status {
+  overflow-y: auto;
+  white-space: initial;
+}
+
+#mail-viewer #mail-index li .thedatetime {
+  width: 12%;
+}
+
+#mail-viewer #mail-index li .recipient {
+  width: 20%;
+}
+
+#mail-viewer #mail-index li .sender {
+  width: 20%;
+}
+
+#mail-viewer #mail-index li .subject {
+  width: 25%;
+}
+
+#mail-viewer #mail-index li .status {
+  width: 20%;
+  border-right: none;
+}
+
+#mail-viewer .debug,
+#mail-viewer .body,
+#mail-viewer .alt_body,
+#mail-viewer .headers {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+#mail-viewer .show-debug .debug,
+#mail-viewer .show-body .body,
+#mail-viewer .show-alt-body .alt_body,
+#mail-viewer .show-headers .headers {
+  display: block;
+  height: 100%;
+  width: 100%;
+}
+
+/**
+ Moderators panel
+ */
+#outpost input[type=text] {
+  width: 400px;
+}
+
+/*# sourceMappingURL=wpes-admin.css.map*/

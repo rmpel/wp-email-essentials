@@ -52,8 +52,8 @@ class Plugin {
 			'init',
 			function () {
 				load_plugin_textdomain( 'wpes', false, dirname( plugin_basename( __FILE__ ) ) . '/lang' );
-				wp_register_style( 'wpes', plugins_url( 'public/wpes-admin.css', __DIR__ ), [], filemtime( __DIR__ . '/../public/wpes-admin.css' ), 'all' );
-				wp_register_script( 'wpes', plugins_url( 'public/wpes-admin.js', __DIR__ ), [], filemtime( __DIR__ . '/../public/wpes-admin.js' ), true );
+				wp_register_style( 'wpes', plugins_url( 'public/styles/wpes-admin.css', __DIR__ ), [], filemtime( __DIR__ . '/../public/styles/wpes-admin.css' ), 'all' );
+				wp_register_script( 'wpes', plugins_url( 'public/scripts/wpes-admin.js', __DIR__ ), [], filemtime( __DIR__ . '/../public/scripts/wpes-admin.js' ), true );
 			}
 		);
 

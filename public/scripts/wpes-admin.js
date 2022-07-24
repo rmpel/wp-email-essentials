@@ -1,0 +1,270 @@
+/******/ (() => { // webpackBootstrap
+/******/ 	var __webpack_modules__ = ({
+
+/***/ "./assets/scripts/wpes-admin.js":
+/*!**************************************!*\
+  !*** ./assets/scripts/wpes-admin.js ***!
+  \**************************************/
+/***/ (() => {
+
+jQuery(document).ready(function ($) {
+  if ($(".wpes-settings").length > 0) {
+    /**
+     * Settings panel
+     */
+    var keys = 'enable_history,smtp-enabled,enable-smime,enable-dkim,smtp-is_html'.split(',');
+
+    for (var key in keys) {
+      var i = keys[key];
+      $("#" + i).on('change', function (e) {
+        var i = e.target.id;
+        $(".on-" + i).toggle($(this).is(':checked'));
+        $(".not-" + i).toggle(!$(this).is(':checked'));
+      }).trigger('change');
+    }
+
+    $(".on-regexp-test").each(function () {
+      (function (field, regexp, label) {
+        $('#' + field).on('change keyup blur paste', function () {
+          label.toggle(null !== ($(this).val() || "").match(new RegExp(regexp, 'i')));
+        }).trigger('change');
+      })($(this).attr('data-field'), $(this).attr('data-regexp'), $(this));
+    });
+  }
+
+  if ($(".wpes-emails").length > 0) {
+    /**
+     * Emails panel
+     */
+    $(".email-item").on('click', function (e) {
+      if ($(e.target).is('a.dashicons-download')) {
+        e.stopPropagation();
+        return true;
+      }
+
+      var alt = e.altKey || false;
+      $(this).addClass('active').siblings().removeClass('show-body').removeClass('show-debug').removeClass('show-headers').removeClass('show-alt-body').removeClass('active');
+      var id = '#' + $(".email-item.active").attr('id').replace('email-', 'email-data-');
+      var that = $(id);
+      $('#mail-data-viewer .email-data').removeClass('show-body').removeClass('show-debug').removeClass('show-headers').removeClass('show-alt-body');
+
+      if (alt) {
+        $(this).removeClass('show-body').removeClass('show-alt-body').removeClass('show-headers').addClass('show-debug');
+        $(that).removeClass('show-body').removeClass('show-alt-body').removeClass('show-headers').addClass('show-debug');
+      } else if ($(this).is('.show-body')) {
+        $(this).removeClass('show-body').addClass('show-headers');
+        $(that).removeClass('show-body').addClass('show-headers');
+      } else if ($(this).is('.show-headers')) {
+        $(this).removeClass('show-headers').addClass('show-alt-body');
+        $(that).removeClass('show-headers').addClass('show-alt-body');
+      } else if ($(this).is('.show-alt-body')) {
+        $(this).removeClass('show-alt-body').addClass('show-body');
+        $(that).removeClass('show-alt-body').addClass('show-body');
+      } else {
+        $(this).addClass('show-body');
+        $(that).addClass('show-body');
+      }
+
+      $(window).trigger('resize');
+    });
+    $(window).bind('resize', function () {
+      $(".autofit").each(function () {
+        $(this).css('width', $(this).parent().innerWidth());
+        $(this).css('height', $(this).parent().innerHeight());
+      });
+    }).trigger('resize');
+  }
+
+  if ($(".wpes-admins").length > 0) {
+    /**
+     * Admins panel
+     */
+    var t = function t() {
+      if (/^\/[\s\S]+\/[i]?$/.test($(this).val() || "")) {
+        var that = this;
+        var re = $(that).val();
+        re = re.split(re.substr(0, 1));
+        re = new RegExp(re[1], re[2]);
+        $(".a-fail").each(function () {
+          $(this).toggleClass('match', re.test($(this).text() || ""));
+        });
+      } else {
+        $(".a-fail").removeClass('match');
+      }
+    };
+
+    $(".a-regexp").bind('blur', function () {
+      var val = $(this).val() || "";
+
+      if ("" === val) {
+        return $(this).removeClass('error match');
+      }
+
+      $(this).toggleClass('error', !/^\/[\s\S]+\/[i]?$/.test(val)).not('.error').addClass('match');
+    }).bind('focus', function (e) {
+      $(".a-fail,.a-regexp").removeClass('match');
+      $(this).removeClass('error match');
+      t.apply(this, [e]);
+    }).bind('keyup', t);
+  }
+});
+
+/***/ }),
+
+/***/ "./assets/styles/wpes-admin.scss":
+/*!***************************************!*\
+  !*** ./assets/styles/wpes-admin.scss ***!
+  \***************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+// extracted by mini-css-extract-plugin
+
+
+/***/ })
+
+/******/ 	});
+/************************************************************************/
+/******/ 	// The module cache
+/******/ 	var __webpack_module_cache__ = {};
+/******/ 	
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/ 		// Check if module is in cache
+/******/ 		var cachedModule = __webpack_module_cache__[moduleId];
+/******/ 		if (cachedModule !== undefined) {
+/******/ 			return cachedModule.exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = __webpack_module_cache__[moduleId] = {
+/******/ 			// no module.id needed
+/******/ 			// no module.loaded needed
+/******/ 			exports: {}
+/******/ 		};
+/******/ 	
+/******/ 		// Execute the module function
+/******/ 		__webpack_modules__[moduleId](module, module.exports, __webpack_require__);
+/******/ 	
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/ 	
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = __webpack_modules__;
+/******/ 	
+/************************************************************************/
+/******/ 	/* webpack/runtime/chunk loaded */
+/******/ 	(() => {
+/******/ 		var deferred = [];
+/******/ 		__webpack_require__.O = (result, chunkIds, fn, priority) => {
+/******/ 			if(chunkIds) {
+/******/ 				priority = priority || 0;
+/******/ 				for(var i = deferred.length; i > 0 && deferred[i - 1][2] > priority; i--) deferred[i] = deferred[i - 1];
+/******/ 				deferred[i] = [chunkIds, fn, priority];
+/******/ 				return;
+/******/ 			}
+/******/ 			var notFulfilled = Infinity;
+/******/ 			for (var i = 0; i < deferred.length; i++) {
+/******/ 				var [chunkIds, fn, priority] = deferred[i];
+/******/ 				var fulfilled = true;
+/******/ 				for (var j = 0; j < chunkIds.length; j++) {
+/******/ 					if ((priority & 1 === 0 || notFulfilled >= priority) && Object.keys(__webpack_require__.O).every((key) => (__webpack_require__.O[key](chunkIds[j])))) {
+/******/ 						chunkIds.splice(j--, 1);
+/******/ 					} else {
+/******/ 						fulfilled = false;
+/******/ 						if(priority < notFulfilled) notFulfilled = priority;
+/******/ 					}
+/******/ 				}
+/******/ 				if(fulfilled) {
+/******/ 					deferred.splice(i--, 1)
+/******/ 					var r = fn();
+/******/ 					if (r !== undefined) result = r;
+/******/ 				}
+/******/ 			}
+/******/ 			return result;
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/hasOwnProperty shorthand */
+/******/ 	(() => {
+/******/ 		__webpack_require__.o = (obj, prop) => (Object.prototype.hasOwnProperty.call(obj, prop))
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/make namespace object */
+/******/ 	(() => {
+/******/ 		// define __esModule on exports
+/******/ 		__webpack_require__.r = (exports) => {
+/******/ 			if(typeof Symbol !== 'undefined' && Symbol.toStringTag) {
+/******/ 				Object.defineProperty(exports, Symbol.toStringTag, { value: 'Module' });
+/******/ 			}
+/******/ 			Object.defineProperty(exports, '__esModule', { value: true });
+/******/ 		};
+/******/ 	})();
+/******/ 	
+/******/ 	/* webpack/runtime/jsonp chunk loading */
+/******/ 	(() => {
+/******/ 		// no baseURI
+/******/ 		
+/******/ 		// object to store loaded and loading chunks
+/******/ 		// undefined = chunk not loaded, null = chunk preloaded/prefetched
+/******/ 		// [resolve, reject, Promise] = chunk loading, 0 = chunk loaded
+/******/ 		var installedChunks = {
+/******/ 			"/scripts/wpes-admin": 0,
+/******/ 			"styles/wpes-admin": 0
+/******/ 		};
+/******/ 		
+/******/ 		// no chunk on demand loading
+/******/ 		
+/******/ 		// no prefetching
+/******/ 		
+/******/ 		// no preloaded
+/******/ 		
+/******/ 		// no HMR
+/******/ 		
+/******/ 		// no HMR manifest
+/******/ 		
+/******/ 		__webpack_require__.O.j = (chunkId) => (installedChunks[chunkId] === 0);
+/******/ 		
+/******/ 		// install a JSONP callback for chunk loading
+/******/ 		var webpackJsonpCallback = (parentChunkLoadingFunction, data) => {
+/******/ 			var [chunkIds, moreModules, runtime] = data;
+/******/ 			// add "moreModules" to the modules object,
+/******/ 			// then flag all "chunkIds" as loaded and fire callback
+/******/ 			var moduleId, chunkId, i = 0;
+/******/ 			if(chunkIds.some((id) => (installedChunks[id] !== 0))) {
+/******/ 				for(moduleId in moreModules) {
+/******/ 					if(__webpack_require__.o(moreModules, moduleId)) {
+/******/ 						__webpack_require__.m[moduleId] = moreModules[moduleId];
+/******/ 					}
+/******/ 				}
+/******/ 				if(runtime) var result = runtime(__webpack_require__);
+/******/ 			}
+/******/ 			if(parentChunkLoadingFunction) parentChunkLoadingFunction(data);
+/******/ 			for(;i < chunkIds.length; i++) {
+/******/ 				chunkId = chunkIds[i];
+/******/ 				if(__webpack_require__.o(installedChunks, chunkId) && installedChunks[chunkId]) {
+/******/ 					installedChunks[chunkId][0]();
+/******/ 				}
+/******/ 				installedChunks[chunkId] = 0;
+/******/ 			}
+/******/ 			return __webpack_require__.O(result);
+/******/ 		}
+/******/ 		
+/******/ 		var chunkLoadingGlobal = self["webpackChunkwp_email_essentials"] = self["webpackChunkwp_email_essentials"] || [];
+/******/ 		chunkLoadingGlobal.forEach(webpackJsonpCallback.bind(null, 0));
+/******/ 		chunkLoadingGlobal.push = webpackJsonpCallback.bind(null, chunkLoadingGlobal.push.bind(chunkLoadingGlobal));
+/******/ 	})();
+/******/ 	
+/************************************************************************/
+/******/ 	
+/******/ 	// startup
+/******/ 	// Load entry module and return exports
+/******/ 	// This entry module depends on other loaded chunks and execution need to be delayed
+/******/ 	__webpack_require__.O(undefined, ["styles/wpes-admin"], () => (__webpack_require__("./assets/scripts/wpes-admin.js")))
+/******/ 	var __webpack_exports__ = __webpack_require__.O(undefined, ["styles/wpes-admin"], () => (__webpack_require__("./assets/styles/wpes-admin.scss")))
+/******/ 	__webpack_exports__ = __webpack_require__.O(__webpack_exports__);
+/******/ 	
+/******/ })()
+;
+//# sourceMappingURL=wpes-admin.js.map
