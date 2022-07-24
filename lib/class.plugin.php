@@ -1581,7 +1581,7 @@ class Plugin {
 		$tpl = basename( "./$tpl" );
 		wp_enqueue_style( 'wpes' );
 		wp_enqueue_script( 'wpes' );
-		require __DIR__ . '/../' . $tpl . '.php';
+		require __DIR__ . '/../templates/' . $tpl . '.php';
 	}
 
 	/**
