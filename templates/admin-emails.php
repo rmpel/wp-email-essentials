@@ -28,11 +28,8 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 
 ?>
 <div class="wrap wpes-wrap wpes-emails">
-	<h2 class="dashicons-before dashicons-email-alt"> <?php print wp_kses_post( Plugin::plugin_data()['Name'] ); ?>
-		<em><?php print wp_kses_post( Plugin::plugin_data()['Version'] ); ?></em>
-		- <?php esc_html_e( 'E-mail History', 'wpes' ); ?>
-	</h2>
 	<?php
+	Plugin::template_header( __( 'E-mail History', 'wpes' ) );
 	if ( Plugin::$message ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
 	}

@@ -24,11 +24,8 @@ if ( ! get_option( 'moderation_notify' ) ) {
 }
 ?>
 <div class="wrap wpes-wrap wpes-moderators">
-	<h2 class="dashicons-before dashicons-email-alt"> <?php print wp_kses_post( Plugin::plugin_data()['Name'] ); ?>
-		<em><?php print wp_kses_post( Plugin::plugin_data()['Version'] ); ?></em>
-		- <?php esc_html_e( 'Alternative Moderators', 'wpes' ); ?>
-	</h2>
 	<?php
+	Plugin::template_header( __( 'Alternative Moderators', 'wpes' ) );
 	if ( Plugin::$message ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
 	}

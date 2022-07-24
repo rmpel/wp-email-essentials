@@ -34,5 +34,7 @@ add_action( 'wp_ajax_nopriv_wpes_get_ip', [ Plugin::class, 'ajax_get_ip' ] );
 
 History::instance();
 
-/* this section enables mail_queue, which is not yet finished */
-add_filter( '__disabled__wp_mail', [ Queue::class, 'wp_mail' ], PHP_INT_MAX - 2000 );
+/**
+ * This section enables mail_queue, which is not yet finished
+ * Queue::instance();
+ */

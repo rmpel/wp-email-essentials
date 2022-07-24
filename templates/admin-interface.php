@@ -17,11 +17,8 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 
 ?>
 <div class="wrap wpes-wrap wpes-settings">
-	<h2 class="dashicons-before dashicons-email-alt"> <?php print wp_kses_post( Plugin::plugin_data()['Name'] ); ?>
-		<em><?php print wp_kses_post( Plugin::plugin_data()['Version'] ); ?></em>
-		- <?php esc_html_e( 'E-mail Configuration', 'wpes' ); ?>
-	</h2>
 	<?php
+	Plugin::template_header( __( 'E-mail Configuration', 'wpes' ) );
 	if ( Plugin::$message ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
 	}
@@ -401,6 +398,11 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 				</th>
 			</tr>
 			<tr>
+				<td colspan="4" class="last">
+					<hr/>
+				</td>
+			</tr>
+			<tr>
 				<td colspan="1" rowspan="2">
 					<h3><?php print wp_kses_post( __( 'E-mail content', 'wpes' ) ); ?>:</h3>
 				</td>
@@ -448,22 +450,22 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 			</tr>
 			<tr>
 				<th rowspan="2"><?php esc_html_e( 'Content handling', 'wpes' ); ?></th>
-				<th colspan="3" class="last">
+				<td colspan="3" class="last">
 					<input
 						type="checkbox" name="settings[alt_body]" value="1"
 						<?php checked( isset( $wpes_config['alt_body'] ) && $wpes_config['alt_body'] ); ?>
 						id="smtp-alt_body"/><label
 						for="smtp-alt_body"><?php print wp_kses_post( __( 'Derive plain-text alternative? (Will derive text-ish body from html body as AltBody)', 'wpes' ) ); ?></label>
-				</th>
+				</td>
 			</tr>
 			<tr>
-				<th colspan="3" class="last">
+				<td colspan="3" class="last">
 					<input
 						type="checkbox" name="settings[do_shortcodes]" value="1"
 						<?php checked( isset( $wpes_config['do_shortcodes'] ) && $wpes_config['do_shortcodes'] ); ?>
 						id="do_shortcodes"/><label
 						for="do_shortcodes"><?php print wp_kses_post( __( 'Process the body with <code>do_shortcode()</code>', 'wpes' ) ); ?></label>
-				</th>
+				</td>
 			</tr>
 			<tr>
 				<th colspan="4" class="last">

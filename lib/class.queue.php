@@ -59,8 +59,18 @@ class Queue {
 			update_option( 'wpes_queue_rev', $hash );
 		}
 
+		// queue handler.
+		add_filter( 'wp_mail', [ self::class, 'wp_mail' ], PHP_INT_MAX - 2000 );
+
 		// maybe send a batch.
-		add_action( 'wp_footer', [ self::class, 'wp_footer' ] );
+		add_action( 'wp_footer', [ self::class, 'maybe_send_batch' ] );
+		add_action( 'admin_footer', [ self::class, 'maybe_send_batch' ] );
+		if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
+			self::maybe_send_batch();
+		}
+
+		// queue display.
+		add_action( 'admin_menu', [ self::class, 'admin_menu' ] );
 	}
 
 	/**
@@ -140,7 +150,7 @@ class Queue {
 			);
 
 			// do not send mail, but to prevent errors, keep the array in same.
-			add_action( 'phpmailer_init', [ 'WP_Email_Essentials_Queue', 'stop_mail' ], PHP_INT_MIN );
+			add_action( 'phpmailer_init', [ self::class, 'stop_mail' ], PHP_INT_MIN );
 		}
 
 		return $mail_data;
@@ -363,7 +373,7 @@ class Queue {
 	/**
 	 * Implementation of wp action wp_footer .
 	 */
-	public static function wp_footer() {
+	public static function maybe_send_batch() {
 		$last = get_option( 'last_batch_sent', '0' );
 		$now  = gmdate( 'YmdHi' );
 		if ( $last < $now ) {
@@ -410,6 +420,26 @@ class Queue {
 	 * Set the status of a queue item.
 	 *
 	 * @param int $mail_id The queued item ID.
+	 */
+	public static function get_status( $mail_id ) {
+		global $wpdb;
+		$wpdb->update( "{$wpdb->prefix}wpes_queue", [ 'status' => $status ], [ 'id' => $mail_id ] );
+	}
+
+	/**
+	 * Set the status of a queue item.
+	 *
+	 * @param int $mail_id The queued item ID.
+	 * @param int $status  The status to compare to.
+	 */
+	public static function is_status( $mail_id, $status ) {
+		return self::get_status( $mail_id ) === $status;
+	}
+
+	/**
+	 * Set the status of a queue item.
+	 *
+	 * @param int $mail_id The queued item ID.
 	 * @param int $status  The new status.
 	 */
 	private static function set_status( $mail_id, $status ) {
@@ -423,7 +453,28 @@ class Queue {
 	 * @param WPES_PHPMailer $phpmailer The mailer object.
 	 */
 	public static function stop_mail( &$phpmailer ) {
-		remove_action( 'phpmailer_init', [ 'WP_Email_Essentials_Queue', 'stop_mail' ], PHP_INT_MIN );
+		remove_action( 'phpmailer_init', [ self::class, 'stop_mail' ], PHP_INT_MIN );
 		$phpmailer = new Fake_Sender();
+	}
+
+	/**
+	 * Callback for admin_menu action.
+	 */
+	public static function admin_menu() {
+		add_submenu_page(
+			'wp-email-essentials',
+			Plugin::plugin_data()['Name'] . ' - ' . __( 'E-mail Queue', 'wpes' ),
+			__( 'E-mail Queue', 'wpes' ),
+			'manage_options',
+			'wpes-queue',
+			[ self::class, 'admin_interface' ]
+		);
+	}
+
+	/**
+	 * The admin interface.
+	 */
+	public static function admin_interface() {
+		Plugin::view( 'admin-queue' );
 	}
 }

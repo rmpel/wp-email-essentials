@@ -2479,4 +2479,22 @@ Item 2
 
 		return $return_value;
 	}
+
+	/**
+	 * Uniform title header for the templates.
+	 *
+	 * @param string $title_subtitle The addition to the title.
+	 */
+	public static function template_header( $title_subtitle ) {
+		?>
+		<h2 class="dashicons-before dashicons-email-alt">
+			<?php print wp_kses_post( self::plugin_data()['Name'] ); ?>
+			<em><?php print wp_kses_post( self::plugin_data()['Version'] ); ?></em>
+			<?php if ( $title_subtitle ) { ?>
+				- <?php print esc_html( $title_subtitle ); ?>
+			<?php } ?>
+		</h2>
+		<hr />
+		<?php
+	}
 }

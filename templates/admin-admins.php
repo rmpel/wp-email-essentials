@@ -16,11 +16,8 @@ $wpes_mail_keys       = Plugin::mail_key_database();
 $wpes_wordpress_admin = get_option( 'admin_email' );
 ?>
 <div class="wrap wpes-wrap wpes-admins">
-	<h2 class="dashicons-before dashicons-email-alt"> <?php print wp_kses_post( Plugin::plugin_data()['Name'] ); ?>
-		<em><?php print wp_kses_post( Plugin::plugin_data()['Version'] ); ?></em>
-		- <?php esc_html_e( 'Alternative Admins', 'wpes' ); ?>
-	</h2>
 	<?php
+	Plugin::template_header( __( 'Alternative Admins', 'wpes' ) );
 	if ( Plugin::$message ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
 	}
