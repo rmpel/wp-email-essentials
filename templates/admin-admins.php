@@ -14,12 +14,11 @@ global $current_user;
 $wpes_config          = get_option( 'mail_key_admins', array() );
 $wpes_mail_keys       = Plugin::mail_key_database();
 $wpes_wordpress_admin = get_option( 'admin_email' );
+var_dump(Plugin::plugin_data());exit;
 ?>
 <div class="wrap wpes-wrap wpes-admins">
-	<div class="icon32 icon32-posts-group" id="icon-edit">
-		<br/>
-	</div>
-	<h2>WP-Email-Essentials - <?php esc_html_e( 'Alternative Admins', 'wpes' ); ?></h2>
+	<h2 class="dashicons-before dashicons-email-alt"> <?php print wp_kses_post( Plugin::plugin_data()['Name'] ); ?>
+		- <?php esc_html_e( 'Alternative Admins', 'wpes' ); ?></h2>
 	<?php
 	if ( Plugin::$message ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';

@@ -45,6 +45,17 @@ class Plugin {
 	}
 
 	/**
+	 * Plugin data
+	 */
+	public static function plugin_data() {
+		static $plugin_data;
+		if ( ! $plugin_data ) {
+			$plugin_data = get_plugin_data( __DIR__ . '/../wp-email-essentials.php' );
+		}
+		return $plugin_data;
+	}
+
+	/**
 	 * The main initialisation.
 	 */
 	public static function init() {
