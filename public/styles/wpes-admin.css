@@ -39,18 +39,18 @@
 /**
  Admins panel
  */
-.wpes-admin .a-regexp {
+.wpes-admins .a-regexp {
   width: 300px;
 }
-.wpes-admin .a-regexp.error {
+.wpes-admins .a-regexp.error {
   border-color: red;
   background: #ff9e8b;
 }
-.wpes-admin .a-regexp.match {
+.wpes-admins .a-regexp.match {
   border-color: #00a800;
   background: #97e396;
 }
-.wpes-admin .a-fail.match {
+.wpes-admins .a-fail.match {
   background-color: #80ff8e;
 }
 

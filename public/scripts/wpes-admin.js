@@ -50,7 +50,7 @@ jQuery(document).ready(function ($) {
 
   if ($(".wpes-emails").length > 0) {
     /**
-     * E-mails panel
+     * Emails panel
      */
     $(".email-item").on('click', function (e) {
       // we need 'function' here for 'this'.
