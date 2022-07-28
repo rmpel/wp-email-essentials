@@ -41,6 +41,8 @@ class Plugin {
 	 * Constructor.
 	 */
 	public function __construct() {
+		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
+
 		self::init();
 	}
 
@@ -60,6 +62,11 @@ class Plugin {
 	 * The main initialisation.
 	 */
 	public static function init() {
+
+		add_filter( 'wp_mail', [ self::class, 'alternative_to' ] );
+
+		add_action( 'wp_ajax_nopriv_wpes_get_ip', [ self::class, 'ajax_get_ip' ] );
+
 		add_action(
 			'init',
 			function () {
@@ -113,6 +120,7 @@ class Plugin {
 		}
 
 		add_filter( 'wp_mail', [ self::class, 'action_wp_mail' ], PHP_INT_MAX - 1000 );
+
 		add_action( 'admin_menu', [ self::class, 'admin_menu' ], 10 );
 
 		add_action( 'admin_footer', [ self::class, 'maybe_inject_admin_settings' ] );
@@ -135,6 +143,15 @@ class Plugin {
 		);
 
 		self::mail_key_registrations();
+
+		// Load add-ons.
+
+		History::instance();
+
+		/**
+		 * This section enables mail_queue, which is not yet finished
+		 */
+		 Queue::instance();
 	}
 
 	/**

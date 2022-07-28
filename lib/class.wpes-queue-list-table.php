@@ -68,7 +68,7 @@ class WPES_Queue_List_Table extends WP_List_Table {
 	 */
 	public function get_columns() {
 		$columns = [
-			'status'  => __( 'status', 'wpes' ),
+			'status'  => __( 'Status', 'wpes' ),
 			'dt'      => __( 'E-mail Date', 'wpes' ),
 			'to'      => __( 'Recipient', 'wpes' ),
 			'subject' => __( 'Subject', 'wpes' ),

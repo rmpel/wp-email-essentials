@@ -9,8 +9,6 @@ namespace WP_Email_Essentials;
 
 use Exception;
 
-require_once __DIR__ . '/class-csstoinlinestyles.php';
-
 /**
  * Support class for CssToInlineStyles
  */
