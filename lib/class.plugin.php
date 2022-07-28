@@ -150,8 +150,8 @@ class Plugin {
 
 		/**
 		 * This section enables mail_queue, which is not yet finished
+		 * Queue::instance();
 		 */
-		 Queue::instance();
 	}
 
 	/**
