@@ -34,3 +34,66 @@ This tool is created for people that know what to do and why they do it. If you 
 
 *1) Under GDPR, storing and tracking emails is prohibited, the history feature is meant for investigative purposes only!
 
+# WordPress Filters
+
+`wpes_settings`
+
+Parameters:
+- (array) `$settings` The current settings of the plugin.
+
+Expected return:
+- (array) The new settings of the plugin.
+
+---
+
+`wpes_defaults`
+
+Parameters:
+- (array) `$defaults` The current default settings of the plugin.
+
+Expected return:
+- (array) The new default settings of the plugin.
+
+---
+
+`wpes_body`
+
+Parameters:
+- (string) `$should_be_html` A text that should be html, but might not yet be, your job to make a nice HTML body.
+- (PHPMailer) `$mailer` The PHPMailer object (by reference).
+
+Expected return:
+- (string) A text that should be html.
+
+---
+
+`wpes_head`
+
+Parameters:
+- (string) `$the_head_section` HTML that is the HEAD section of the HTML email.
+- (PHPMailer) `$mailer` The PHPMailer object (by reference).
+
+Expected return:
+- (string) The altered HEAD section of the HTML email.
+
+---
+
+`wpes_css`
+
+Parameters:
+- (string) `$the_css` CSS for the email (empty by default).
+- (PHPMailer) `$mailer` The PHPMailer object (by reference).
+
+Expected return:
+- (string) The (altered) CSS.
+
+---
+
+`wpes_subject`
+
+Parameters:
+- (string) `$the_subject` Subject for the email.
+- (PHPMailer) `$mailer` The PHPMailer object (by reference).
+
+Expected return:
+- (string) The (altered) Subject.
