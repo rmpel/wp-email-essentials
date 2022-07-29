@@ -14,6 +14,7 @@ namespace WP_Email_Essentials;
 
 use DOMDocument;
 use DOMXPath;
+use Exception;
 
 /**
  * Main class for inlining styles.
@@ -220,7 +221,7 @@ class CssToInlineStyles {
 	 *
 	 * @return string
 	 *
-	 * @throws \Exception When html is empty.
+	 * @throws Exception When html is empty.
 	 */
 	public function convert( $output_xhtml = false ) {
 		// redefine.
@@ -228,7 +229,7 @@ class CssToInlineStyles {
 
 		// validate.
 		if ( null === $this->html ) {
-			throw new \Exception( 'No HTML provided.' );
+			throw new Exception( 'No HTML provided.' );
 		}
 
 		// should we use inline style-block.
