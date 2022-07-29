@@ -7,6 +7,8 @@
 
 namespace WP_Email_Essentials;
 
+use Exception;
+
 /**
  * The main plugin class.
  */
@@ -747,6 +749,19 @@ class Plugin {
 	 * @return array|mixed
 	 */
 	public static function dns_get_record( $lookup, $filter, $single_output = null ) {
+		// pre-filter; these tlds can never have SPF or other special records.
+		$local_tlds = apply_filters( 'wpes_local_tlds', [ 'local', 'test' ] );
+		$local_tlds = array_filter( array_unique( $local_tlds ) );
+		if ( $local_tlds ) {
+			$local_tlds = array_map( 'preg_quote', $local_tlds, [ '/' ] );
+			$local_tlds = implode( '|', $local_tlds );
+			if ( preg_match( '/\.(' . $local_tlds . ')$/', $lookup ) ) {
+				if ( DNS_A !== $filter || DNS_A6 !== $filter ) {
+					return [];
+				}
+			}
+		}
+		// Proceed with normal lookup.
 		$transient_name = "dns_{$lookup}__TYPE{$filter}__cache";
 		$transient      = get_site_transient( $transient_name );
 		if ( ! $transient ) {
@@ -2490,7 +2505,7 @@ Item 2
 			$return_value = is_file( $filename ) && is_readable( $filename ) ? file_get_contents( $filename ) : false;
 			// @phpcs:enable WordPress.WP.AlternativeFunctions.file_system_read_file_get_contents
 			// @phpcs:enable WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-		} catch ( \Exception $e ) {
+		} catch ( Exception $e ) {
 			$return_value = false;
 		}
 
