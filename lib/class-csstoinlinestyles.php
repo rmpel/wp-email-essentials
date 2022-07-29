@@ -10,11 +10,6 @@
  * @package        WP_Email_Essentials
  */
 
-// phpcs:disable WordPress.NamingConventions.ValidVariableName.PropertyNotSnakeCase -- Adopted code.
-// phpcs:disable WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid -- Adopted code.
-// phpcs:disable WordPress.NamingConventions.ValidVariableName.VariableNotSnakeCase -- Adopted code.
-// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Adopted code.
-
 namespace WP_Email_Essentials;
 
 use DOMDocument;
@@ -36,7 +31,7 @@ class CssToInlineStyles {
 	 *
 	 * @var    array
 	 */
-	private $cssRules;
+	private $css_rules;
 
 	/**
 	 * Should the generated HTML be cleaned
@@ -64,21 +59,21 @@ class CssToInlineStyles {
 	 *
 	 * @var    bool
 	 */
-	private $useInlineStylesBlock = false;
+	private $use_inline_styles_block = false;
 
 	/**
 	 * Strip original style tags
 	 *
 	 * @var bool
 	 */
-	private $stripOriginalStyleTags = false;
+	private $strip_original_style_tags = false;
 
 	/**
 	 * Exclude the media queries from the inlined styles
 	 *
 	 * @var bool
 	 */
-	private $excludeMediaQueries = false;
+	private $exclude_media_queries = false;
 
 	/**
 	 * Creates an instance, you could set the HTML and CSS here, or load it
@@ -91,10 +86,10 @@ class CssToInlineStyles {
 	 */
 	public function __construct( $html = null, $css = null ) {
 		if ( null !== $html ) {
-			$this->setHTML( $html );
+			$this->set_html( $html );
 		}
 		if ( null !== $css ) {
-			$this->setCSS( $css );
+			$this->set_css( $css );
 		}
 	}
 
@@ -105,12 +100,12 @@ class CssToInlineStyles {
 	 *
 	 * @return string
 	 */
-	private function buildXPathQuery( $selector ) {
+	private function build_xpath_query( $selector ) {
 		// redefine.
 		$selector = (string) $selector;
 
 		// the CSS selector.
-		$cssSelector = [
+		$css_selector = [
 			// E F, Matches any F element that is a descendant of an E element.
 			'/(\w)\s+([\w\*])/',
 			// E > F, Matches any F element that is a child of an element E.
@@ -134,7 +129,7 @@ class CssToInlineStyles {
 		];
 
 		// the xPath-equivalent.
-		$xPathQuery = [
+		$xpath_query = [
 			// E F, Matches any F element that is a descendant of an E element.
 			'\1//\2',
 			// E > F, Matches any F element that is a child of an element E.
@@ -158,9 +153,9 @@ class CssToInlineStyles {
 		];
 
 		// return.
-		$xPath = (string) '//' . preg_replace( $cssSelector, $xPathQuery, $selector );
+		$xpath = '//' . preg_replace( $css_selector, $xpath_query, $selector );
 
-		return str_replace( '] *', ']//*', $xPath );
+		return str_replace( '] *', ']//*', $xpath );
 	}
 
 	/**
@@ -170,7 +165,7 @@ class CssToInlineStyles {
 	 *
 	 * @return int
 	 */
-	private function calculateCSSSpecifity( $selector ) {
+	private function calculate_css_specificity( $selector ) {
 		// cleanup selector.
 		$selector = str_replace( [ '>', '+' ], [ ' > ', ' + ' ], $selector );
 
@@ -206,7 +201,7 @@ class CssToInlineStyles {
 	 *
 	 * @return string
 	 */
-	private function cleanupHTML( $html ) {
+	private function cleanup_html( $html ) {
 		// remove classes.
 		$html = preg_replace( '/(\s)+class="(.*)"(\s)*/U', ' ', $html );
 
@@ -221,15 +216,15 @@ class CssToInlineStyles {
 	/**
 	 * Converts the loaded HTML into an HTML-string with inline styles based on the loaded CSS
 	 *
-	 * @param bool $outputXHTML (optional) Should we output valid XHTML?..
+	 * @param bool $output_xhtml (optional) Should we output valid XHTML?..
 	 *
 	 * @return string
 	 *
 	 * @throws \Exception When html is empty.
 	 */
-	public function convert( $outputXHTML = false ) {
+	public function convert( $output_xhtml = false ) {
 		// redefine.
-		$outputXHTML = (bool) $outputXHTML;
+		$output_xhtml = (bool) $output_xhtml;
 
 		// validate.
 		if ( null === $this->html ) {
@@ -237,7 +232,7 @@ class CssToInlineStyles {
 		}
 
 		// should we use inline style-block.
-		if ( $this->useInlineStylesBlock ) {
+		if ( $this->use_inline_styles_block ) {
 			// init var.
 			$matches = [];
 
@@ -254,10 +249,10 @@ class CssToInlineStyles {
 		}
 
 		// process css.
-		$this->processCSS();
+		$this->process_css();
 
 		// create new DOMDocument.
-		$document = new DOMDocument( '1.0', $this->getEncoding() );
+		$document = new DOMDocument( '1.0', $this->get_encoding() );
 
 		// set error level.
 		libxml_use_internal_errors( true );
@@ -266,14 +261,14 @@ class CssToInlineStyles {
 		$document->loadHTML( $this->html );
 
 		// create new XPath.
-		$xPath = new DOMXPath( $document );
+		$xpath = new DOMXPath( $document );
 
 		// any rules?.
-		if ( ! empty( $this->cssRules ) ) {
+		if ( ! empty( $this->css_rules ) ) {
 			// loop rules.
-			foreach ( $this->cssRules as $rule ) {
+			foreach ( $this->css_rules as $rule ) {
 				// init var.
-				$query = $this->buildXPathQuery( $rule['selector'] );
+				$query = $this->build_xpath_query( $rule['selector'] );
 
 				// validate query.
 				if ( false === $query ) {
@@ -281,7 +276,7 @@ class CssToInlineStyles {
 				}
 
 				// search elements.
-				$elements = $xPath->query( $query );
+				$elements = $xpath->query( $query );
 
 				// validate elements.
 				if ( false === $elements ) {
@@ -293,15 +288,15 @@ class CssToInlineStyles {
 					// no styles stored?.
 					if ( null === $element->attributes->getNamedItem( 'data-css-to-inline-styles-original-styles' ) ) {
 						// init var.
-						$originalStyle = '';
+						$original_style = '';
 						if ( null !== $element->attributes->getNamedItem( 'style' ) ) {
-							$originalStyle = $element->attributes->getNamedItem( 'style' )->value;
+							$original_style = $element->attributes->getNamedItem( 'style' )->value;
 						}
 
 						// store original styles.
 						$element->setAttribute(
 							'data-css-to-inline-styles-original-styles',
-							$originalStyle
+							$original_style
 						);
 
 						// clear the styles.
@@ -312,18 +307,18 @@ class CssToInlineStyles {
 					$properties = [];
 
 					// get current styles.
-					$stylesAttribute = $element->attributes->getNamedItem( 'style' );
+					$styles_attribute = $element->attributes->getNamedItem( 'style' );
 
 					// any styles defined before?.
-					if ( null !== $stylesAttribute ) {
+					if ( null !== $styles_attribute ) {
 						// get value for the styles attribute.
-						$definedStyles = (string) $stylesAttribute->value;
+						$defined_styles = (string) $styles_attribute->value;
 
 						// split into properties.
-						$definedProperties = explode( ';', $definedStyles );
+						$defined_properties = explode( ';', $defined_styles );
 
 						// loop properties.
-						foreach ( $definedProperties as $property ) {
+						foreach ( $defined_properties as $property ) {
 							// validate property.
 							if ( '' === $property ) {
 								continue;
@@ -348,27 +343,27 @@ class CssToInlineStyles {
 					}
 
 					// build string.
-					$propertyChunks = [];
+					$property_chunks = [];
 
 					// build chunks.
 					foreach ( $properties as $key => $values ) {
 						foreach ( (array) $values as $value ) {
-							$propertyChunks[] = $key . ': ' . $value . ';';
+							$property_chunks[] = $key . ': ' . $value . ';';
 						}
 					}
 
 					// build properties string.
-					$propertiesString = implode( ' ', $propertyChunks );
+					$properties_string = implode( ' ', $property_chunks );
 
 					// set attribute.
-					if ( '' !== $propertiesString ) {
-						$element->setAttribute( 'style', $propertiesString );
+					if ( '' !== $properties_string ) {
+						$element->setAttribute( 'style', $properties_string );
 					}
 				}
 			}
 
 			// reapply original styles.
-			$query = $this->buildXPathQuery(
+			$query = $this->build_xpath_query(
 				'*[@data-css-to-inline-styles-original-styles]'
 			);
 
@@ -378,20 +373,20 @@ class CssToInlineStyles {
 			}
 
 			// search elements.
-			$elements = $xPath->query( $query );
+			$elements = $xpath->query( $query );
 
 			// loop found elements.
 			foreach ( $elements as $element ) {
 				// get the original styles.
-				$originalStyle = $element->attributes->getNamedItem(
+				$original_style = $element->attributes->getNamedItem(
 					'data-css-to-inline-styles-original-styles'
 				)->value;
 
-				if ( '' !== $originalStyle ) {
-					$originalProperties = [];
-					$originalStyles     = explode( ';', $originalStyle );
+				if ( '' !== $original_style ) {
+					$original_properties = [];
+					$original_styles     = explode( ';', $original_style );
 
-					foreach ( $originalStyles as $property ) {
+					foreach ( $original_styles as $property ) {
 						// validate property.
 						if ( '' === $property ) {
 							continue;
@@ -406,23 +401,23 @@ class CssToInlineStyles {
 						}
 
 						// loop chunks.
-						$originalProperties[ $chunks[0] ] = trim( $chunks[1] );
+						$original_properties[ $chunks[0] ] = trim( $chunks[1] );
 					}
 
 					// get current styles.
-					$stylesAttribute = $element->attributes->getNamedItem( 'style' );
-					$properties      = [];
+					$styles_attribute = $element->attributes->getNamedItem( 'style' );
+					$properties       = [];
 
 					// any styles defined before?.
-					if ( null !== $stylesAttribute ) {
+					if ( null !== $styles_attribute ) {
 						// get value for the styles attribute.
-						$definedStyles = (string) $stylesAttribute->value;
+						$defined_styles = (string) $styles_attribute->value;
 
 						// split into properties.
-						$definedProperties = explode( ';', $definedStyles );
+						$defined_properties = explode( ';', $defined_styles );
 
 						// loop properties.
-						foreach ( $definedProperties as $property ) {
+						foreach ( $defined_properties as $property ) {
 							// validate property.
 							if ( '' === $property ) {
 								continue;
@@ -442,28 +437,28 @@ class CssToInlineStyles {
 					}
 
 					// add new properties into the list.
-					foreach ( $originalProperties as $key => $value ) {
+					foreach ( $original_properties as $key => $value ) {
 						$properties[ $key ] = $value;
 					}
 
 					// build string.
-					$propertyChunks = [];
+					$property_chunks = [];
 
 					// build chunks.
 					foreach ( $properties as $key => $values ) {
 						foreach ( (array) $values as $value ) {
-							$propertyChunks[] = $key . ': ' . $value . ';';
+							$property_chunks[] = $key . ': ' . $value . ';';
 						}
 					}
 
 					// build properties string.
-					$propertiesString = implode( ' ', $propertyChunks );
+					$properties_string = implode( ' ', $property_chunks );
 
 					// set attribute.
-					if ( '' !== $propertiesString ) {
+					if ( '' !== $properties_string ) {
 						$element->setAttribute(
 							'style',
-							$propertiesString
+							$properties_string
 						);
 					}
 				}
@@ -476,23 +471,23 @@ class CssToInlineStyles {
 		}
 
 		// should we output XHTML?.
-		if ( $outputXHTML ) {
+		if ( $output_xhtml ) {
 			// set formating.
-			$document->formatOutput = true;
+			$document->formatOutput = true; // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- DOMDocument.
 
 			// get the HTML as XML.
 			$html = $document->saveXML( null, LIBXML_NOEMPTYTAG );
 
 			// get start of the XML-declaration.
-			$startPosition = strpos( $html, '<?xml' );
+			$start_position = strpos( $html, '<?xml' );
 
 			// valid start position?.
-			if ( false !== $startPosition ) {
+			if ( false !== $start_position ) {
 				// get end of the xml-declaration.
-				$endPosition = strpos( $html, '?>', $startPosition );
+				$end_position = strpos( $html, '?>', $start_position );
 
 				// remove the XML-header.
-				$html = ltrim( substr( $html, $endPosition + 1 ) );
+				$html = ltrim( substr( $html, $end_position + 1 ) );
 			}
 		} else {
 			// just regular HTML 4.01 as it should be used in newsletters.
@@ -502,12 +497,12 @@ class CssToInlineStyles {
 
 		// cleanup the HTML if we need to.
 		if ( $this->cleanup ) {
-			$html = $this->cleanupHTML( $html );
+			$html = $this->cleanup_html( $html );
 		}
 
 		// strip original style tags if we need to.
-		if ( $this->stripOriginalStyleTags ) {
-			$html = $this->stripOriginalStyleTags( $html );
+		if ( $this->strip_original_style_tags ) {
+			$html = $this->strip_original_style_tags( $html );
 		}
 
 		// return.
@@ -520,7 +515,7 @@ class CssToInlineStyles {
 	 *
 	 * @return string
 	 */
-	private function getEncoding() {
+	private function get_encoding() {
 		return $this->encoding;
 	}
 
@@ -530,7 +525,7 @@ class CssToInlineStyles {
 	 *
 	 * @return void
 	 */
-	private function processCSS() {
+	private function process_css() {
 		// init vars.
 		$css = (string) $this->css;
 
@@ -546,7 +541,7 @@ class CssToInlineStyles {
 		// remove spaces.
 		$css = preg_replace( '/\s\s+/', ' ', $css );
 
-		if ( $this->excludeMediaQueries ) {
+		if ( $this->exclude_media_queries ) {
 			$css = preg_replace( '/@media [^{]*{([^{}]|{[^{}]*})*}/', '', $css );
 		}
 
@@ -570,7 +565,7 @@ class CssToInlineStyles {
 			$selectors = trim( $chunks[0] );
 
 			// get cssProperties.
-			$cssProperties = trim( $chunks[1] );
+			$css_properties = trim( $chunks[1] );
 
 			// split multiple selectors.
 			$selectors = explode( ',', $selectors );
@@ -581,21 +576,21 @@ class CssToInlineStyles {
 				$selector = trim( $selector );
 
 				// build an array for each selector.
-				$ruleSet = [];
+				$rule_set = [];
 
 				// store selector.
-				$ruleSet['selector'] = $selector;
+				$rule_set['selector'] = $selector;
 
 				// process the properties.
-				$ruleSet['properties'] = $this->processCSSProperties(
-					$cssProperties
+				$rule_set['properties'] = $this->process_css_properties(
+					$css_properties
 				);
 
 				// calculate specifity.
-				$ruleSet['specifity'] = $this->calculateCSSSpecifity( $selector ) + $i;
+				$rule_set['specifity'] = $this->calculate_css_specificity( $selector ) + $i;
 
 				// add into global rules.
-				$this->cssRules[] = $ruleSet;
+				$this->css_rules[] = $rule_set;
 			}
 
 			// increment.
@@ -603,21 +598,21 @@ class CssToInlineStyles {
 		}
 
 		// sort based on specifity.
-		if ( ! empty( $this->cssRules ) ) {
-			usort( $this->cssRules, [ __CLASS__, 'sortOnSpecifity' ] );
+		if ( ! empty( $this->css_rules ) ) {
+			usort( $this->css_rules, [ self::class, 'sort_on_specificity' ] );
 		}
 	}
 
 	/**
 	 * Process the CSS-properties
 	 *
-	 * @param string $propertyString The CSS-properties.
+	 * @param string $property_string The CSS-properties.
 	 *
 	 * @return array
 	 */
-	private function processCSSProperties( $propertyString ) {
+	private function process_css_properties( $property_string ) {
 		// split into chunks.
-		$properties = explode( ';', $propertyString );
+		$properties = explode( ';', $property_string );
 
 		// init var.
 		$pairs = [];
@@ -656,7 +651,7 @@ class CssToInlineStyles {
 	 *
 	 * @return void
 	 */
-	public function setCleanup( $on = true ) {
+	public function set_cleanup( $on = true ) {
 		$this->cleanup = (bool) $on;
 	}
 
@@ -667,7 +662,7 @@ class CssToInlineStyles {
 	 *
 	 * @return void
 	 */
-	public function setCSS( $css ) {
+	public function set_css( $css ) {
 		$this->css = (string) $css;
 	}
 
@@ -678,7 +673,7 @@ class CssToInlineStyles {
 	 *
 	 * @return void
 	 */
-	public function setEncoding( $encoding ) {
+	public function set_encoding( $encoding ) {
 		$this->encoding = (string) $encoding;
 	}
 
@@ -689,7 +684,7 @@ class CssToInlineStyles {
 	 *
 	 * @return void
 	 */
-	public function setHTML( $html ) {
+	public function set_html( $html ) {
 		$this->html = (string) $html;
 	}
 
@@ -701,8 +696,8 @@ class CssToInlineStyles {
 	 *
 	 * @return void
 	 */
-	public function setUseInlineStylesBlock( $on = true ) {
-		$this->useInlineStylesBlock = (bool) $on;
+	public function set_use_inline_styles_block( $on = true ) {
+		$this->use_inline_styles_block = (bool) $on;
 	}
 
 	/**
@@ -713,8 +708,8 @@ class CssToInlineStyles {
 	 *
 	 * @return void
 	 */
-	public function setStripOriginalStyleTags( $on = true ) {
-		$this->stripOriginalStyleTags = (bool) $on;
+	public function set_strip_original_style_tags( $on = true ) {
+		$this->strip_original_style_tags = (bool) $on;
 	}
 
 	/**
@@ -726,8 +721,8 @@ class CssToInlineStyles {
 	 *
 	 * @return void
 	 */
-	public function setExcludeMediaQueries( $on = true ) {
-		$this->excludeMediaQueries = (bool) $on;
+	public function set_exclude_media_queries( $on = true ) {
+		$this->exclude_media_queries = (bool) $on;
 	}
 
 	/**
@@ -737,7 +732,7 @@ class CssToInlineStyles {
 	 *
 	 * @return string
 	 */
-	private function stripOriginalStyleTags( $html ) {
+	private function strip_original_style_tags( $html ) {
 		return preg_replace( '|<style(.*)>(.*)</style>|isU', '', $html );
 	}
 
@@ -749,7 +744,7 @@ class CssToInlineStyles {
 	 *
 	 * @return int
 	 */
-	private static function sortOnSpecifity( $e1, $e2 ) {
+	private static function sort_on_specificity( $e1, $e2 ) {
 		// validate.
 		if ( ! isset( $e1['specifity'] ) || ! isset( $e2['specifity'] ) ) {
 			return 0;

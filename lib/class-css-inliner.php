@@ -61,8 +61,8 @@ class CSS_Inliner {
 	 * @return false|string
 	 */
 	public function convert() {
-		$this->css_to_inline_styles->setHTML( $this->html );
-		$this->css_to_inline_styles->setCSS( $this->css );
+		$this->css_to_inline_styles->set_html( $this->html );
+		$this->css_to_inline_styles->set_css( $this->css );
 		try {
 			$result = $this->css_to_inline_styles->convert();
 		} catch ( Exception $e ) {

@@ -20,28 +20,31 @@ namespace WP_Email_Essentials;
  */
 
 spl_autoload_register(
-	function( $class_name ) {
+	function ( $class_name ) {
 		global $wp_version;
-		$class_map = [];
-		$class_map[ __NAMESPACE__ .'\\Plugin' ] = __DIR__ . '/lib/class.plugin.php';
-		$class_map[ __NAMESPACE__ .'\\IP' ] = __DIR__ . '/lib/class.ip.php';
-		$class_map[ __NAMESPACE__ .'\\History' ] = __DIR__ . '/lib/class.history.php';
-		$class_map[ __NAMESPACE__ .'\\Queue' ] = __DIR__ . '/lib/class.queue.php';
-		$class_map[ __NAMESPACE__ .'\\Fake_Sender' ] = __DIR__ . '/lib/class.wpes-phpmailer.php';
-		$class_map[ __NAMESPACE__ .'\\WPES_Queue_List_Table' ] = __DIR__ . '/lib/class.wpes-queue-list-table.php';
-		$class_map[ __NAMESPACE__ .'\\CSS_Inliner' ] = __DIR__ . '/lib/class-css-inliner.php';
-		$class_map[ __NAMESPACE__ .'\\CssToInlineStyles' ] = __DIR__ . '/lib/class-csstoinlinestyles.php';
+		$n = __NAMESPACE__;
+
+		$class_map = [
+			$n . '\\Plugin'                => __DIR__ . '/lib/class.plugin.php',
+			$n . '\\IP'                    => __DIR__ . '/lib/class.ip.php',
+			$n . '\\History'               => __DIR__ . '/lib/class.history.php',
+			$n . '\\Queue'                 => __DIR__ . '/lib/class.queue.php',
+			$n . '\\Fake_Sender'           => __DIR__ . '/lib/class.wpes-phpmailer.php',
+			$n . '\\WPES_Queue_List_Table' => __DIR__ . '/lib/class.wpes-queue-list-table.php',
+			$n . '\\CSS_Inliner'           => __DIR__ . '/lib/class-css-inliner.php',
+			$n . '\\CssToInlineStyles'     => __DIR__ . '/lib/class-csstoinlinestyles.php',
+		];
 
 		/**
 		 * Depending on the WordPress version, the phpMailer object to overload is in a different file/is called differently.
 		 */
 		if ( version_compare( $wp_version, '5.4.99', '<' ) ) {
-			$class_map[ __NAMESPACE__ .'\\WPES_PHPMailer' ] = __DIR__ . '/lib/class.wpes-phpmailer.wp54.php';
+			$class_map[ $n . '\\WPES_PHPMailer' ] = __DIR__ . '/lib/class.wpes-phpmailer.wp54.php';
 		} else {
-			$class_map[ __NAMESPACE__ .'\\WPES_PHPMailer' ] = __DIR__ . '/lib/class.wpes-phpmailer.wp55.php';
+			$class_map[ $n . '\\WPES_PHPMailer' ] = __DIR__ . '/lib/class.wpes-phpmailer.wp55.php';
 		}
 
-		if ( !empty( $class_map[ $class_name ]) && is_file( $class_map[ $class_name ]) ) {
+		if ( ! empty( $class_map[ $class_name ] ) && is_file( $class_map[ $class_name ] ) ) {
 			require_once $class_map[ $class_name ];
 		}
 	}
