@@ -14,6 +14,13 @@ use \Exception;
  */
 class Plugin {
 	/**
+	 * The plugin slug.
+	 *
+	 * @const string
+	 */
+	const SLUG = 'wp-email-essentials/wp-email-essentials.php';
+
+	/**
 	 * Holds a message to show in the admin panel.
 	 *
 	 * @var string
@@ -151,9 +158,29 @@ class Plugin {
 		History::instance();
 
 		/**
-		 * This section enables mail_queue, which is not yet finished
+		 * This line enables mail_queue, which is not yet finished
 		 * Queue::instance();
 		 */
+
+		add_filter( 'plugin_action_links', [ self::class, 'plugin_actions' ], 10, 2 );
+	}
+
+	/**
+	 * Implementation of filter plugin_action_links.
+	 *
+	 * @param string[] $links A list of links (HTML) shown at the plugin row.
+	 * @param string   $file  The plugin dir relative to wp-content/plugins.
+	 *
+	 * @return string[]
+	 */
+	public static function plugin_actions( $links, $file ) {
+		if ( self::SLUG === $file && function_exists( 'admin_url' ) ) {
+			// phpcs:ignore WordPress.WP.I18n.MissingArgDomain -- we want to use the WordPress default translation here.
+			$settings_link = '<a href="' . admin_url( 'admin.php?page=wp-email-essentials' ) . '">' . _x( 'Settings', 'translators: ignore this.' ) . '</a>';
+			array_unshift( $links, $settings_link ); // before other links.
+		}
+
+		return $links;
 	}
 
 	/**
@@ -1198,17 +1225,19 @@ class Plugin {
 			'smtp'                 => false,
 			'from_email'           => get_bloginfo( 'admin_email' ),
 			'from_name'            => self::get_hostname_by_blogurl(),
-			'is_html'              => false,
-			'alt_body'             => false,
-			'css_inliner'          => false,
+			'is_html'              => true,
+			'alt_body'             => true,
+			'css_inliner'          => true,
 			'enable_smime'         => false,
 			'enable_dkim'          => false,
 			'spf_lookup_enabled'   => false,
 			'errors_to'            => get_bloginfo( 'admin_email' ),
 			'content_precode'      => false,
-			'do_shortcodes'        => false,
+			'SingleTo'             => true,
+			'do_shortcodes'        => true,
 			'enable_history'       => false,
 			'make_from_valid_when' => 'when_sender_invalid',
+			'make_from_valid'      => 'default',
 		];
 
 		$defaults = apply_filters( 'wpes_defaults', $defaults );
@@ -1300,6 +1329,26 @@ class Plugin {
 		$settings['make_from_valid_when'] = array_key_exists( 'make_from_valid_when', $values ) && $values['make_from_valid_when'] ? $values['make_from_valid_when'] : 'when_sender_invalid';
 		$settings['errors_to']            = array_key_exists( 'errors_to', $values ) && $values['errors_to'] ? $values['errors_to'] : '';
 		update_option( 'wp-email-essentials', $settings );
+	}
+
+	/**
+	 * Update config from Migrations ONLY.
+	 *
+	 * @access RESTRICTED: Only allowed to be called internally, do not call this unless you know what you are doing.
+	 *
+	 * @param array $values New values.
+	 */
+	public static function update_config( $values ) {
+		// Check referer ;).
+		$trace  = debug_backtrace(); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_debug_backtrace
+		$caller = $trace[1];
+		if (
+			'class.migrations.php' === basename( $caller['file'] ) &&
+			'migrate_from_' === substr( $caller['function'], 0, 13 ) &&
+			Migrations::class === $caller['class']
+		) {
+			return self::set_config( $values );
+		}
 	}
 
 	/**

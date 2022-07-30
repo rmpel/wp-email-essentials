@@ -26,6 +26,7 @@ spl_autoload_register(
 
 		$class_map = [
 			$n . '\\Plugin'                => __DIR__ . '/lib/class.plugin.php',
+			$n . '\\Migrations'            => __DIR__ . '/lib/class.migrations.php',
 			$n . '\\IP'                    => __DIR__ . '/lib/class.ip.php',
 			$n . '\\History'               => __DIR__ . '/lib/class.history.php',
 			$n . '\\Queue'                 => __DIR__ . '/lib/class.queue.php',
@@ -51,3 +52,5 @@ spl_autoload_register(
 );
 
 new Plugin();
+
+register_activation_hook( __FILE__, [ Migrations::class, 'plugin_activation_hook' ] );
