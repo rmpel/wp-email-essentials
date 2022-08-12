@@ -61,6 +61,9 @@ class Plugin {
 	public static function plugin_data() {
 		static $plugin_data;
 		if ( ! $plugin_data ) {
+			if ( ! function_exists( 'get_plugin_data' ) ) {
+				require_once ABSPATH . '/wp-admin/includes/plugin.php';
+			}
 			$plugin_data = get_plugin_data( __DIR__ . '/../wp-email-essentials.php' );
 		}
 
@@ -2575,7 +2578,6 @@ Item 2
 				- <?php print esc_html( $title_subtitle ); ?>
 			<?php } ?>
 		</h2>
-		<hr/>
 		<?php
 	}
 }
