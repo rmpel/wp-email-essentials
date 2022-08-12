@@ -25,15 +25,16 @@ spl_autoload_register(
 		$n = __NAMESPACE__;
 
 		$class_map = [
-			$n . '\\Plugin'                => __DIR__ . '/lib/class.plugin.php',
-			$n . '\\Migrations'            => __DIR__ . '/lib/class.migrations.php',
-			$n . '\\IP'                    => __DIR__ . '/lib/class.ip.php',
-			$n . '\\History'               => __DIR__ . '/lib/class.history.php',
-			$n . '\\Queue'                 => __DIR__ . '/lib/class.queue.php',
-			$n . '\\Fake_Sender'           => __DIR__ . '/lib/class.wpes-phpmailer.php',
-			$n . '\\WPES_Queue_List_Table' => __DIR__ . '/lib/class.wpes-queue-list-table.php',
-			$n . '\\CSS_Inliner'           => __DIR__ . '/lib/class-css-inliner.php',
-			$n . '\\CssToInlineStyles'     => __DIR__ . '/lib/class-csstoinlinestyles.php',
+			$n . '\\Plugin'                    => __DIR__ . '/lib/class.plugin.php',
+			$n . '\\Migrations'                => __DIR__ . '/lib/class.migrations.php',
+			$n . '\\IP'                        => __DIR__ . '/lib/class.ip.php',
+			$n . '\\History'                   => __DIR__ . '/lib/class.history.php',
+			$n . '\\Queue'                     => __DIR__ . '/lib/class.queue.php',
+			$n . '\\Fake_Sender'               => __DIR__ . '/lib/class.wpes-phpmailer.php',
+			$n . '\\WPES_Queue_List_Table'     => __DIR__ . '/lib/class.wpes-queue-list-table.php',
+			$n . '\\CSS_Inliner'               => __DIR__ . '/lib/class-css-inliner.php',
+			$n . '\\CssToInlineStyles'         => __DIR__ . '/lib/class-csstoinlinestyles.php',
+			$n . '\\GutenkitCustomizerSupport' => __DIR__ . '/lib/class.gutenkit-customizer.php',
 		];
 
 		/**

@@ -53,6 +53,11 @@ class Plugin {
 		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
 
 		self::init();
+
+		$template = get_option('template');
+		if (preg_match('/gutenkit-/', $template)) {
+			GutenkitCustomizerSupport::instance();
+		}
 	}
 
 	/**
