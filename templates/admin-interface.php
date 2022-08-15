@@ -74,6 +74,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 					'how-to-validate-sender'              => _x( 'How to validate sender?', 'Item in jump-to list', 'wpes' ),
 					'what-to-do-in-case-sender-not-valid' => _x( 'What to do in case the sender is not valid for this domain?', 'Item in jump-to list', 'wpes' ),
 					'email-history'                       => _x( 'E-mail History', 'Item in jump-to list', 'wpes' ),
+					'email-queue'                         => _x( 'E-mail Throttling', 'Item in jump-to list', 'wpes' ),
 					'email-settings'                      => _x( 'E-mail Settings', 'Item in jump-to list', 'wpes' ),
 					'email-content'                       => _x( 'E-mail content', 'Item in jump-to list', 'wpes' ),
 					'content-charset-recoding'            => _x( 'Content charset re-coding', 'Item in jump-to list', 'wpes' ),
@@ -138,8 +139,9 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 						<?php
 						if ( $wpes_config['spf_lookup_enabled'] ) {
 							// SPF match.
-							?>
-							<?php $result = Plugin::i_am_allowed_to_send_in_name_of( $wpes_config['from_email'] ) ; if ( ! $result ) { ?>
+							$wpes_spf_result = Plugin::i_am_allowed_to_send_in_name_of( $wpes_config['from_email'] );
+							if ( ! $wpes_spf_result ) {
+								?>
 								<div class="wpes-notice--error">
 									<strong class="title">
 										<?php print wp_kses_post( __( 'SPF Records are checked', 'wpes' ) ); ?>
@@ -208,7 +210,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 								</strong>
 								<p>
 									<code>
-										<?php print wp_kses_post( $result ); ?>
+										<?php print wp_kses_post( $wpes_spf_result ); ?>
 									</code>
 								</p>
 							</div>
@@ -523,7 +525,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 						</label>
 					</div>
 
-					<div class="wpes-notice--error on-enable_history">
+					<div class="wpes-notice--warning on-enable_history">
 						<?php print wp_kses_post( __( '<strong class="title">Warning</strong> Storing e-mails in your database is a BAD idea and illegal in most countries. Use this for DEBUGGING only!', 'wpes' ) ); ?>
 						<br/>
 						<?php print wp_kses_post( __( 'Enabling the history feature will also add a tracker to all outgoing e-mails to check receipt.', 'wpes' ) ); ?>
@@ -532,6 +534,38 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 						<br/>
 						<strong class="warning">
 							<?php print wp_kses_post( __( 'If you insist on storing e-mails, please note that you need to implement the appropriate protocols for compliance with GDPR. The responsibility lies with the owner of the website, not the creator or hosting company.', 'wpes' ) ); ?>
+						</strong>
+					</div>
+				</div>
+			</div>
+
+			<div id="email-queue" class="postbox">
+				<div class="postbox-header">
+					<h2>
+						<?php print wp_kses_post( __( 'E-mail Throttling', 'wpes' ) ); ?>
+					</h2>
+				</div>
+				<div class="inside">
+					<div class="wpes-radio-list">
+						<input
+							<?php checked( $wpes_config['enable_queue'] ); ?>
+							type="checkbox" name="settings[enable_queue]"
+							value="1"
+							id="enable_queue"/>
+						<label for="enable_queue">
+							<?php print wp_kses_post( __( 'Enable E-mail Throttling', 'wpes' ) ); ?>
+						</label>
+					</div>
+
+					<div class="wpes-notice--warning on-enable_queue">
+						<?php print wp_kses_post( __( 'Enabling the throttling feature will prevent sending large amounts of e-mails in quick succession, for example a spam-run.', 'wpes' ) ); ?>
+						<br/>
+						<?php print wp_kses_post( __( 'Once activated, when more than 25 emails are sent within a second from the same IP-address, all other emails will be held until released.', 'wpes' ) ); ?>
+						<br/>
+						<?php print wp_kses_post( __( 'E-mails will be sent in batches of 25 per minute, the trigger is a hit on the website, the admin panel or the cron (wp-cron.php).', 'wpes' ) ); ?>
+						<br/>
+						<strong class="warning">
+							<?php print wp_kses_post( __( 'This feature is new and therefore needs to be considered experimental. If you have feedback, please send to <code>remon+wpes@acato.nl</code>. Thank you.', 'wpes' ) ); ?>
 						</strong>
 					</div>
 				</div>
@@ -989,8 +1023,9 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 					</h2>
 				</div>
 				<div class="inside">
-					<iframe class="email-preview"
-					        src="<?php print esc_attr( add_query_arg( 'iframe', 'content' ) ); ?>"></iframe>
+					<iframe
+						class="email-preview"
+						src="<?php print esc_attr( add_query_arg( 'iframe', 'content' ) ); ?>"></iframe>
 				</div>
 			</div>
 		</div>

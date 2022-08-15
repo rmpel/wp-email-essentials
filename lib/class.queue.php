@@ -23,12 +23,12 @@ class Queue {
 	 * @return Queue
 	 */
 	public static function instance() {
-		static $me;
-		if ( ! $me ) {
-			$me = new self();
+		static $instance;
+		if ( ! $instance ) {
+			$instance = new static();
 		}
 
-		return $me;
+		return $instance;
 	}
 
 	/**
@@ -59,18 +59,27 @@ class Queue {
 			update_option( 'wpes_queue_rev', $hash );
 		}
 
-		// queue handler.
-		add_filter( 'wp_mail', [ self::class, 'wp_mail' ], PHP_INT_MAX - 2000 );
+		$enabled = Plugin::get_config();
+		$enabled = $enabled['enable_queue'];
+
+		// Only queue more if enabled.
+
+		if ( $enabled ) {
+			// queue handler.
+			add_filter( 'wp_mail', [ self::class, 'wp_mail' ], PHP_INT_MAX - 2000 );
+
+			// queue display.
+			add_action( 'admin_menu', [ self::class, 'admin_menu' ] );
+		}
+
+		// But always try to send a batch, in case the Queue was deactivated recently.
 
 		// maybe send a batch.
 		add_action( 'wp_footer', [ self::class, 'maybe_send_batch' ] );
 		add_action( 'admin_footer', [ self::class, 'maybe_send_batch' ] );
 		if ( defined( 'DOING_CRON' ) && DOING_CRON ) {
-			self::maybe_send_batch();
+			add_action( 'init', [ self::class, 'maybe_send_batch' ] );
 		}
-
-		// queue display.
-		add_action( 'admin_menu', [ self::class, 'admin_menu' ] );
 	}
 
 	/**
@@ -182,14 +191,47 @@ class Queue {
 		global $wpdb;
 		$ip = $me->server_remote_addr();
 
-		$q                   = $wpdb->prepare( "SELECT count(id) FROM {$wpdb->prefix}wpes_queue WHERE ip = %s AND dt >= %s", $ip, gmdate( 'Y-m-d H:i:s', time() - 5 ) );
+		$q                   = $wpdb->prepare( "SELECT count(id) FROM {$wpdb->prefix}wpes_queue WHERE ip = %s AND dt >= %s", $ip, gmdate( 'Y-m-d H:i:s', time() - self::get_time_window() ) );
 		$mails_recently_sent = $wpdb->get_var( $q ); // @phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
-		if ( $mails_recently_sent > 10 ) {
+		if ( $mails_recently_sent > self::get_max_count_per_time_window() ) {
 			return apply_filters( 'wpes_mail_is_throttled', true, $ip, $mails_recently_sent );
 		}
 
 		return false;
+	}
+
+	/**
+	 * Get the time window to count the number of sent e-mails in. A larger window makes a stricter system.
+	 *
+	 * @return mixed|null
+	 */
+	public static function get_time_window() {
+		$window = (int) apply_filters( 'wpes_mail_throttle_time_window', 5 );
+
+		return $window > 0 ? $window : 5;
+	}
+
+	/**
+	 * Get the max amount of e-mails allowed to be sent within the time window (from the same IP). A smaller amount makes a stricter system.
+	 *
+	 * @return int
+	 */
+	public static function get_max_count_per_time_window() {
+		$max = (int) apply_filters( 'wpes_mail_throttle_max_count_per_time_window', 10 );
+
+		return $max > 0 ? $max : 10;
+	}
+
+	/**
+	 * Get the amount of e-mails sent in a single batch.
+	 *
+	 * @return int
+	 */
+	public static function get_batch_size() {
+		$max = (int) apply_filters( 'wpes_mail_throttle_batch_size', 25 );
+
+		return $max > 0 ? $max : 25;
 	}
 
 	/**
@@ -389,7 +431,7 @@ class Queue {
 		$me = self::instance();
 
 		global $wpdb;
-		$ids = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}wpes_queue WHERE status = %d ORDER BY dt ASC LIMIT 25", self::FRESH ) );
+		$ids = $wpdb->get_col( $wpdb->prepare( "SELECT id FROM {$wpdb->prefix}wpes_queue WHERE status = %d ORDER BY dt ASC LIMIT %d", self::FRESH, self::get_batch_size() ) );
 		foreach ( $ids as $id ) {
 			self::send_now( $id );
 		}
@@ -463,8 +505,8 @@ class Queue {
 	public static function admin_menu() {
 		add_submenu_page(
 			'wp-email-essentials',
-			Plugin::plugin_data()['Name'] . ' - ' . __( 'E-mail Queue', 'wpes' ),
-			__( 'E-mail Queue', 'wpes' ),
+			Plugin::plugin_data()['Name'] . ' - ' . __( 'E-mail Throttling', 'wpes' ),
+			__( 'E-mail Throttling', 'wpes' ),
 			'manage_options',
 			'wpes-queue',
 			[ self::class, 'admin_interface' ]

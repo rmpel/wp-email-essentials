@@ -50,6 +50,7 @@ class Plugin {
 	 * Constructor.
 	 */
 	public function __construct() {
+		self::$message = get_transient( 'wpes_message' );
 		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
 
 		self::init();
@@ -139,7 +140,7 @@ class Plugin {
 
 		add_filter( 'wp_mail', [ self::class, 'action_wp_mail' ], PHP_INT_MAX - 1000 );
 
-		add_action( 'admin_menu', [ self::class, 'admin_menu' ], 10 );
+		add_action( 'admin_menu', [ self::class, 'admin_menu' ], 9 );
 
 		add_action( 'admin_footer', [ self::class, 'maybe_inject_admin_settings' ] );
 
@@ -162,14 +163,12 @@ class Plugin {
 
 		self::mail_key_registrations();
 
+		// Maybe process settings.
+		add_action( 'init', [ self::class, 'save_admin_settings' ] );
+
 		// Load add-ons.
-
 		History::instance();
-
-		/**
-		 * This line enables mail_queue, which is not yet finished
-		 * Queue::instance();
-		 */
+		Queue::instance();
 
 		add_filter( 'plugin_action_links', [ self::class, 'plugin_actions' ], 10, 2 );
 	}
@@ -764,7 +763,8 @@ class Plugin {
 							return $section;
 						}
 					} elseif ( preg_match( '/include:(.+)$/', $section, $include ) ) {
-						if ( $result = self::validate_ip_listed_in_spf( $include[1], $ip ) ) {
+						$result = self::validate_ip_listed_in_spf( $include[1], $ip );
+						if ( $result ) {
 							return $section . ' > ' . $result;
 						}
 					}
@@ -1245,6 +1245,7 @@ class Plugin {
 			'SingleTo'             => true,
 			'do_shortcodes'        => true,
 			'enable_history'       => false,
+			'enable_queue'         => false,
 			'make_from_valid_when' => 'when_sender_invalid',
 			'make_from_valid'      => 'default',
 		];
@@ -1329,6 +1330,7 @@ class Plugin {
 		$settings['SingleTo']           = array_key_exists( 'SingleTo', $values ) && $values['SingleTo'] ? true : false;
 		$settings['spf_lookup_enabled'] = array_key_exists( 'spf_lookup_enabled', $values ) && $values['spf_lookup_enabled'] ? true : false;
 		$settings['enable_history']     = array_key_exists( 'enable_history', $values ) && $values['enable_history'] ? true : false;
+		$settings['enable_queue']       = array_key_exists( 'enable_queue', $values ) && $values['enable_queue'] ? true : false;
 
 		$settings['enable_smime']         = array_key_exists( 'enable_smime', $values ) && $values['enable_smime'] ? '1' : '0';
 		$settings['certfolder']           = array_key_exists( 'certfolder', $values ) && $values['certfolder'] ? $values['certfolder'] : '';
@@ -1489,18 +1491,9 @@ class Plugin {
 	}
 
 	/**
-	 * Callback to the admin_menu action.
+	 * Process settings when POSTed.
 	 */
-	public static function admin_menu() {
-		add_menu_page(
-			self::plugin_data()['Name'],
-			self::plugin_data()['Name'],
-			'manage_options',
-			'wp-email-essentials',
-			[ self::class, 'admin_interface' ],
-			'dashicons-email-alt'
-		);
-
+	public static function save_admin_settings() {
 		/**
 		 * Save options for "Settings" pane..
 		 */
@@ -1515,8 +1508,9 @@ class Plugin {
 						$_POST['settings']['make_from_valid'] = 'noreply';
 					}
 					self::set_config( $_POST['settings'] );
-					self::$message = __( 'Settings saved.', 'wpes' );
-					break;
+					set_transient( 'wpes_message', __( 'Settings saved.', 'wpes' ), 5 );
+					wp_safe_redirect( remove_query_arg( 'wpes-nonce' ) );
+					exit;
 				case __( 'Print debug output of sample mail', 'wpes' ):
 				case __( 'Send sample mail', 'wpes' ):
 					ob_start();
@@ -1533,7 +1527,7 @@ class Plugin {
 						$wpes_admin,
 						self::dummy_subject(),
 						self::dummy_content(),
-						[ 'X-Priority: 1' ]
+						[ 'X-Priority: 5' ]
 					);
 					self::$debug = ob_get_clean();
 					if ( $result ) {
@@ -1571,18 +1565,6 @@ class Plugin {
 
 			exit;
 		}
-
-		add_submenu_page(
-			'wp-email-essentials',
-			self::plugin_data()['Name'] . ' - ' . __( 'Alternative Admins', 'wpes' ),
-			__( 'Alternative Admins', 'wpes' ),
-			'manage_options',
-			'wpes-admins',
-			[
-				self::class,
-				'admin_interface_admins',
-			]
-		);
 
 		/**
 		 * Save options for "alternative admins" panel
@@ -1625,18 +1607,6 @@ class Plugin {
 			}
 		}
 
-		add_submenu_page(
-			'wp-email-essentials',
-			self::plugin_data()['Name'] . ' - ' . __( 'Alternative Moderators', 'wpes' ),
-			__( 'Alternative Moderators', 'wpes' ),
-			'manage_options',
-			'wpes-moderators',
-			[
-				self::class,
-				'admin_interface_moderators',
-			]
-		);
-
 		/**
 		 * Save options for "Moderators" panel.
 		 */
@@ -1671,6 +1641,44 @@ class Plugin {
 					break;
 			}
 		}
+	}
+
+	/**
+	 * Callback to the admin_menu action.
+	 */
+	public static function admin_menu() {
+		add_menu_page(
+			self::plugin_data()['Name'],
+			self::plugin_data()['Name'],
+			'manage_options',
+			'wp-email-essentials',
+			[ self::class, 'admin_interface' ],
+			'dashicons-email-alt'
+		);
+
+		add_submenu_page(
+			'wp-email-essentials',
+			self::plugin_data()['Name'] . ' - ' . __( 'Alternative Admins', 'wpes' ),
+			__( 'Alternative Admins', 'wpes' ),
+			'manage_options',
+			'wpes-admins',
+			[
+				self::class,
+				'admin_interface_admins',
+			]
+		);
+
+		add_submenu_page(
+			'wp-email-essentials',
+			self::plugin_data()['Name'] . ' - ' . __( 'Alternative Moderators', 'wpes' ),
+			__( 'Alternative Moderators', 'wpes' ),
+			'manage_options',
+			'wpes-moderators',
+			[
+				self::class,
+				'admin_interface_moderators',
+			]
+		);
 	}
 
 	/**
