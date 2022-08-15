@@ -707,13 +707,13 @@ class Plugin {
 						if ( IP::is_4( $ip ) ) {
 							$m_ip = self::dns_get_record( $_domain, DNS_A, true );
 							if ( IP::a_4_is_4( $m_ip, $ip ) ) {
-								return true;
+								return $section;
 							}
 						}
 						if ( IP::is_6( $ip ) ) {
 							$m_ip = self::dns_get_record( $_domain, DNS_AAAA, true );
 							if ( IP::a_6_is_6( $m_ip, $ip ) ) {
-								return true;
+								return $section;
 							}
 						}
 					} elseif ( 'mx' === $section ) {
@@ -727,7 +727,7 @@ class Plugin {
 									$new_target = $target;
 								}
 								if ( IP::a_4_is_4( $ip, $new_target ) ) {
-									return true;
+									return $section;
 								}
 							}
 							if ( IP::is_6( $ip ) ) {
@@ -737,29 +737,29 @@ class Plugin {
 									$new_target = $target;
 								}
 								if ( IP::a_6_is_6( $ip, $new_target ) ) {
-									return true;
+									return $section;
 								}
 							}
 						}
 					} elseif ( preg_match( '/ip4:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$/', $section, $m_ip ) ) {
 						if ( IP::a_4_is_4( $ip, $m_ip[1] ) ) {
-							return true;
+							return $section;
 						}
 					} elseif ( preg_match( '/ip4:([0-9.]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
 						if ( IP::ip4_match_cidr( $ip, $ip_cidr[1] ) ) {
-							return true;
+							return $section;
 						}
 					} elseif ( preg_match( '/ip6:([0-9A-Fa-f:]+)$/', $section, $m_ip ) ) {
 						if ( IP::is_6( $m_ip[1] ) && IP::a_6_is_6( $ip, $m_ip[1] ) ) {
-							return true;
+							return $section;
 						}
 					} elseif ( preg_match( '/ip6:([0-9A-Fa-f:]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
 						if ( IP::ip6_match_cidr( $ip, $ip_cidr[1] ) ) {
-							return true;
+							return $section;
 						}
 					} elseif ( preg_match( '/include:(.+)$/', $section, $include ) ) {
-						if ( self::validate_ip_listed_in_spf( $include[1], $ip ) ) {
-							return true;
+						if ( $result = self::validate_ip_listed_in_spf( $include[1], $ip ) ) {
+							return $section .' > ' . $result;
 						}
 					}
 				}

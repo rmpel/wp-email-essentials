@@ -139,7 +139,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 						if ( $wpes_config['spf_lookup_enabled'] ) {
 							// SPF match.
 							?>
-							<?php if ( ! Plugin::i_am_allowed_to_send_in_name_of( $wpes_config['from_email'] ) ) { ?>
+							<?php $result = Plugin::i_am_allowed_to_send_in_name_of( $wpes_config['from_email'] ) ; if ( ! $result ) { ?>
 								<div class="wpes-notice--error">
 									<strong class="title">
 										<?php print wp_kses_post( __( 'SPF Records are checked', 'wpes' ) ); ?>
@@ -173,6 +173,15 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 							<?php } else { ?>
 								<div class="wpes-notice--info">
 									<strong class="title">
+										<?php print wp_kses_post( __( 'SPF Records are checked', 'wpes' ) ); ?>
+									</strong>
+
+									<p>
+										<?php print wp_kses_post( __( 'You are allowed to send mail with this domain.', 'wpes' ) ); ?>
+									</p>
+								</div>
+								<div class="wpes-notice--info">
+									<strong class="title">
 										<?php print wp_kses_post( __( 'SPF Record', 'wpes' ) ); ?>
 									</strong>
 
@@ -184,6 +193,26 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 								</div>
 								<?php
 							}
+							?>
+							<div class="wpes-notice--info">
+								<strong class="title">
+									<?php print wp_kses_post( __( 'Sending IP', 'wpes' ) ); ?>
+								</strong>
+								<p>
+									<code>
+										<?php print wp_kses_post( Plugin::get_sending_ip() ); ?>
+									</code>
+								</p>
+								<strong class="title">
+									<?php print wp_kses_post( __( 'Matches', 'wpes' ) ); ?>
+								</strong>
+								<p>
+									<code>
+										<?php print wp_kses_post( $result ); ?>
+									</code>
+								</p>
+							</div>
+							<?php
 						} else {
 							// domain match.
 							if ( ! Plugin::i_am_allowed_to_send_in_name_of( $wpes_config['from_email'] ) ) {
