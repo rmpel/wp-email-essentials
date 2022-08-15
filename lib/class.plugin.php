@@ -61,10 +61,16 @@ class Plugin {
 	public static function plugin_data() {
 		static $plugin_data;
 		if ( ! $plugin_data ) {
-			if ( ! function_exists( 'get_plugin_data' ) ) {
-				require_once ABSPATH . '/wp-admin/includes/plugin.php';
+			if ( ! is_admin() ) {
+				$plugin_data = get_transient( 'wpes_plugin_data' );
 			}
-			$plugin_data = get_plugin_data( __DIR__ . '/../wp-email-essentials.php' );
+			if ( ! $plugin_data ) {
+				if ( ! function_exists( 'get_plugin_data' ) ) {
+					require_once ABSPATH . '/wp-admin/includes/plugin.php';
+				}
+				$plugin_data = get_plugin_data( __DIR__ . '/../wp-email-essentials.php' );
+			}
+			set_transient( 'wpes_plugin_data', $plugin_data, WEEK_IN_SECONDS );
 		}
 
 		return $plugin_data;
