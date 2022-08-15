@@ -803,7 +803,7 @@ class Plugin {
 			if ( DNS_A === $filter ) {
 				return $transient[0]['ip'];
 			}
-			if ( DNS_A6 === $filter ) {
+			if ( DNS_A6 === $filter || DNS_AAAA === $filter ) {
 				return $transient[0]['ipv6'];
 			}
 		}
