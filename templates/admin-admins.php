@@ -54,7 +54,7 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 							<th><?php esc_html_e( 'Send to', 'wpes' ); ?></th>
 						</tr>
 						<?php
-						foreach ( $wpes_mail_keys as $wpes_mail_key ) {
+						foreach ( $wpes_mail_keys as $wpes_mail_key => $wpes_mail_key_description ) {
 							if ( ! isset( $wpes_config[ $wpes_mail_key ] ) ) {
 								$wpes_config[ $wpes_mail_key ] = '';
 							}
@@ -62,7 +62,7 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 							<tr>
 								<td>
 									<label
-											for="key-<?php print esc_attr( $wpes_mail_key ); ?>"><?php print esc_html( $wpes_mail_key ); ?></label>
+											for="key-<?php print esc_attr( $wpes_mail_key ); ?>"><?php print esc_html( $wpes_mail_key_description ?: $wpes_mail_key ); ?></label>
 								</td>
 								<td>
 									<input

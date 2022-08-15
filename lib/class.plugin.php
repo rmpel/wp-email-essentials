@@ -759,7 +759,7 @@ class Plugin {
 						}
 					} elseif ( preg_match( '/include:(.+)$/', $section, $include ) ) {
 						if ( $result = self::validate_ip_listed_in_spf( $include[1], $ip ) ) {
-							return $section .' > ' . $result;
+							return $section . ' > ' . $result;
 						}
 					}
 				}
@@ -2208,18 +2208,18 @@ Item 2
 	public static function mail_key_database() {
 		// supported;.
 		$wp_filters = [
-			'automatic_updates_debug_email',
-			'auto_core_update_email',
-			'recovery_mode_email',
+			'automatic_updates_debug_email' => _x( 'E-mail after automatic update (debug)', 'mail key', 'wpes' ),
+			'auto_core_update_email'        => _x( 'E-mail after automatic update', 'mail key', 'wpes' ),
+			'recovery_mode_email'           => _x( 'E-mail after website crash', 'mail key', 'wpes' ),
 		];
 
 		// unsupported until added, @see wp_mail_key.patch, matched by subject, @see self::mail_subject_database.
 		$unsupported_wp_filters = [
-			'new_user_registration_admin_email',
-			'password_lost_changed_email',
-			'password_reset_email',
-			'password_changed_email',
-			'wpes_email_test',
+			'new_user_registration_admin_email' => _x( 'E-mail after new user registered', 'mail key', 'wpes' ),
+			'password_lost_changed_email'       => _x( 'E-mail notification after user requests password reset', 'mail key', 'wpes' ),
+			'password_reset_email'              => _x( 'E-mail notification after user reset their password', 'mail key', 'wpes' ),
+			'password_changed_email'            => _x( 'E-mail notification after user changed their password', 'mail key', 'wpes' ),
+			'wpes_email_test'                   => _x( 'E-Mail test from WP Email Essentials', 'mail key', 'wpes' ),
 		];
 
 		return array_merge( $wp_filters, $unsupported_wp_filters );
@@ -2284,7 +2284,7 @@ Item 2
 	 * actions and filters are equal to WordPress, but handled with or without return values.
 	 */
 	public static function mail_key_registrations() {
-		foreach ( self::mail_key_database() as $filter_name ) {
+		foreach ( self::mail_key_database() as $filter_name => $filter_description ) {
 			add_filter( $filter_name, [ self::class, 'now_sending___' ] );
 		}
 	}
