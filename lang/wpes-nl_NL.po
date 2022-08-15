@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WP Email Essentials\n"
-"POT-Creation-Date: 2022-08-15 13:20+0200\n"
-"PO-Revision-Date: 2022-08-15 13:20+0200\n"
+"POT-Creation-Date: 2022-08-15 15:17+0200\n"
+"PO-Revision-Date: 2022-08-15 15:21+0200\n"
 "Last-Translator: Remon Pel <remon@acato.nl>\n"
 "Language-Team: Clearsite Webdesigners <support@clearsite.nl>\n"
 "Language: nl_NL\n"
@@ -173,6 +173,46 @@ msgstr ""
 "Extreem onveilig. Kies a.u.b. een andere locatie welke niet binnen de "
 "website-basis %s ligt."
 
+#: lib/class.plugin.php:2211
+msgctxt "mail key"
+msgid "E-mail after automatic update (debug)"
+msgstr "E-mail na automatische update (debug)"
+
+#: lib/class.plugin.php:2212
+msgctxt "mail key"
+msgid "E-mail after automatic update"
+msgstr "E-mail na automatische update"
+
+#: lib/class.plugin.php:2213
+msgctxt "mail key"
+msgid "E-mail after website crash"
+msgstr "E-mail wanneer de website crasht"
+
+#: lib/class.plugin.php:2218
+msgctxt "mail key"
+msgid "E-mail after new user registered"
+msgstr "E-mail wanneer een nieuwe gebruiker is geregistreerd"
+
+#: lib/class.plugin.php:2219
+msgctxt "mail key"
+msgid "E-mail notification after user requests password reset"
+msgstr "E-mail notificatie nadat een gebruiker een wachtwoord reset vraagt"
+
+#: lib/class.plugin.php:2220
+msgctxt "mail key"
+msgid "E-mail notification after user reset their password"
+msgstr "E-mail notificatie nadat een gebruiker hun wachtwoord heeft gereset"
+
+#: lib/class.plugin.php:2221
+msgctxt "mail key"
+msgid "E-mail notification after user changed their password"
+msgstr "E-mail notificatie nadat een gebruiker hun wachtwoord veranderd heeft"
+
+#: lib/class.plugin.php:2222
+msgctxt "mail key"
+msgid "E-Mail test from WP Email Essentials"
+msgstr "E-mail test vanuit WP Email Essentials"
+
 #: lib/class.plugin.php:2244
 #, php-format
 msgctxt "translators: ignore this."
@@ -313,30 +353,46 @@ msgid "Uh uh uh! You didn't say the magic word!"
 msgstr "Sorry, je mag hier niet komen!"
 
 #: templates/admin-admins.php:47
-msgid "Outgoing emails"
-msgstr "Uitgaande emails"
+#, php-format
+msgid "Outgoing emails to the site-administrator ( %s )"
+msgstr "Uitgaande emails aan de website administrator ( %s )"
 
 #: templates/admin-admins.php:53
-msgid "Mail Key"
-msgstr "E-mail sleutel"
+msgid ""
+"E-mails to the site administrator are often better off with a different "
+"person or department."
+msgstr ""
+"E-mails aan de website administrator zijn vaak in betere handen bij een "
+"ander persoon of afdeling."
 
-#: templates/admin-admins.php:54 templates/admin-admins.php:105
-#: templates/admin-moderators.php:87
-msgid "Send to"
-msgstr "Verstuur aan"
+#: templates/admin-admins.php:54
+msgid ""
+"Here you can assign a different recipient for a specific set of e-mails sent "
+"by WordPress to the administrator."
+msgstr ""
+"Hier kun je een nieuwe ontvanger toewijzen aan een specifiek set van e-mails "
+"verzonden door WordPress aan de administrator."
 
-#: templates/admin-admins.php:85
+#: templates/admin-admins.php:61
+msgid "E-mail sent in the following situations"
+msgstr "E-mail verzonden in de volgende situaties"
+
+#: templates/admin-admins.php:62 templates/admin-admins.php:113
+msgid "Instead of the site administrator, send these e-mails to"
+msgstr "In plaats van de website administrator, verstuur deze e-mails aan"
+
+#: templates/admin-admins.php:93
 msgid "RegExp"
 msgstr "RegExp"
 
-#: templates/admin-admins.php:93
+#: templates/admin-admins.php:101
 #, php-format
 msgid "You must include the boundaries, so start with %1$s and end with %1$s."
 msgstr ""
 "Je dient de afbakening ook in te voeren, dus begin met %1$s en eindig met "
 "%1$s."
 
-#: templates/admin-admins.php:96
+#: templates/admin-admins.php:104
 #, php-format
 msgid ""
 "You can add the %1$s flag to create a case-insensitive match (like so: %2$s)."
@@ -344,7 +400,7 @@ msgstr ""
 "Je mag ook de %1$s vlag toevoegen om daarmee een hoofdletter-ongevoelige "
 "match te maken (op deze manier: %2$s)."
 
-#: templates/admin-admins.php:98
+#: templates/admin-admins.php:106
 msgid ""
 "If you are unfamiliar with regular expressions, you can ignore this section, "
 "ask for help or learn the magic and power of regular expressions yourself."
@@ -352,15 +408,17 @@ msgstr ""
 "Als je niet bekend bent met reguliere expressies; negeer deze sectie, vraag "
 "om hulp of leer jezelf de magie en kracht van reguliere expressies."
 
-#: templates/admin-admins.php:104
-msgid "RegExp matched against subject"
-msgstr "RegExp voor testen van onderwerp"
+#: templates/admin-admins.php:112
+msgid "E-mails sent with subject matching the following regular expression"
+msgstr ""
+"E-mails verzonden met onderwerpen welke matchen aan de volgende reguliere "
+"expressies"
 
-#: templates/admin-admins.php:166
+#: templates/admin-admins.php:174
 msgid "Unmatched subjects"
 msgstr "Niet-afgevangen onderwerpen"
 
-#: templates/admin-admins.php:170
+#: templates/admin-admins.php:178
 msgid ""
 "This is a list of e-mail subjects of e-mails that have been sent to the site "
 "administrator."
@@ -368,7 +426,7 @@ msgstr ""
 "Dit is een lijst van e-mail onderwerpen van e-mails verzonden aan de website "
 "administrator."
 
-#: templates/admin-admins.php:171
+#: templates/admin-admins.php:179
 msgid ""
 "You can use the table above to input regular expressions for e-mails that "
 "should have gone to an alternative e-mail address."
@@ -377,7 +435,7 @@ msgstr ""
 "matchen zodat je de e-mails in vervolg naar een andere administrator kunt "
 "sturen."
 
-#: templates/admin-admins.php:181
+#: templates/admin-admins.php:189
 msgid "There are currently no e-mail subjects that have not been matched."
 msgstr "Er zijn momenteel geen e-mail onderwerpen die niet zijn gematched."
 
@@ -1120,6 +1178,10 @@ msgstr "Deze Instelling wijzigen"
 msgid "Action"
 msgstr "Actie"
 
+#: templates/admin-moderators.php:87
+msgid "Send to"
+msgstr "Verstuur aan"
+
 #: templates/admin-moderators.php:98
 #, php-format
 msgid "default: owner of %s"
@@ -1129,6 +1191,15 @@ msgstr "standaard: eigenaar van %s"
 #, php-format
 msgid "<em>%1$s</em> to author on <em>%2$s</em> on <em>%3$s</em>"
 msgstr "<em>%1$s</em> naar de auteur vanwege <em>%2$s</em> op <em>%3$s</em>"
+
+#~ msgid "Outgoing emails"
+#~ msgstr "Uitgaande emails"
+
+#~ msgid "Mail Key"
+#~ msgstr "E-mail sleutel"
+
+#~ msgid "RegExp matched against subject"
+#~ msgstr "RegExp voor testen van onderwerp"
 
 #~| msgid "Status"
 #~ msgid "status"

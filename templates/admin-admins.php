@@ -35,8 +35,8 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 		<div class="wpes-tools">
 			<div class="wpes-tools--box">
 				<input
-						type="submit" name="op" value="<?php print esc_attr__( 'Save settings', 'wpes' ); ?>"
-						class="button-primary action"/>
+					type="submit" name="op" value="<?php print esc_attr__( 'Save settings', 'wpes' ); ?>"
+					class="button-primary action"/>
 			</div>
 		</div>
 
@@ -44,14 +44,22 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 			<div class="postbox">
 				<div class="postbox-header">
 					<h2>
-						<?php print wp_kses_post( __( 'Outgoing emails', 'wpes' ) ); ?>
+						<?php print wp_kses_post( sprintf( __( 'Outgoing emails to the site-administrator ( %s )', 'wpes' ), $wpes_wordpress_admin ) ); ?>
 					</h2>
+				</div>
+				<div class="inside">
+					<div class="wpes-notice--info">
+						<p>
+							<?php print wp_kses_post( __( 'E-mails to the site administrator are often better off with a different person or department.', 'wpes' ) ); ?>
+							<?php print wp_kses_post( __( 'Here you can assign a different recipient for a specific set of e-mails sent by WordPress to the administrator.', 'wpes' ) ); ?>
+						</p>
+					</div>
 				</div>
 				<div class="inside">
 					<table class="wpes-info-table equal">
 						<tr>
-							<th><?php esc_html_e( 'Mail Key', 'wpes' ); ?></th>
-							<th><?php esc_html_e( 'Send to', 'wpes' ); ?></th>
+							<th><?php esc_html_e( 'E-mail sent in the following situations', 'wpes' ); ?></th>
+							<th><?php esc_html_e( 'Instead of the site administrator, send these e-mails to', 'wpes' ); ?></th>
 						</tr>
 						<?php
 						foreach ( $wpes_mail_keys as $wpes_mail_key => $wpes_mail_key_description ) {
@@ -62,16 +70,16 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 							<tr>
 								<td>
 									<label
-											for="key-<?php print esc_attr( $wpes_mail_key ); ?>"><?php print esc_html( $wpes_mail_key_description ?: $wpes_mail_key ); ?></label>
+										for="key-<?php print esc_attr( $wpes_mail_key ); ?>"><?php print esc_html( $wpes_mail_key_description ?: $wpes_mail_key ); ?></label>
 								</td>
 								<td>
 									<input
-											type="text"
-											name="settings[keys][<?php print esc_attr( $wpes_mail_key ); ?>]"
-											class="widefat"
-											placeholder="<?php print esc_attr( $wpes_wordpress_admin ); ?>"
-											value="<?php print esc_attr( $wpes_config[ $wpes_mail_key ] ); ?>"
-											id="key-<?php print esc_attr( $wpes_mail_key ); ?>"/>
+										type="text"
+										name="settings[keys][<?php print esc_attr( $wpes_mail_key ); ?>]"
+										class="widefat"
+										placeholder="<?php print esc_attr( $wpes_wordpress_admin ); ?>"
+										value="<?php print esc_attr( $wpes_config[ $wpes_mail_key ] ); ?>"
+										id="key-<?php print esc_attr( $wpes_mail_key ); ?>"/>
 								</td>
 							</tr>
 						<?php } ?>
@@ -101,8 +109,8 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 
 					<table class="wpes-info-table equal">
 						<tr>
-							<th><?php esc_html_e( 'RegExp matched against subject', 'wpes' ); ?></th>
-							<th><?php esc_html_e( 'Send to', 'wpes' ); ?></th>
+							<th><?php esc_html_e( 'E-mails sent with subject matching the following regular expression', 'wpes' ); ?></th>
+							<th><?php esc_html_e( 'Instead of the site administrator, send these e-mails to', 'wpes' ); ?></th>
 						</tr>
 
 						<?php
@@ -113,17 +121,17 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 							<tr>
 								<td style="width: 50%">
 									<input
-											type="text"
-											name="settings[regexp][<?php print esc_attr( $wpes_loop_iterator_0 ); ?>][regexp]"
-											class="a-regexp widefat"
-											value="<?php print esc_attr( $wpes_regexp ); ?>"/>
+										type="text"
+										name="settings[regexp][<?php print esc_attr( $wpes_loop_iterator_0 ); ?>][regexp]"
+										class="a-regexp widefat"
+										value="<?php print esc_attr( $wpes_regexp ); ?>"/>
 								</td>
 								<td>
 									<input
-											type="text"
-											name="settings[regexp][<?php print esc_attr( $wpes_loop_iterator_0 ); ?>][key]"
-											class="widefat"
-											value="<?php print esc_attr( $wpes_mail_key ); ?>"/>
+										type="text"
+										name="settings[regexp][<?php print esc_attr( $wpes_loop_iterator_0 ); ?>][key]"
+										class="widefat"
+										value="<?php print esc_attr( $wpes_mail_key ); ?>"/>
 								</td>
 							</tr>
 							<?php
@@ -134,16 +142,16 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 							<tr>
 								<td>
 									<input
-											type="text"
-											name="settings[regexp][<?php print esc_attr( $wpes_loop_iterator_1 + $wpes_loop_iterator_0 ); ?>][regexp]"
-											class="a-regexp widefat"
-											value=""/>
+										type="text"
+										name="settings[regexp][<?php print esc_attr( $wpes_loop_iterator_1 + $wpes_loop_iterator_0 ); ?>][regexp]"
+										class="a-regexp widefat"
+										value=""/>
 								</td>
 								<td>
 									<input
-											type="text" class="widefat"
-											name="settings[regexp][<?php print esc_attr( $wpes_loop_iterator_1 + $wpes_loop_iterator_0 ); ?>][key]"
-											value=""/>
+										type="text" class="widefat"
+										name="settings[regexp][<?php print esc_attr( $wpes_loop_iterator_1 + $wpes_loop_iterator_0 ); ?>][key]"
+										value=""/>
 								</td>
 							</tr>
 						<?php } ?>
