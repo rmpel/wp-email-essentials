@@ -2578,7 +2578,6 @@ Item 2
 				- <?php print esc_html( $title_subtitle ); ?>
 			<?php } ?>
 		</h2>
-		<hr/>
 		<?php
 	}
 }

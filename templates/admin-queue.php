@@ -28,22 +28,30 @@ if ( ! current_user_can( 'manage_options' ) ) {
 	$wpes_queue_list_table = new WPES_Queue_List_Table();
 
 	?>
-	<p>
-		This is an experimental feature;
-	</p>
-	<ul>
-		<li>E-mails with high priority will be sent as usual, if you have mission-critial emails, set <code>X-Priority:
-				1</code>.
-		</li>
-		<li>Normal e-mails will be queued and sent in batches of 25 emails per minute.</li>
-		<li>If a single user (based on IP-address) sends too many e-mails in quick succession, the remainder will be
-			blocked. This it to prevent spamming. You can unblock the emails below.
-		</li>
-		<li>Stale e-mails can be resent.</li>
-	</ul>
+	<div class="wpes-notice--warning">
+		<strong class="title">
+			This is an experimental feature;
+		</strong>
+		<ul>
+			<li>
+				E-mails with high priority will be sent as usual, if you have mission-critial emails, set
+				<code>X-Priority: 1</code>.
+			</li>
+			<li>
+				Normal e-mails will be queued and sent in batches of 25 emails per minute.
+			</li>
+			<li>
+				If a single user (based on IP-address) sends too many e-mails in quick succession, the remainder will be
+				blocked. This it to prevent spamming. You can unblock the emails below.
+			</li>
+			<li>
+				Stale e-mails can be resent.
+			</li>
+		</ul>
+	</div>
 	<form
-		action="<?php print esc_attr( add_query_arg( 'wpes-action', 'form-post' ) ); ?>"
-		method="post">
+			action="<?php print esc_attr( add_query_arg( 'wpes-action', 'form-post' ) ); ?>"
+			method="post">
 		<?php
 		wp_nonce_field( 'wp-email-essentials--queue', 'wpes-nonce' );
 		$wpes_queue_list_table->process_bulk_action();
