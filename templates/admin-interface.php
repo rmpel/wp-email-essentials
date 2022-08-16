@@ -560,9 +560,9 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 					<div class="wpes-notice--warning on-enable_queue">
 						<?php print wp_kses_post( __( 'Enabling the throttling feature will prevent sending large amounts of e-mails in quick succession, for example a spam-run.', 'wpes' ) ); ?>
 						<br/>
-						<?php print wp_kses_post( __( 'Once activated, when more than 25 emails are sent within a second from the same IP-address, all other emails will be held until released.', 'wpes' ) ); ?>
+						<?php print wp_kses_post( sprintf( __( 'Once activated, when more than %d e-mails are sent within %d seconds from the same IP-address, all other e-mails will be held until released.', 'wpes' ), Queue::get_max_count_per_time_window(), Queue::get_time_window() ) ); ?>
 						<br/>
-						<?php print wp_kses_post( __( 'E-mails will be sent in batches of 25 per minute, the trigger is a hit on the website, the admin panel or the cron (wp-cron.php).', 'wpes' ) ); ?>
+						<?php print wp_kses_post( sprintf( __( 'E-mails will be sent in batches of %d per minute, the trigger is a hit on the website, the admin panel or the cron (wp-cron.php).', 'wpes' ), Queue::get_batch_size() ) ); ?>
 						<br/>
 						<strong class="warning">
 							<?php print wp_kses_post( __( 'This feature is new and therefore needs to be considered experimental. If you have feedback, please send to <code>remon+wpes@acato.nl</code>. Thank you.', 'wpes' ) ); ?>

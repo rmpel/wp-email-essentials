@@ -29,24 +29,17 @@ if ( ! current_user_can( 'manage_options' ) ) {
 
 	?>
 	<div class="wpes-notice--warning">
-		<strong class="title">
-			This is an experimental feature;
+		<strong class="warning">
+			<?php print wp_kses_post( __( 'This feature is new and therefore needs to be considered experimental. If you have feedback, please send to <code>remon+wpes@acato.nl</code>. Thank you.', 'wpes' ) ); ?>
 		</strong>
-		<ul>
-			<li>
-				E-mails with high priority will be sent as usual, if you have mission-critical e-mails, set
-				<code>X-Priority: 1</code>.
-			</li>
-			<li>
-				<?php print wp_kses_post( sprintf( 'Normal e-mails will be queued and sent in batches of %d e-mails per minute.', Queue::get_batch_size() ) ); ?>
-			</li>
-			<li>
-				<?php print wp_kses_post( sprintf( 'If a single user (based on IP-address) sends too many e-mails in quick succession (%d in a time-window of %d seconds), the remainder will be blocked. This it to prevent spamming. You can unblock the emails below.', Queue::get_max_count_per_time_window(), Queue::get_time_window() ) ); ?>
-			</li>
-			<li>
-				Stale e-mails can be resent.
-			</li>
-		</ul>
+		<?php print wp_kses_post( __( 'Enabling the throttling feature will prevent sending large amounts of e-mails in quick succession, for example a spam-run.', 'wpes' ) ); ?>
+		<br/>
+		<?php print wp_kses_post( sprintf( __( 'Once activated, when more than %d e-mails are sent within %d seconds from the same IP-address, all other e-mails will be held until released.', 'wpes' ), Queue::get_max_count_per_time_window(), Queue::get_time_window() ) ); ?>
+		<br/>
+		<?php print wp_kses_post( sprintf( __( 'E-mails will be sent in batches of %d per minute, the trigger is a hit on the website, the admin panel or the cron (wp-cron.php).', 'wpes' ), Queue::get_batch_size() ) ); ?>
+		<br/>
+		<?php print wp_kses_post( __( 'E-mails with high priority will be sent as usual, if you have mission-critical e-mails, set priority to high using the following header;', 'wpes') ); ?>
+		<code class="inline">X-Priority: 1</code>
 	</div>
 	<form
 		action="<?php print esc_attr( add_query_arg( 'wpes-action', 'form-post' ) ); ?>"
