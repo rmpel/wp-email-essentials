@@ -107,6 +107,9 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 				<div class="inside">
 					<div class="wpes-form">
 						<div class="wpes-form-item">
+							<div class="wpes-notice--info">
+								<?php print wp_kses_post( sprintf( __( 'Out of the box, WordPress will use name "WordPress" and e-mail "wordpress@%s" as default sender. This is far from optimal. Your first step is therefore to set an appropriate name and e-mail address.', 'wpes' ), $wpes_host ) ); ?>
+							</div>
 							<label
 								for="from-name"><?php print wp_kses_post( __( 'Default from name', 'wpes' ) ); ?></label>
 							<input
@@ -115,9 +118,6 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 								value="<?php print esc_attr( $wpes_config['from_name'] ); ?>"
 								placeholder="WordPress"
 								id="from-name"/>
-							<div class="wpes-notice--info">
-								<?php print wp_kses_post( sprintf( __( 'Out of the box, WordPress will use name "WordPress" and e-mail "wordpress@%s" as default sender. This is far from optimal. Your first step is therefore to set an appropriate name and e-mail address.', 'wpes' ), $wpes_host ) ); ?>
-							</div>
 						</div>
 						<div class="wpes-form-item">
 							<label for="from-email">
