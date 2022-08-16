@@ -74,6 +74,10 @@ class Plugin {
 			set_transient( 'wpes_plugin_data', $plugin_data, WEEK_IN_SECONDS );
 		}
 
+		if (empty($plugin_data['LongName'])) {
+			$plugin_data['LongName'] = $plugin_data['Name'];
+			$plugin_data['Name']     = str_replace( 'WordPress', 'WP', $plugin_data['Name'] );
+		}
 		return $plugin_data;
 	}
 
@@ -1648,7 +1652,7 @@ class Plugin {
 	 */
 	public static function admin_menu() {
 		add_menu_page(
-			self::plugin_data()['Name'],
+			self::plugin_data()['LongName'],
 			self::plugin_data()['Name'],
 			'manage_options',
 			'wp-email-essentials',
@@ -1658,7 +1662,7 @@ class Plugin {
 
 		add_submenu_page(
 			'wp-email-essentials',
-			self::plugin_data()['Name'] . ' - ' . __( 'Alternative Admins', 'wpes' ),
+			self::plugin_data()['LongName'] . ' - ' . __( 'Alternative Admins', 'wpes' ),
 			__( 'Alternative Admins', 'wpes' ),
 			'manage_options',
 			'wpes-admins',
@@ -1670,7 +1674,7 @@ class Plugin {
 
 		add_submenu_page(
 			'wp-email-essentials',
-			self::plugin_data()['Name'] . ' - ' . __( 'Alternative Moderators', 'wpes' ),
+			self::plugin_data()['LongName'] . ' - ' . __( 'Alternative Moderators', 'wpes' ),
 			__( 'Alternative Moderators', 'wpes' ),
 			'manage_options',
 			'wpes-moderators',
@@ -2586,7 +2590,7 @@ Item 2
 	public static function template_header( $title_subtitle ) {
 		?>
 		<h2 class="dashicons-before dashicons-email-alt">
-			<?php print wp_kses_post( self::plugin_data()['Name'] ); ?>
+			<?php print wp_kses_post( self::plugin_data()['LongName'] ); ?>
 			<em><?php print wp_kses_post( self::plugin_data()['Version'] ); ?></em>
 			<?php if ( $title_subtitle ) { ?>
 				- <?php print esc_html( $title_subtitle ); ?>
