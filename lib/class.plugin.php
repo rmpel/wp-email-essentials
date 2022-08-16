@@ -1323,8 +1323,8 @@ class Plugin {
 		} else {
 			$settings['smtp'] = false;
 		}
-		$settings['from_name']          = array_key_exists( 'from_name', $values ) && $values['from_name'] ? $values['from_name'] : $settings['from_name'];
-		$settings['from_email']         = array_key_exists( 'from_email', $values ) && $values['from_email'] ? $values['from_email'] : $settings['from_email'];
+		$settings['from_name']          = array_key_exists( 'from_name', $values ) && $values['from_name'] ? trim( $values['from_name'] ) : $settings['from_name'];
+		$settings['from_email']         = array_key_exists( 'from_email', $values ) && $values['from_email'] ? trim( $values['from_email'] ) : $settings['from_email'];
 		$settings['timeout']            = array_key_exists( 'timeout', $values ) && $values['timeout'] ? $values['timeout'] : 5;
 		$settings['is_html']            = array_key_exists( 'is_html', $values ) && $values['is_html'] ? true : false;
 		$settings['css_inliner']        = array_key_exists( 'css_inliner', $values ) && $values['css_inliner'] ? true : false;
