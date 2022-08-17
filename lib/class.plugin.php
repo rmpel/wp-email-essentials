@@ -74,10 +74,11 @@ class Plugin {
 			set_transient( 'wpes_plugin_data', $plugin_data, WEEK_IN_SECONDS );
 		}
 
-		if (empty($plugin_data['LongName'])) {
+		if ( empty( $plugin_data['LongName'] ) ) {
 			$plugin_data['LongName'] = $plugin_data['Name'];
 			$plugin_data['Name']     = str_replace( 'WordPress', 'WP', $plugin_data['Name'] );
 		}
+
 		return $plugin_data;
 	}
 
@@ -557,7 +558,11 @@ class Plugin {
 		// we assume here that everything NOT IP4 is IP6. This will do for now, but ...
 		// @phpcs:ignore Generic.Commenting.Todo.TaskFound
 		// todo: actual ip6 check!.
-		$ip = preg_match( '/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/', trim( $sending_server ) ) ? 'ip4' : 'ip6';
+		$ip               = preg_match( '/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/', trim( $sending_server ) ) ? 'ip4' : 'ip6';
+		$sending_server_4 = false; // only set if ipv6 in use.
+		if ( 'ip6' === $ip ) {
+			$sending_server_4 = self::get_sending_ip( true );
+		}
 
 		if ( ! isset( $lookup[ $sending_domain ] ) ) {
 			$dns = self::dns_get_record( $sending_domain, DNS_TXT );
@@ -588,6 +593,9 @@ class Plugin {
 			$position = false !== $position ? $position : ( false !== array_search( 'v=spf1', $spf, true ) ? array_search( 'v=spf1', $spf, true ) + 1 : false );
 
 			array_splice( $spf, $position, 0, $ip . ':' . $sending_server );
+			if ( $sending_server_4 ) {
+				array_splice( $spf, $position, 0, 'ip4:' . $sending_server_4 );
+			}
 			$spf = str_replace( 'include: ', 'include:', implode( ' ', $spf ) );
 		}
 
@@ -604,6 +612,9 @@ class Plugin {
 				$color = 'green';
 			}
 			$spf = str_replace( $ip . ':' . $sending_server, '<strong style="color:' . $color . ';">' . $ip . ':' . $sending_server . '</strong>', $spf );
+			if ( $sending_server_4 ) {
+				$spf = str_replace( 'ip4:' . $sending_server_4, '<strong style="color:' . $color . ';">ip4:' . $sending_server_4 . '</strong>', $spf );
+			}
 		}
 
 		return $spf;
@@ -644,17 +655,66 @@ class Plugin {
 	/**
 	 * Get the sending IP address.
 	 *
+	 * @param bool $force_ip4 Get the IPv4 address, even if IPv6 is available.
+	 *
 	 * @return string
 	 */
-	public static function get_sending_ip() {
+	public static function get_sending_ip( $force_ip4 = false ) {
 		static $sending_ip;
-		if ( $sending_ip ) {
-			return $sending_ip;
+		if ( ! $sending_ip ) {
+			$sending_ip = [];
+		}
+		$ipkey = $force_ip4 ? 'force_ip4' : 'auto';
+		if ( $sending_ip && $sending_ip[ $ipkey ] ) {
+			return $sending_ip[ $ipkey ];
 		}
 		$url = admin_url( 'admin-ajax.php' );
-		$ip  = wp_remote_retrieve_body( wp_remote_get( $url . '?action=wpes_get_ip' ) );
-		if ( ! preg_match( '/^[0-9A-Fa-f.:]$/', $ip ) ) {
-			$ip = false;
+		$ip  = false; // start with unknown.
+
+		$ipv4_validation_regex = '/^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/';
+
+		/**
+		 * Services:
+		 *
+		 * Service hostname: ip4.me             ; single-stack ip report, will always report ipv4.
+		 * Service hostname: ip6.me             ; dual-stack ip report, will report ipv6 if possible, ipv4 otherwise.
+		 * Service hostname: ip4.remonpel.nl    ; single-stack ip report, will always report ipv4.
+		 * Service hostname: ip.remonpel.nl     ; dual-stack ip report, will report ipv6 if possible, ipv4 otherwise.
+		 * Service hostname: watismijnip.nl     ; dual-stack ip report, will report ipv6 if possible, ipv4 otherwise.
+		 */
+		if ( ! $ip && $force_ip4 ) {
+			$ip = wp_remote_retrieve_body(
+				wp_remote_get(
+					'http://ip4.me',
+					[
+						'httpversion' => '1.1',
+						'referer'     => $_SERVER['HTTP_REFERER'],
+						'user-agent'  => $_SERVER['HTTP_USER_AGENT'],
+					]
+				)
+			);
+			preg_match( $ipv4_validation_regex, $ip, $part );
+			$ip = $part[0] ?? false;
+		}
+		if ( ! $ip && $force_ip4 ) {
+			$ip = wp_remote_retrieve_body(
+				wp_remote_get(
+					'https://ip4.remonpel.nl',
+					[
+						'httpversion' => '1.1',
+						'referer'     => $_SERVER['HTTP_REFERER'],
+						'user-agent'  => $_SERVER['HTTP_USER_AGENT'],
+					]
+				)
+			);
+			preg_match( $ipv4_validation_regex, $ip, $part );
+			$ip = $part[0] ?? false;
+		}
+		if ( ! $ip ) {
+			$ip = wp_remote_retrieve_body( wp_remote_get( $url . '?action=wpes_get_ip' ) );
+			if ( ! preg_match( '/^[0-9A-Fa-f.:]$/', $ip ) ) {
+				$ip = false;
+			}
 		}
 		if ( ! $ip ) {
 			$ip = wp_remote_retrieve_body( wp_remote_get( 'https://ip.remonpel.nl' ) );
@@ -677,12 +737,26 @@ class Plugin {
 			$ip = $part[1];
 		}
 		if ( ! $ip ) {
+			$ip = wp_remote_retrieve_body(
+				wp_remote_get(
+					'http://ip6.me',
+					[
+						'httpversion' => '1.1',
+						'referer'     => $_SERVER['HTTP_REFERER'],
+						'user-agent'  => $_SERVER['HTTP_USER_AGENT'],
+					]
+				)
+			);
+			preg_match( '/>([.:0-9A-Fa-f]+)</', $ip, $part );
+			$ip = $part[1];
+		}
+		if ( ! $ip ) {
 			$ip = $_SERVER['SERVER_ADDR'];
 		}
 
-		$sending_ip = $ip;
+		$sending_ip[ $ipkey ] = $ip;
 
-		return $sending_ip;
+		return $sending_ip[ $ipkey ];
 	}
 
 	/**
