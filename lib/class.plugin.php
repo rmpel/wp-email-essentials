@@ -21,6 +21,14 @@ class Plugin {
 	const SLUG = 'wp-email-essentials/wp-email-essentials.php';
 
 	/**
+	 * RegExp to validate IPv4
+	 *
+	 * @const string
+	 */
+	const REGEXP_IP4 = '/^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/';
+	const REGEXP_IP6 = '(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]+|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|1?[0-9])?[0-9])\.){3}(25[0-5]|(2[0-4]|1?[0-9])?[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1?[0-9])?[0-9])\.){3}(25[0-5]|(2[0-4]|1?[0-9])?[0-9]))';
+
+	/**
 	 * Holds a message to show in the admin panel.
 	 *
 	 * @var string
@@ -545,6 +553,19 @@ class Plugin {
 	 * @return string
 	 */
 	public static function get_spf( $email, $fix = false, $as_html = false ) {
+		return self::get_spf_v2( $email, $fix, $as_html );
+	}
+
+	/**
+	 * Get SPF record for the domain of the email given.
+	 *
+	 * @param string $email   The email address.
+	 * @param bool   $fix     If true; give a fixed SPF record.
+	 * @param bool   $as_html If true, return as richly formatted HTML.
+	 *
+	 * @return string
+	 */
+	public static function get_spf_v1( $email, $fix = false, $as_html = false ) {
 		static $lookup;
 		if ( ! $lookup ) {
 			$lookup = [];
@@ -621,7 +642,143 @@ class Plugin {
 	}
 
 	/**
-	 * Test: I (this server) is allowed to send in name of givern email address.
+	 * Get SPF record for the domain of the email given.
+	 *
+	 * @param string $email   The email address.
+	 * @param bool   $fix     If true; give a fixed SPF record.
+	 * @param bool   $as_html If true, return as richly formatted HTML.
+	 *
+	 * @return string
+	 */
+	public static function get_spf_v2( $email, $fix = false, $as_html = false ) {
+		static $lookup;
+		if ( ! $lookup ) {
+			$lookup = [];
+		}
+
+		// Domain.
+		$sending_domain = self::get_domain( $email );
+		if ( ! $sending_domain ) {
+			return false; // invalid email.
+		}
+
+		// IP.
+		$sending_server   = self::get_sending_ip();
+		$sending_server_4 = false;
+		switch ( true ) {
+			case ! ! preg_match( self::REGEXP_IP4, trim( $sending_server ) ):
+				$ip = 'ip4';
+				break;
+			case ! ! preg_match( self::REGEXP_IP6, trim( $sending_server ) ):
+				$ip = 'ip6';
+				// Also get IPv4.
+				$sending_server_4 = self::get_sending_ip( true );
+				break;
+			default:
+				$ip = false;
+		}
+		if ( ! $ip ) {
+			return false;
+		}
+
+		// Cached?
+		if ( ! isset( $lookup[ $sending_domain ] ) ) {
+			$dns = self::dns_get_record( $sending_domain, DNS_TXT );
+			foreach ( $dns as $record ) {
+				if ( false !== strpos( $record['txt'], 'v=spf1' ) ) {
+					$lookup[ $sending_domain ] = $record['txt'];
+					break;
+				}
+			}
+		}
+
+		// Still not cached? make sure we return a string.
+		if ( ! isset( $lookup[ $sending_domain ] ) ) {
+			$lookup[ $sending_domain ] = '';
+		}
+
+		// The SPF record to work with.
+		$spf = $lookup[ $sending_domain ];
+
+		// Is the IP valid according the SPF?
+		$sending_server_valid   = self::validate_ip_listed_in_spf( $sending_domain, $sending_server );
+		$sending_server_4_valid = $sending_server_4 ? self::validate_ip_listed_in_spf( $sending_domain, $sending_server_4 ) : true; // assume valid so we don't list it as invalid.
+		if ( $as_html ) {
+			$spf = self::highlight_spf( $spf, $sending_server_valid, 'green' );
+			if ( $sending_server_4 ) {
+				$spf = self::highlight_spf( $spf, $sending_server_4_valid, 'green' );
+			}
+		}
+		if ( $fix ) {
+			// Get a default new SPF record.
+			if ( ! $spf ) {
+				$spf = 'v=spf1 a mx -all';
+			}
+			if ( ! $sending_server_valid ) {
+				$spf = self::inject_in_spf( $spf, $ip . ':' . $sending_server );
+			}
+			if ( $sending_server_4 && ! $sending_server_4_valid ) {
+				$spf = self::inject_in_spf( $spf, 'ip4:' . $sending_server_4 );
+			}
+			if ( $as_html ) {
+				if ( ! $sending_server_valid ) {
+					$spf = self::highlight_spf( $spf, $ip . ':' . $sending_server, 'red' );
+				}
+				if ( $sending_server_4 && ! $sending_server_4_valid ) {
+					$spf = self::highlight_spf( $spf, 'ip4:' . $sending_server_4, 'red' );
+				}
+			}
+		}
+
+		return $spf;
+	}
+
+	/**
+	 * Highlight a part of the SPF record.
+	 *
+	 * @param string $spf             The SPF record.
+	 * @param string $highlight_text  The section to highlight.
+	 * @param string $highlight_color Color red or green.
+	 *
+	 * @return string
+	 */
+	private static function highlight_spf( $spf, $highlight_text, $highlight_color ) {
+		$spf = explode( ' ', $spf );
+		foreach ( $spf as &$segment ) {
+			if ( $segment === $highlight_text ) {
+				$segment = sprintf( '<strong style="color:%s">%s</strong>', $highlight_color, $segment );
+			}
+		}
+
+		return implode( ' ', $spf );
+	}
+
+	/**
+	 * Inject a part into an SPF record.
+	 *
+	 * @param string $spf    The SPF record.
+	 * @param string $inject The section to inject.
+	 *
+	 * @return string
+	 */
+	private static function inject_in_spf( $spf, $inject ) {
+		$_spf  = explode( ' ', strtolower( $spf ) );
+		$after = [ 'mx', 'a', 'v=spf1' ];
+		$match = array_intersect( $after, $_spf );
+		$match = $match[0] ?? false;
+		if ( $match ) {
+			$spf = trim( preg_replace( '/ ' . $match . ' /i', ' ' . $match . ' ' . $inject . ' ', ' ' . $spf . ' ', 1 ) );
+		} elseif ( preg_match( '/([^ ]+all)/i', $spf ) ) {
+			$spf = trim( preg_replace( '/([^ ]+all)/i', $inject . ' \1', $spf, 1 ) );
+		} else {
+			$spf = $spf . ' ' . $inject;
+		}
+
+		return $spf;
+	}
+
+	/**
+	 * Test: I (this server) is allowed to send in name of given email address.
 	 *
 	 * @param string $email The email address to check.
 	 *
@@ -671,7 +828,7 @@ class Plugin {
 		$url = admin_url( 'admin-ajax.php' );
 		$ip  = false; // start with unknown.
 
-		$ipv4_validation_regex = '/^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/';
+		$ipv4_validation_regex = self::REGEXP_IP4;
 
 		/**
 		 * Services:
