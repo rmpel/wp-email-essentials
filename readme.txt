@@ -4,7 +4,7 @@ Donate link: https://remonpel.nl/
 Tags: email
 Requires at least: 3.6.1
 Tested up to: 6.0.1
-Stable tag: 4.2.1
+Stable tag: 4.2.2
 License: GPL2
 
 WP Email Essentials helps you send better emails from your WordPress blog.

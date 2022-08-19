@@ -14,7 +14,7 @@ namespace WP_Email_Essentials;
  * Upstream URI: https://github.com/rmpel/wp-email-essentials
  * Author: Remon Pel
  * Author URI: http://remonpel.nl
- * Version: 4.2.1
+ * Version: 4.2.2
  * Requires PHP: 7.1
  * Requires at least: 4.8.3
  */
