@@ -1,10 +1,22 @@
-  - name: Checkout
-    uses: actions/checkout@v2
-    with:
-      fetch-depth: 0 # <-- clone with complete history
-  - name: Push
-    uses: heussd/mirror-to-bitbucket-github-action@v2
-    with:
-      username: ${{ secrets.BITBUCKET_USERNAME }}
-      repository: ${{ secrets.BITBUCKET_REPO }}
-      password: ${{ secrets.BITBUCKET_PASSWORD }}
+on:
+  push:
+    tags:
+      - '*'
+    branches:
+      - '*'
+  workflow_dispatch:
+  
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0 # <-- clone with complete history
+      - name: Push
+        uses: heussd/mirror-to-bitbucket-github-action@v2
+        with:
+          username: ${{ secrets.BITBUCKET_USERNAME }}
+          repository: ${{ secrets.BITBUCKET_REPO }}
+          password: ${{ secrets.BITBUCKET_PASSWORD }}
