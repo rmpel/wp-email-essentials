@@ -1,10 +1,10 @@
 === WP Email Essentials ===
-Contributors: rmpel, clearsite
+Contributors: acato, rmpel, clearsite
 Donate link: https://remonpel.nl/
 Tags: email
 Requires at least: 4.8.3
-Tested up to: 6.0.2
-Stable tag: 4.2.3
+Tested up to: 6.0.3
+Stable tag: 5.0.0
 License: GPL2
 
 WP Email Essentials helps you send better emails from your WordPress blog.

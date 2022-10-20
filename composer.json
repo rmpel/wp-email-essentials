@@ -1,4 +1,14 @@
 {
-  "name": "clearsite/wp-email-essentials",
-  "type": "wordpress-plugin"
+  "name": "acato/wp-email-essentials",
+  "type": "wordpress-plugin",
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://packagist.acato.nl"
+    }
+  ],
+  "require-dev": {
+    "acato/wp-pre-commit-hook": "*",
+    "composer/installers": "~1.0"
+  }
 }
