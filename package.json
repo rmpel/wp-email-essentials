@@ -1,6 +1,6 @@
 {
   "name": "wp-email-essentials",
-  "version": "4.0.0",
+  "version": "5.0.0",
   "description": "The only plugin you need for email processing in WordPress.",
   "author": "Municipality of Acato",
   "main": "build/index.js",

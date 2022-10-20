@@ -21,6 +21,14 @@ class Plugin {
 	const SLUG = 'wp-email-essentials/wp-email-essentials.php';
 
 	/**
+	 * RegExp to validate IPv4
+	 *
+	 * @const string
+	 */
+	const REGEXP_IP4 = '/^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/';
+	const REGEXP_IP6 = '(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]+|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|1?[0-9])?[0-9])\.){3}(25[0-5]|(2[0-4]|1?[0-9])?[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1?[0-9])?[0-9])\.){3}(25[0-5]|(2[0-4]|1?[0-9])?[0-9]))';
+
+	/**
 	 * Holds a message to show in the admin panel.
 	 *
 	 * @var string
@@ -50,6 +58,7 @@ class Plugin {
 	 * Constructor.
 	 */
 	public function __construct() {
+		self::$message = get_transient( 'wpes_message' );
 		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
 
 		self::init();
@@ -66,7 +75,21 @@ class Plugin {
 	public static function plugin_data() {
 		static $plugin_data;
 		if ( ! $plugin_data ) {
-			$plugin_data = get_plugin_data( __DIR__ . '/../wp-email-essentials.php' );
+			if ( ! is_admin() ) {
+				$plugin_data = get_transient( 'wpes_plugin_data' );
+			}
+			if ( ! $plugin_data ) {
+				if ( ! function_exists( 'get_plugin_data' ) ) {
+					require_once ABSPATH . '/wp-admin/includes/plugin.php';
+				}
+				$plugin_data = get_plugin_data( __DIR__ . '/../wp-email-essentials.php' );
+			}
+			set_transient( 'wpes_plugin_data', $plugin_data, WEEK_IN_SECONDS );
+		}
+
+		if ( empty( $plugin_data['LongName'] ) ) {
+			$plugin_data['LongName'] = $plugin_data['Name'];
+			$plugin_data['Name']     = str_replace( 'WordPress', 'WP', $plugin_data['Name'] );
 		}
 
 		return $plugin_data;
@@ -135,7 +158,7 @@ class Plugin {
 
 		add_filter( 'wp_mail', [ self::class, 'action_wp_mail' ], PHP_INT_MAX - 1000 );
 
-		add_action( 'admin_menu', [ self::class, 'admin_menu' ], 10 );
+		add_action( 'admin_menu', [ self::class, 'admin_menu' ], 9 );
 
 		add_action( 'admin_footer', [ self::class, 'maybe_inject_admin_settings' ] );
 
@@ -158,14 +181,12 @@ class Plugin {
 
 		self::mail_key_registrations();
 
+		// Maybe process settings.
+		add_action( 'init', [ self::class, 'save_admin_settings' ] );
+
 		// Load add-ons.
-
 		History::instance();
-
-		/**
-		 * This line enables mail_queue, which is not yet finished
-		 * Queue::instance();
-		 */
+		Queue::instance();
 
 		add_filter( 'plugin_action_links', [ self::class, 'plugin_actions' ], 10, 2 );
 	}
@@ -537,6 +558,19 @@ class Plugin {
 	 * @return string
 	 */
 	public static function get_spf( $email, $fix = false, $as_html = false ) {
+		return self::get_spf_v2( $email, $fix, $as_html );
+	}
+
+	/**
+	 * Get SPF record for the domain of the email given.
+	 *
+	 * @param string $email   The email address.
+	 * @param bool   $fix     If true; give a fixed SPF record.
+	 * @param bool   $as_html If true, return as richly formatted HTML.
+	 *
+	 * @return string
+	 */
+	public static function get_spf_v1( $email, $fix = false, $as_html = false ) {
 		static $lookup;
 		if ( ! $lookup ) {
 			$lookup = [];
@@ -550,7 +584,11 @@ class Plugin {
 		// we assume here that everything NOT IP4 is IP6. This will do for now, but ...
 		// @phpcs:ignore Generic.Commenting.Todo.TaskFound
 		// todo: actual ip6 check!.
-		$ip = preg_match( '/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/', trim( $sending_server ) ) ? 'ip4' : 'ip6';
+		$ip               = preg_match( '/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/', trim( $sending_server ) ) ? 'ip4' : 'ip6';
+		$sending_server_4 = false; // only set if ipv6 in use.
+		if ( 'ip6' === $ip ) {
+			$sending_server_4 = self::get_sending_ip( true );
+		}
 
 		if ( ! isset( $lookup[ $sending_domain ] ) ) {
 			$dns = self::dns_get_record( $sending_domain, DNS_TXT );
@@ -581,6 +619,9 @@ class Plugin {
 			$position = false !== $position ? $position : ( false !== array_search( 'v=spf1', $spf, true ) ? array_search( 'v=spf1', $spf, true ) + 1 : false );
 
 			array_splice( $spf, $position, 0, $ip . ':' . $sending_server );
+			if ( $sending_server_4 ) {
+				array_splice( $spf, $position, 0, 'ip4:' . $sending_server_4 );
+			}
 			$spf = str_replace( 'include: ', 'include:', implode( ' ', $spf ) );
 		}
 
@@ -597,13 +638,152 @@ class Plugin {
 				$color = 'green';
 			}
 			$spf = str_replace( $ip . ':' . $sending_server, '<strong style="color:' . $color . ';">' . $ip . ':' . $sending_server . '</strong>', $spf );
+			if ( $sending_server_4 ) {
+				$spf = str_replace( 'ip4:' . $sending_server_4, '<strong style="color:' . $color . ';">ip4:' . $sending_server_4 . '</strong>', $spf );
+			}
 		}
 
 		return $spf;
 	}
 
 	/**
-	 * Test: I (this server) is allowed to send in name of givern email address.
+	 * Get SPF record for the domain of the email given.
+	 *
+	 * @param string $email   The email address.
+	 * @param bool   $fix     If true; give a fixed SPF record.
+	 * @param bool   $as_html If true, return as richly formatted HTML.
+	 *
+	 * @return string
+	 */
+	public static function get_spf_v2( $email, $fix = false, $as_html = false ) {
+		static $lookup;
+		if ( ! $lookup ) {
+			$lookup = [];
+		}
+
+		// Domain.
+		$sending_domain = self::get_domain( $email );
+		if ( ! $sending_domain ) {
+			return false; // invalid email.
+		}
+
+		// IP.
+		$sending_server   = self::get_sending_ip();
+		$sending_server_4 = false;
+		switch ( true ) {
+			case ! ! preg_match( self::REGEXP_IP4, trim( $sending_server ) ):
+				$ip = 'ip4';
+				break;
+			case ! ! preg_match( self::REGEXP_IP6, trim( $sending_server ) ):
+				$ip = 'ip6';
+				// Also get IPv4.
+				$sending_server_4 = self::get_sending_ip( true );
+				break;
+			default:
+				$ip = false;
+		}
+		if ( ! $ip ) {
+			return false;
+		}
+
+		// Cached?
+		if ( ! isset( $lookup[ $sending_domain ] ) ) {
+			$dns = self::dns_get_record( $sending_domain, DNS_TXT );
+			foreach ( $dns as $record ) {
+				if ( false !== strpos( $record['txt'], 'v=spf1' ) ) {
+					$lookup[ $sending_domain ] = $record['txt'];
+					break;
+				}
+			}
+		}
+
+		// Still not cached? make sure we return a string.
+		if ( ! isset( $lookup[ $sending_domain ] ) ) {
+			$lookup[ $sending_domain ] = '';
+		}
+
+		// The SPF record to work with.
+		$spf = $lookup[ $sending_domain ];
+
+		// Is the IP valid according the SPF?
+		$sending_server_valid   = self::validate_ip_listed_in_spf( $sending_domain, $sending_server );
+		$sending_server_4_valid = $sending_server_4 ? self::validate_ip_listed_in_spf( $sending_domain, $sending_server_4 ) : true; // assume valid so we don't list it as invalid.
+		if ( $as_html ) {
+			$spf = self::highlight_spf( $spf, $sending_server_valid, 'green' );
+			if ( $sending_server_4 ) {
+				$spf = self::highlight_spf( $spf, $sending_server_4_valid, 'green' );
+			}
+		}
+		if ( $fix ) {
+			// Get a default new SPF record.
+			if ( ! $spf ) {
+				$spf = 'v=spf1 a mx -all';
+			}
+			if ( ! $sending_server_valid ) {
+				$spf = self::inject_in_spf( $spf, $ip . ':' . $sending_server );
+			}
+			if ( $sending_server_4 && ! $sending_server_4_valid ) {
+				$spf = self::inject_in_spf( $spf, 'ip4:' . $sending_server_4 );
+			}
+			if ( $as_html ) {
+				if ( ! $sending_server_valid ) {
+					$spf = self::highlight_spf( $spf, $ip . ':' . $sending_server, 'red' );
+				}
+				if ( $sending_server_4 && ! $sending_server_4_valid ) {
+					$spf = self::highlight_spf( $spf, 'ip4:' . $sending_server_4, 'red' );
+				}
+			}
+		}
+
+		return $spf;
+	}
+
+	/**
+	 * Highlight a part of the SPF record.
+	 *
+	 * @param string $spf             The SPF record.
+	 * @param string $highlight_text  The section to highlight.
+	 * @param string $highlight_color Color red or green.
+	 *
+	 * @return string
+	 */
+	private static function highlight_spf( $spf, $highlight_text, $highlight_color ) {
+		$spf = explode( ' ', $spf );
+		foreach ( $spf as &$segment ) {
+			if ( $segment === $highlight_text ) {
+				$segment = sprintf( '<strong style="color:%s">%s</strong>', $highlight_color, $segment );
+			}
+		}
+
+		return implode( ' ', $spf );
+	}
+
+	/**
+	 * Inject a part into an SPF record.
+	 *
+	 * @param string $spf    The SPF record.
+	 * @param string $inject The section to inject.
+	 *
+	 * @return string
+	 */
+	private static function inject_in_spf( $spf, $inject ) {
+		$_spf  = explode( ' ', strtolower( $spf ) );
+		$after = [ 'mx', 'a', 'v=spf1' ];
+		$match = array_intersect( $after, $_spf );
+		$match = $match[0] ?? false;
+		if ( $match ) {
+			$spf = trim( preg_replace( '/ ' . $match . ' /i', ' ' . $match . ' ' . $inject . ' ', ' ' . $spf . ' ', 1 ) );
+		} elseif ( preg_match( '/([^ ]+all)/i', $spf ) ) {
+			$spf = trim( preg_replace( '/([^ ]+all)/i', $inject . ' \1', $spf, 1 ) );
+		} else {
+			$spf = $spf . ' ' . $inject;
+		}
+
+		return $spf;
+	}
+
+	/**
+	 * Test: I (this server) is allowed to send in name of given email address.
 	 *
 	 * @param string $email The email address to check.
 	 *
@@ -637,17 +817,66 @@ class Plugin {
 	/**
 	 * Get the sending IP address.
 	 *
+	 * @param bool $force_ip4 Get the IPv4 address, even if IPv6 is available.
+	 *
 	 * @return string
 	 */
-	public static function get_sending_ip() {
+	public static function get_sending_ip( $force_ip4 = false ) {
 		static $sending_ip;
-		if ( $sending_ip ) {
-			return $sending_ip;
+		if ( ! $sending_ip ) {
+			$sending_ip = [];
+		}
+		$ipkey = $force_ip4 ? 'force_ip4' : 'auto';
+		if ( $sending_ip && $sending_ip[ $ipkey ] ) {
+			return $sending_ip[ $ipkey ];
 		}
 		$url = admin_url( 'admin-ajax.php' );
-		$ip  = wp_remote_retrieve_body( wp_remote_get( $url . '?action=wpes_get_ip' ) );
-		if ( ! preg_match( '/^[0-9A-Fa-f.:]$/', $ip ) ) {
-			$ip = false;
+		$ip  = false; // start with unknown.
+
+		$ipv4_validation_regex = self::REGEXP_IP4;
+
+		/**
+		 * Services:
+		 *
+		 * Service hostname: ip4.me             ; single-stack ip report, will always report ipv4.
+		 * Service hostname: ip6.me             ; dual-stack ip report, will report ipv6 if possible, ipv4 otherwise.
+		 * Service hostname: ip4.remonpel.nl    ; single-stack ip report, will always report ipv4.
+		 * Service hostname: ip.remonpel.nl     ; dual-stack ip report, will report ipv6 if possible, ipv4 otherwise.
+		 * Service hostname: watismijnip.nl     ; dual-stack ip report, will report ipv6 if possible, ipv4 otherwise.
+		 */
+		if ( ! $ip && $force_ip4 ) {
+			$ip = wp_remote_retrieve_body(
+				wp_remote_get(
+					'http://ip4.me',
+					[
+						'httpversion' => '1.1',
+						'referer'     => $_SERVER['HTTP_REFERER'],
+						'user-agent'  => $_SERVER['HTTP_USER_AGENT'],
+					]
+				)
+			);
+			preg_match( $ipv4_validation_regex, $ip, $part );
+			$ip = $part[0] ?? false;
+		}
+		if ( ! $ip && $force_ip4 ) {
+			$ip = wp_remote_retrieve_body(
+				wp_remote_get(
+					'https://ip4.remonpel.nl',
+					[
+						'httpversion' => '1.1',
+						'referer'     => $_SERVER['HTTP_REFERER'],
+						'user-agent'  => $_SERVER['HTTP_USER_AGENT'],
+					]
+				)
+			);
+			preg_match( $ipv4_validation_regex, $ip, $part );
+			$ip = $part[0] ?? false;
+		}
+		if ( ! $ip ) {
+			$ip = wp_remote_retrieve_body( wp_remote_get( $url . '?action=wpes_get_ip' ) );
+			if ( ! preg_match( '/^[0-9A-Fa-f.:]$/', $ip ) ) {
+				$ip = false;
+			}
 		}
 		if ( ! $ip ) {
 			$ip = wp_remote_retrieve_body( wp_remote_get( 'https://ip.remonpel.nl' ) );
@@ -670,12 +899,26 @@ class Plugin {
 			$ip = $part[1];
 		}
 		if ( ! $ip ) {
+			$ip = wp_remote_retrieve_body(
+				wp_remote_get(
+					'http://ip6.me',
+					[
+						'httpversion' => '1.1',
+						'referer'     => $_SERVER['HTTP_REFERER'],
+						'user-agent'  => $_SERVER['HTTP_USER_AGENT'],
+					]
+				)
+			);
+			preg_match( '/>([.:0-9A-Fa-f]+)</', $ip, $part );
+			$ip = $part[1];
+		}
+		if ( ! $ip ) {
 			$ip = $_SERVER['SERVER_ADDR'];
 		}
 
-		$sending_ip = $ip;
+		$sending_ip[ $ipkey ] = $ip;
 
-		return $sending_ip;
+		return $sending_ip[ $ipkey ];
 	}
 
 	/**
@@ -709,13 +952,13 @@ class Plugin {
 						if ( IP::is_4( $ip ) ) {
 							$m_ip = self::dns_get_record( $_domain, DNS_A, true );
 							if ( IP::a_4_is_4( $m_ip, $ip ) ) {
-								return true;
+								return $section;
 							}
 						}
 						if ( IP::is_6( $ip ) ) {
 							$m_ip = self::dns_get_record( $_domain, DNS_AAAA, true );
 							if ( IP::a_6_is_6( $m_ip, $ip ) ) {
-								return true;
+								return $section;
 							}
 						}
 					} elseif ( 'mx' === $section ) {
@@ -729,7 +972,7 @@ class Plugin {
 									$new_target = $target;
 								}
 								if ( IP::a_4_is_4( $ip, $new_target ) ) {
-									return true;
+									return $section;
 								}
 							}
 							if ( IP::is_6( $ip ) ) {
@@ -739,29 +982,30 @@ class Plugin {
 									$new_target = $target;
 								}
 								if ( IP::a_6_is_6( $ip, $new_target ) ) {
-									return true;
+									return $section;
 								}
 							}
 						}
 					} elseif ( preg_match( '/ip4:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$/', $section, $m_ip ) ) {
 						if ( IP::a_4_is_4( $ip, $m_ip[1] ) ) {
-							return true;
+							return $section;
 						}
 					} elseif ( preg_match( '/ip4:([0-9.]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
 						if ( IP::ip4_match_cidr( $ip, $ip_cidr[1] ) ) {
-							return true;
+							return $section;
 						}
 					} elseif ( preg_match( '/ip6:([0-9A-Fa-f:]+)$/', $section, $m_ip ) ) {
 						if ( IP::is_6( $m_ip[1] ) && IP::a_6_is_6( $ip, $m_ip[1] ) ) {
-							return true;
+							return $section;
 						}
 					} elseif ( preg_match( '/ip6:([0-9A-Fa-f:]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
 						if ( IP::ip6_match_cidr( $ip, $ip_cidr[1] ) ) {
-							return true;
+							return $section;
 						}
 					} elseif ( preg_match( '/include:(.+)$/', $section, $include ) ) {
-						if ( self::validate_ip_listed_in_spf( $include[1], $ip ) ) {
-							return true;
+						$result = self::validate_ip_listed_in_spf( $include[1], $ip );
+						if ( $result ) {
+							return $section . ' > ' . $result;
 						}
 					}
 				}
@@ -805,7 +1049,7 @@ class Plugin {
 			if ( DNS_A === $filter ) {
 				return $transient[0]['ip'];
 			}
-			if ( DNS_A6 === $filter ) {
+			if ( DNS_A6 === $filter || DNS_AAAA === $filter ) {
 				return $transient[0]['ipv6'];
 			}
 		}
@@ -1241,6 +1485,7 @@ class Plugin {
 			'SingleTo'             => true,
 			'do_shortcodes'        => true,
 			'enable_history'       => false,
+			'enable_queue'         => false,
 			'make_from_valid_when' => 'when_sender_invalid',
 			'make_from_valid'      => 'default',
 		];
@@ -1314,8 +1559,8 @@ class Plugin {
 		} else {
 			$settings['smtp'] = false;
 		}
-		$settings['from_name']          = array_key_exists( 'from_name', $values ) && $values['from_name'] ? $values['from_name'] : $settings['from_name'];
-		$settings['from_email']         = array_key_exists( 'from_email', $values ) && $values['from_email'] ? $values['from_email'] : $settings['from_email'];
+		$settings['from_name']          = array_key_exists( 'from_name', $values ) && $values['from_name'] ? trim( $values['from_name'] ) : $settings['from_name'];
+		$settings['from_email']         = array_key_exists( 'from_email', $values ) && $values['from_email'] ? trim( $values['from_email'] ) : $settings['from_email'];
 		$settings['timeout']            = array_key_exists( 'timeout', $values ) && $values['timeout'] ? $values['timeout'] : 5;
 		$settings['is_html']            = array_key_exists( 'is_html', $values ) && $values['is_html'] ? true : false;
 		$settings['css_inliner']        = array_key_exists( 'css_inliner', $values ) && $values['css_inliner'] ? true : false;
@@ -1325,6 +1570,7 @@ class Plugin {
 		$settings['SingleTo']           = array_key_exists( 'SingleTo', $values ) && $values['SingleTo'] ? true : false;
 		$settings['spf_lookup_enabled'] = array_key_exists( 'spf_lookup_enabled', $values ) && $values['spf_lookup_enabled'] ? true : false;
 		$settings['enable_history']     = array_key_exists( 'enable_history', $values ) && $values['enable_history'] ? true : false;
+		$settings['enable_queue']       = array_key_exists( 'enable_queue', $values ) && $values['enable_queue'] ? true : false;
 
 		$settings['enable_smime']         = array_key_exists( 'enable_smime', $values ) && $values['enable_smime'] ? '1' : '0';
 		$settings['certfolder']           = array_key_exists( 'certfolder', $values ) && $values['certfolder'] ? $values['certfolder'] : '';
@@ -1485,18 +1731,9 @@ class Plugin {
 	}
 
 	/**
-	 * Callback to the admin_menu action.
+	 * Process settings when POSTed.
 	 */
-	public static function admin_menu() {
-		add_menu_page(
-			self::plugin_data()['Name'],
-			self::plugin_data()['Name'],
-			'manage_options',
-			'wp-email-essentials',
-			[ self::class, 'admin_interface' ],
-			'dashicons-email-alt'
-		);
-
+	public static function save_admin_settings() {
 		/**
 		 * Save options for "Settings" pane..
 		 */
@@ -1511,8 +1748,9 @@ class Plugin {
 						$_POST['settings']['make_from_valid'] = 'noreply';
 					}
 					self::set_config( $_POST['settings'] );
-					self::$message = __( 'Settings saved.', 'wpes' );
-					break;
+					set_transient( 'wpes_message', __( 'Settings saved.', 'wpes' ), 5 );
+					wp_safe_redirect( remove_query_arg( 'wpes-nonce' ) );
+					exit;
 				case __( 'Print debug output of sample mail', 'wpes' ):
 				case __( 'Send sample mail', 'wpes' ):
 					ob_start();
@@ -1529,7 +1767,7 @@ class Plugin {
 						$wpes_admin,
 						self::dummy_subject(),
 						self::dummy_content(),
-						[ 'X-Priority: 1' ]
+						[ 'X-Priority: 5' ]
 					);
 					self::$debug = ob_get_clean();
 					if ( $result ) {
@@ -1567,18 +1805,6 @@ class Plugin {
 
 			exit;
 		}
-
-		add_submenu_page(
-			'wp-email-essentials',
-			self::plugin_data()['Name'] . ' - ' . __( 'Alternative Admins', 'wpes' ),
-			__( 'Alternative Admins', 'wpes' ),
-			'manage_options',
-			'wpes-admins',
-			[
-				self::class,
-				'admin_interface_admins',
-			]
-		);
 
 		/**
 		 * Save options for "alternative admins" panel
@@ -1621,18 +1847,6 @@ class Plugin {
 			}
 		}
 
-		add_submenu_page(
-			'wp-email-essentials',
-			self::plugin_data()['Name'] . ' - ' . __( 'Alternative Moderators', 'wpes' ),
-			__( 'Alternative Moderators', 'wpes' ),
-			'manage_options',
-			'wpes-moderators',
-			[
-				self::class,
-				'admin_interface_moderators',
-			]
-		);
-
 		/**
 		 * Save options for "Moderators" panel.
 		 */
@@ -1667,6 +1881,44 @@ class Plugin {
 					break;
 			}
 		}
+	}
+
+	/**
+	 * Callback to the admin_menu action.
+	 */
+	public static function admin_menu() {
+		add_menu_page(
+			self::plugin_data()['LongName'],
+			self::plugin_data()['Name'],
+			'manage_options',
+			'wp-email-essentials',
+			[ self::class, 'admin_interface' ],
+			'dashicons-email-alt'
+		);
+
+		add_submenu_page(
+			'wp-email-essentials',
+			self::plugin_data()['LongName'] . ' - ' . __( 'Alternative Admins', 'wpes' ),
+			__( 'Alternative Admins', 'wpes' ),
+			'manage_options',
+			'wpes-admins',
+			[
+				self::class,
+				'admin_interface_admins',
+			]
+		);
+
+		add_submenu_page(
+			'wp-email-essentials',
+			self::plugin_data()['LongName'] . ' - ' . __( 'Alternative Moderators', 'wpes' ),
+			__( 'Alternative Moderators', 'wpes' ),
+			'manage_options',
+			'wpes-moderators',
+			[
+				self::class,
+				'admin_interface_moderators',
+			]
+		);
 	}
 
 	/**
@@ -2210,18 +2462,18 @@ Item 2
 	public static function mail_key_database() {
 		// supported;.
 		$wp_filters = [
-			'automatic_updates_debug_email',
-			'auto_core_update_email',
-			'recovery_mode_email',
+			'automatic_updates_debug_email' => _x( 'E-mail after automatic update (debug)', 'mail key', 'wpes' ),
+			'auto_core_update_email'        => _x( 'E-mail after automatic update', 'mail key', 'wpes' ),
+			'recovery_mode_email'           => _x( 'E-mail after website crash', 'mail key', 'wpes' ),
 		];
 
 		// unsupported until added, @see wp_mail_key.patch, matched by subject, @see self::mail_subject_database.
 		$unsupported_wp_filters = [
-			'new_user_registration_admin_email',
-			'password_lost_changed_email',
-			'password_reset_email',
-			'password_changed_email',
-			'wpes_email_test',
+			'new_user_registration_admin_email' => _x( 'E-mail after new user registered', 'mail key', 'wpes' ),
+			'password_lost_changed_email'       => _x( 'E-mail notification after user requests password reset', 'mail key', 'wpes' ),
+			'password_reset_email'              => _x( 'E-mail notification after user reset their password', 'mail key', 'wpes' ),
+			'password_changed_email'            => _x( 'E-mail notification after user changed their password', 'mail key', 'wpes' ),
+			'wpes_email_test'                   => _x( 'E-Mail test from WP Email Essentials', 'mail key', 'wpes' ),
 		];
 
 		return array_merge( $wp_filters, $unsupported_wp_filters );
@@ -2286,7 +2538,7 @@ Item 2
 	 * actions and filters are equal to WordPress, but handled with or without return values.
 	 */
 	public static function mail_key_registrations() {
-		foreach ( self::mail_key_database() as $filter_name ) {
+		foreach ( self::mail_key_database() as $filter_name => $filter_description ) {
 			add_filter( $filter_name, [ self::class, 'now_sending___' ] );
 		}
 	}
@@ -2574,13 +2826,12 @@ Item 2
 	public static function template_header( $title_subtitle ) {
 		?>
 		<h2 class="dashicons-before dashicons-email-alt">
-			<?php print wp_kses_post( self::plugin_data()['Name'] ); ?>
+			<?php print wp_kses_post( self::plugin_data()['LongName'] ); ?>
 			<em><?php print wp_kses_post( self::plugin_data()['Version'] ); ?></em>
 			<?php if ( $title_subtitle ) { ?>
 				- <?php print esc_html( $title_subtitle ); ?>
 			<?php } ?>
 		</h2>
-		<hr/>
 		<?php
 	}
 }

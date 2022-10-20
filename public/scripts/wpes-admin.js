@@ -8,21 +8,21 @@
 /***/ (() => {
 
 jQuery(document).ready(function ($) {
-  if ($(".wpes-settings").length > 0) {
+  if ($('.wpes-settings').length > 0) {
     /**
      * Settings panel
      */
     var keys = 'enable_history,smtp-enabled,enable-smime,enable-dkim,smtp-is_html'.split(',');
     keys.forEach(function (selector) {
-      $("#" + selector).on('change', function (e) {
+      $('#' + selector).on('change', function (e) {
         // we need 'function' here for 'this'.
         var target_id = e.target.id;
-        $(".on-" + target_id).toggle($(this).is(':checked'));
-        $(".not-" + target_id).toggle(!$(this).is(':checked'));
+        $('.on-' + target_id).toggle($(this).is(':checked'));
+        $('.not-' + target_id).toggle(!$(this).is(':checked'));
       }).trigger('change');
     });
     var preventInfinite = false;
-    $(".on-regexp-test").each(function () {
+    $('.on-regexp-test').each(function () {
       // we need 'function' here for 'this'.
       (function (field, regexp, label) {
         $('#' + field).on('change keyup blur paste', function () {
@@ -32,7 +32,7 @@ jQuery(document).ready(function ($) {
             if (!preventInfinite) {
               preventInfinite = true;
               var name = $(this).attr('name');
-              var siblings = $(this).closest('table').find('[name="' + name + '"]').not(this);
+              var siblings = $(this).closest('.postbox').find('[name="' + name + '"]').not(this);
               siblings.trigger('change');
               preventInfinite = false;
             }
@@ -42,17 +42,17 @@ jQuery(document).ready(function ($) {
             }
           }
 
-          label.toggle(null !== (value || "").match(new RegExp(regexp, 'i')));
+          label.toggle(null !== (value || '').match(new RegExp(regexp, 'i')));
         }).trigger('change');
       })($(this).attr('data-field'), $(this).attr('data-regexp'), $(this));
     });
   }
 
-  if ($(".wpes-emails").length > 0) {
+  if ($('.wpes-emails').length > 0) {
     /**
      * Emails panel
      */
-    $(".email-item").on('click', function (e) {
+    $('.email-item').on('click', function (e) {
       // we need 'function' here for 'this'.
       if ($(e.target).is('a.dashicons-download')) {
         e.stopPropagation();
@@ -63,7 +63,7 @@ jQuery(document).ready(function ($) {
       $(this).addClass('active').siblings().removeClass('active').removeClass(function (index, className) {
         return (className.match(/(^|\s)show-\S+/g) || []).join(' ');
       });
-      var id = '#' + $(".email-item.active").attr('id').replace('email-', 'email-data-');
+      var id = '#' + $('.email-item.active').attr('id').replace('email-', 'email-data-');
       var that = $(id);
       $('#mail-data-viewer .email-data').removeClass(function (index, className) {
         return (className.match(/(^|\s)show-\S+/g) || []).join(' ');
@@ -87,44 +87,44 @@ jQuery(document).ready(function ($) {
     });
     $(window).bind('resize', function () {
       // we need 'function' here for 'this'.
-      $(".autofit").each(function () {
+      $('.autofit').each(function () {
         $(this).css('width', $(this).parent().innerWidth());
         $(this).css('height', $(this).parent().innerHeight());
       });
     }).trigger('resize');
   }
 
-  if ($(".wpes-admins").length > 0) {
+  if ($('.wpes-admins').length > 0) {
     /**
      * Admins panel
      */
     var t = function t() {
       // we need 'function' here for 'this'.
-      if (/^\/[\s\S]+\/[i]?$/.test($(this).val() || "")) {
+      if (/^\/[\s\S]+\/[i]?$/.test($(this).val() || '')) {
         var that = this;
         var re = $(that).val();
         re = re.split(re.substr(0, 1));
         re = new RegExp(re[1], re[2]);
-        $(".a-fail").each(function () {
-          $(this).toggleClass('match', re.test($(this).text() || ""));
+        $('.a-fail').each(function () {
+          $(this).toggleClass('match', re.test($(this).text() || ''));
         });
       } else {
-        $(".a-fail").removeClass('match');
+        $('.a-fail').removeClass('match');
       }
     };
 
-    $(".a-regexp").bind('blur', function () {
+    $('.a-regexp').bind('blur', function () {
       // we need 'function' here for 'this'.
-      var val = $(this).val() || "";
+      var val = $(this).val() || '';
 
-      if ("" === val) {
+      if ('' === val) {
         return $(this).removeClass('error match');
       }
 
       $(this).toggleClass('error', !/^\/[\s\S]+\/[i]?$/.test(val)).not('.error').addClass('match');
     }).bind('focus', function (e) {
       // we need 'function' here for 'this'.
-      $(".a-fail,.a-regexp").removeClass('match');
+      $('.a-fail,.a-regexp').removeClass('match');
       $(this).removeClass('error match');
       t.apply(this, [e]);
     }).bind('keyup', t);

@@ -10,13 +10,15 @@ namespace WP_Email_Essentials;
 /**
  * Plugin Name: WordPress Email Essentials
  * Description: A must-have plugin for WordPress to get your outgoing e-mails straightened out.
- * Plugin URI: https://github.com/clearsite/wp-email-essentials
- * Upstream URI: https://github.com/rmpel/wp-email-essentials
- * Author: Remon Pel
- * Author URI: http://remonpel.nl
- * Version: 4.1.5
+ * Plugin URI: https://bitbucket.org/acato/wp-email-essentials
+ * Legacy URI: https://github.com/clearsite/wp-email-essentials
+ * Mirror URI: https://github.com/rmpel/wp-email-essentials
+ * Author: Remon Pel <remon@acato.nl>
+ * Author URI: https://acato.nl
+ * Version: 5.0.0
  * Requires PHP: 7.1
  * Requires at least: 4.8.3
+ * Tested up to: 6.0.3
  */
 
 spl_autoload_register(

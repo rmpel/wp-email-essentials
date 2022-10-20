@@ -201,7 +201,7 @@ class IP {
 				$binaryip .= str_pad( decbin( ord( $char ) ), 8, '0', STR_PAD_LEFT );
 			}
 
-			return $binaryip;
+			return substr($binaryip . str_repeat('0', 128), 0, 128);
 		};
 
 		$ip       = inet_pton( $ip );
