@@ -822,7 +822,7 @@ class Plugin {
 			$sending_ip = [];
 		}
 		$ipkey = $force_ip4 ? 'force_ip4' : 'auto';
-		if ( $sending_ip && $sending_ip[ $ipkey ] ) {
+		if ( $sending_ip && !empty( $sending_ip[ $ipkey ] ) ) {
 			return $sending_ip[ $ipkey ];
 		}
 		$url = admin_url( 'admin-ajax.php' );
@@ -1041,6 +1041,9 @@ class Plugin {
 			set_site_transient( $transient_name, $transient, $ttl );
 		}
 		if ( $single_output ) { // Most records are repeatable, should return array, calling code should process array.
+			if ( empty($transient) ) {
+				return false;
+			}
 			if ( DNS_A === $filter ) {
 				return $transient[0]['ip'];
 			}
