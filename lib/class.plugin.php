@@ -2592,7 +2592,7 @@ Item 2
 			return;
 		}
 
-		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+		if ( defined( 'WP_DEBUG_LOG' ) && WP_DEBUG_LOG ) {
 			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			error_log( "WP_Email_Essentials: $text" );
 
