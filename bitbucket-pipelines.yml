@@ -1,0 +1,23 @@
+pipelines:
+  tags:
+    '*':
+      - step:
+          name: Trigger package refresh from tag
+          script:
+            - pipe: atlassian/trigger-pipeline:4.2.1
+              variables:
+                BITBUCKET_USERNAME: 'acato_pipeline'
+                BITBUCKET_APP_PASSWORD: $APP_PASSWORD
+                REPOSITORY: 'acato-packagist'
+                ACCOUNT: 'acato'
+  branches:
+    '{develop,staging,master}':
+      - step:
+          name: Trigger package refresh from branch
+          script:
+            - pipe: atlassian/trigger-pipeline:4.2.1
+              variables:
+                BITBUCKET_USERNAME: 'acato_pipeline'
+                BITBUCKET_APP_PASSWORD: $APP_PASSWORD
+                REPOSITORY: 'acato-packagist'
+                ACCOUNT: 'acato'
