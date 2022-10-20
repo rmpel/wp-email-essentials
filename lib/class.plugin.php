@@ -845,8 +845,8 @@ class Plugin {
 					'http://ip4.me',
 					[
 						'httpversion' => '1.1',
-						'referer'     => $_SERVER['HTTP_REFERER'],
-						'user-agent'  => $_SERVER['HTTP_USER_AGENT'],
+						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo('url'),
+						'user-agent'  => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
 					]
 				)
 			);
@@ -859,8 +859,8 @@ class Plugin {
 					'https://ip4.remonpel.nl',
 					[
 						'httpversion' => '1.1',
-						'referer'     => $_SERVER['HTTP_REFERER'],
-						'user-agent'  => $_SERVER['HTTP_USER_AGENT'],
+						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo('url'),
+						'user-agent'  => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
 					]
 				)
 			);
@@ -885,8 +885,8 @@ class Plugin {
 					'http://watismijnip.nl',
 					[
 						'httpversion' => '1.1',
-						'referer'     => $_SERVER['HTTP_REFERER'],
-						'user-agent'  => $_SERVER['HTTP_USER_AGENT'],
+						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo('url'),
+						'user-agent'  => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
 					]
 				)
 			);
@@ -899,8 +899,8 @@ class Plugin {
 					'http://ip6.me',
 					[
 						'httpversion' => '1.1',
-						'referer'     => $_SERVER['HTTP_REFERER'],
-						'user-agent'  => $_SERVER['HTTP_USER_AGENT'],
+						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo('url'),
+						'user-agent'  => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
 					]
 				)
 			);
