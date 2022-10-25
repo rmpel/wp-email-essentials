@@ -1,33 +1,43 @@
 pipelines:
   tags:
     '*':
-      - step:
-          name: Trigger package refresh from tag
-          script:
-            - pipe: atlassian/trigger-pipeline:4.2.1
-              variables:
-                BITBUCKET_USERNAME: 'acato_pipeline'
-                BITBUCKET_APP_PASSWORD: $APP_PASSWORD
-                REPOSITORY: 'acato-packagist'
-                ACCOUNT: 'acato'
+      - parallel:
+          - step:
+              name: Trigger package refresh from tag
+              script:
+                - pipe: atlassian/trigger-pipeline:4.2.1
+                  variables:
+                    BITBUCKET_USERNAME: 'acato_pipeline'
+                    BITBUCKET_APP_PASSWORD: $APP_PASSWORD
+                    REPOSITORY: 'acato-packagist'
+                    ACCOUNT: 'acato'
+          - step:
+              name: GitHub Mirror to Acato Legacy Clearsite
+              image: alpine/git:latest
+              clone:
+                enabled: false
+              script:
+                - git clone --bare git@bitbucket.org:acato/wp-email-essentials.git
+                - cd wp-email-essentials.git
+                - git push --mirror git@github.com:clearsite/wp-email-essentials.git
   branches:
     '{develop,staging,master}':
-      - step:
-          name: Trigger package refresh from branch
-          script:
-            - pipe: atlassian/trigger-pipeline:4.2.1
-              variables:
-                BITBUCKET_USERNAME: 'acato_pipeline'
-                BITBUCKET_APP_PASSWORD: $APP_PASSWORD
-                REPOSITORY: 'acato-packagist'
-                ACCOUNT: 'acato'
-  default:
-    - step:
-        name: GitHub Mirror to Acato Legacy Clearsite
-        image: alpine/git:latest
-        clone:
-          enabled: false
-        script:
-          - git clone --bare git@bitbucket.org:acato/wp-email-essentials.git
-          - cd wp-email-essentials.git
-          - git push --mirror git@github.com:clearsite/wp-email-essentials.git
+      - parallel:
+          - step:
+              name: Trigger package refresh from branch
+              script:
+                - pipe: atlassian/trigger-pipeline:4.2.1
+                  variables:
+                    BITBUCKET_USERNAME: 'acato_pipeline'
+                    BITBUCKET_APP_PASSWORD: $APP_PASSWORD
+                    REPOSITORY: 'acato-packagist'
+                    ACCOUNT: 'acato'
+          - step:
+              name: GitHub Mirror to Acato Legacy Clearsite
+              image: alpine/git:latest
+              clone:
+                enabled: false
+              script:
+                - git clone --bare git@bitbucket.org:acato/wp-email-essentials.git
+                - cd wp-email-essentials.git
+                - git push --mirror git@github.com:clearsite/wp-email-essentials.git
