@@ -114,7 +114,14 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 								<td class="eml">
 									<?php
 									if ( $wpes_view_email->eml ) {
-										print '<a href="' . esc_attr( add_query_arg( 'download_eml', $wpes_view_email->ID ) ) . '" class="dashicons dashicons-download"></a> ' . Plugin::nice_size( strlen( $wpes_view_email->eml ) );
+										$wpes_attachment_count = substr_count( $wpes_view_email->eml, 'Content-Disposition: attachment;');
+										if ($wpes_attachment_count) {
+											$wpes_attachment_count = '<span class="dashicons dashicons-paperclip"></span>' . $wpes_attachment_count;
+										}
+										else {
+											$wpes_attachment_count = '';
+										}
+										print '<a href="' . esc_attr( add_query_arg( 'download_eml', $wpes_view_email->ID ) ) . '" class="dashicons dashicons-download"></a> ' . Plugin::nice_size( strlen( $wpes_view_email->eml ) ) . $wpes_attachment_count;
 									}
 									?>
 								</td>
