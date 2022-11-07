@@ -2832,4 +2832,21 @@ Item 2
 		</h2>
 		<?php
 	}
+
+	public static function nice_size( int $filesize ) {
+		$filesize = absint( $filesize );
+		if ( ! $filesize ) {
+			return '';
+		}
+		$sizes = [ 'B', 'kB', 'MB', 'GB' ];
+		while ( $filesize > 900 && count( $sizes ) > 1 ) {
+			$filesize /= 1024;
+			array_shift( $sizes );
+		}
+		$size = array_shift( $sizes );
+
+		$digits = $filesize >= 100 ? 0 : 1;
+
+		return sprintf( "%0.{$digits}f%s", $filesize, $size );
+	}
 }

@@ -114,7 +114,7 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 								<td class="eml">
 									<?php
 									if ( $wpes_view_email->eml ) {
-										print '<a href="' . esc_attr( add_query_arg( 'download_eml', $wpes_view_email->ID ) ) . '" class="dashicons dashicons-download"></a>';
+										print '<a href="' . esc_attr( add_query_arg( 'download_eml', $wpes_view_email->ID ) ) . '" class="dashicons dashicons-download"></a> ' . Plugin::nice_size( strlen( $wpes_view_email->eml ) );
 									}
 									?>
 								</td>
