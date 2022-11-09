@@ -112,38 +112,40 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 						];
 						foreach ( $wpes_view_emails_list as $wpes_view_email ) {
 							// Get the sender from the log. This might be replaced, if so, this is reply-to, indicated with * .
-							$sender   = $wpes_view_email->sender;
-							$reply_to = '';
+							$wpes__sender   = $wpes_view_email->sender;
+							$wpes__reply_to = '';
 							// This is reply-to!
-							if ( substr( $sender, - 2, 2 ) === ' *' ) {
-								$reply_to = trim( $sender, ' *' );
+							if ( substr( $wpes__sender, - 2, 2 ) === ' *' ) {
+								$wpes__reply_to = trim( $wpes__sender, ' *' );
 								// So who sent it?
 								// 1. Get from Debug data, Sender if available, From otherwise, and FromName if we have it.
-								$debug  = json_decode( $wpes_view_email->debug );
-								$sender = $debug->Sender ?: $debug->From;
-								if ( $sender ) {
-									if ( $debug->FromName ) {
-										$sender = Plugin::rfc_encode(
+								$wpes__debug = json_decode( $wpes_view_email->debug );
+								// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+								$wpes__sender = $wpes__debug->Sender ?: $wpes__debug->From;
+								if ( $wpes__sender ) {
+									// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+									if ( $wpes__debug->FromName ) {
+										$wpes__sender = Plugin::rfc_encode(
 											[
-												'name'  => $debug->FromName,
-												'email' => $debug->Sender ?: $debug->From,
+												'name'  => $wpes__debug->FromName, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+												'email' => $wpes__debug->Sender ?: $wpes__debug->From, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 											]
 										);
-										$sender = esc_html( $sender );
+										$wpes__sender = esc_html( $wpes__sender );
 									}
 								} else {
 									// If not available, then assume it is the configured email address.
-									$sender = $wpes_default_sender;
-									if ( $sender ) {
-										$sender = '<strong style="color: darkgreen">' . esc_html( $sender ) . '</strong>';
+									$wpes__sender = $wpes_default_sender;
+									if ( $wpes__sender ) {
+										$wpes__sender = '<strong style="color: darkgreen">' . esc_html( $wpes__sender ) . '</strong>';
 									} else {
 										// Unless that is not set-up yet, then we assume the WP default, which might not be accurate.
-										$sender = '<strong style="color: orange">' . esc_html( $wpes_wp_admin_email ) . '</strong>';
+										$wpes__sender = '<strong style="color: orange">' . esc_html( $wpes_wp_admin_email ) . '</strong>';
 									}
 								}
-								$reply_to = esc_html( $reply_to );
+								$wpes__reply_to = esc_html( $wpes__reply_to );
 							} else {
-								$sender = esc_html( $sender );
+								$wpes__sender = esc_html( $wpes__sender );
 							}
 							?>
 							<tr class="email-item" id="email-<?php print esc_attr( $wpes_view_email->ID ); ?>">
@@ -156,7 +158,7 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 										} else {
 											$wpes_attachment_count = '';
 										}
-										print '<a href="' . esc_attr( add_query_arg( 'download_eml', $wpes_view_email->ID ) ) . '" class="dashicons dashicons-download"></a> ' . Plugin::nice_size( strlen( $wpes_view_email->eml ) ) . $wpes_attachment_count;
+										print '<a href="' . esc_attr( add_query_arg( 'download_eml', $wpes_view_email->ID ) ) . '" class="dashicons dashicons-download"></a> ' . wp_kses_post( Plugin::nice_size( strlen( $wpes_view_email->eml ) ) . $wpes_attachment_count );
 									}
 									?>
 								</td>
@@ -167,7 +169,7 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 									<?php print esc_html( $wpes_view_email->recipient ); ?>&nbsp;
 								</td>
 								<td class="sender">
-									<?php print wp_kses_post( $sender . ( $reply_to ? '<br />Reply-To: ' . $reply_to : '' ) ); ?>
+									<?php print wp_kses_post( $wpes__sender . ( $wpes__reply_to ? '<br />Reply-To: ' . $wpes__reply_to : '' ) ); ?>
 								</td>
 								<td class="subject">
 									<?php print esc_html( $wpes_view_email->subject ); ?>&nbsp;

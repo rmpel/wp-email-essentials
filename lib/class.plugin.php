@@ -7,7 +7,7 @@
 
 namespace WP_Email_Essentials;
 
-use \Exception;
+use Exception;
 
 /**
  * The main plugin class.
@@ -822,7 +822,7 @@ class Plugin {
 			$sending_ip = [];
 		}
 		$ipkey = $force_ip4 ? 'force_ip4' : 'auto';
-		if ( $sending_ip && !empty( $sending_ip[ $ipkey ] ) ) {
+		if ( $sending_ip && ! empty( $sending_ip[ $ipkey ] ) ) {
 			return $sending_ip[ $ipkey ];
 		}
 		$url = admin_url( 'admin-ajax.php' );
@@ -845,7 +845,7 @@ class Plugin {
 					'http://ip4.me',
 					[
 						'httpversion' => '1.1',
-						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo('url'),
+						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo( 'url' ),
 						'user-agent'  => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
 					]
 				)
@@ -859,7 +859,7 @@ class Plugin {
 					'https://ip4.remonpel.nl',
 					[
 						'httpversion' => '1.1',
-						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo('url'),
+						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo( 'url' ),
 						'user-agent'  => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
 					]
 				)
@@ -885,7 +885,7 @@ class Plugin {
 					'http://watismijnip.nl',
 					[
 						'httpversion' => '1.1',
-						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo('url'),
+						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo( 'url' ),
 						'user-agent'  => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
 					]
 				)
@@ -899,7 +899,7 @@ class Plugin {
 					'http://ip6.me',
 					[
 						'httpversion' => '1.1',
-						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo('url'),
+						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo( 'url' ),
 						'user-agent'  => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
 					]
 				)
@@ -1041,7 +1041,7 @@ class Plugin {
 			set_site_transient( $transient_name, $transient, $ttl );
 		}
 		if ( $single_output ) { // Most records are repeatable, should return array, calling code should process array.
-			if ( empty($transient) ) {
+			if ( empty( $transient ) ) {
 				return false;
 			}
 			if ( DNS_A === $filter ) {
@@ -2833,12 +2833,20 @@ Item 2
 		<?php
 	}
 
-	public static function nice_size( int $filesize ) {
+	/**
+	 * Make a nice-size display format of a number of bytes.
+	 *
+	 * @param int $filesize The filesize.
+	 *
+	 * @return string
+	 */
+	public static function nice_size( $filesize ) {
 		$filesize = absint( $filesize );
 		if ( ! $filesize ) {
 			return '';
 		}
 		$sizes = [ 'B', 'kB', 'MB', 'GB' ];
+		// phpcs:ignore Squiz.PHP.DisallowSizeFunctionsInLoops.Found -- Not allowed? Are you my mother???.
 		while ( $filesize > 900 && count( $sizes ) > 1 ) {
 			$filesize /= 1024;
 			array_shift( $sizes );

@@ -210,7 +210,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 								</strong>
 								<p>
 									<code>
-										<?php print $wpes_spf_result ? wp_kses_post( $wpes_spf_result ) : esc_html_e('Nothing ;(', 'wpes'); ?>
+										<?php print $wpes_spf_result ? wp_kses_post( $wpes_spf_result ) : esc_html_e( 'Nothing ;( - This IP is not found in any part of the SPF.', 'wpes' ); ?>
 									</code>
 								</p>
 							</div>
