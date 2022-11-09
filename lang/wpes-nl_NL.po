@@ -1,8 +1,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: WP Email Essentials\n"
-"POT-Creation-Date: 2022-08-19 12:31+0200\n"
-"PO-Revision-Date: 2022-08-19 12:31+0200\n"
+"POT-Creation-Date: 2022-11-09 09:00+0100\n"
+"PO-Revision-Date: 2022-11-09 09:00+0100\n"
 "Last-Translator: Remon Pel <remon@acato.nl>\n"
 "Language-Team: Clearsite Webdesigners <support@clearsite.nl>\n"
 "Language: nl_NL\n"
@@ -20,7 +20,7 @@ msgstr ""
 "X-Poedit-SearchPathExcluded-1: node_modules\n"
 
 #: lib/class.history.php:161 lib/class.history.php:162
-#: templates/admin-emails.php:32 templates/admin-emails.php:80
+#: templates/admin-emails.php:34 templates/admin-emails.php:82
 #: templates/admin-interface.php:513
 msgid "E-mail History"
 msgstr "E-mail Historie"
@@ -34,83 +34,83 @@ msgstr "Instellingen"
 msgid "anonymous"
 msgstr "anoniem"
 
-#: lib/class.plugin.php:1223 lib/class.plugin.php:1750
+#: lib/class.plugin.php:1226 lib/class.plugin.php:1753
 #: templates/admin-interface.php:49
 msgid "Send sample mail"
 msgstr "Verstuur test-e-mail"
 
-#: lib/class.plugin.php:1258 lib/class.plugin.php:1749
+#: lib/class.plugin.php:1261 lib/class.plugin.php:1752
 #: templates/admin-interface.php:47
 msgid "Print debug output of sample mail"
 msgstr "Geef debug informatie over verzonden test-e-mail"
 
-#: lib/class.plugin.php:1260
+#: lib/class.plugin.php:1263
 msgid "Dump of PHP Mailer object"
 msgstr "Dump van het PHP Mailer object"
 
-#: lib/class.plugin.php:1737 lib/class.plugin.php:1809
-#: lib/class.plugin.php:1850 templates/admin-admins.php:38
+#: lib/class.plugin.php:1740 lib/class.plugin.php:1812
+#: lib/class.plugin.php:1853 templates/admin-admins.php:38
 #: templates/admin-interface.php:45 templates/admin-moderators.php:45
 msgid "Save settings"
 msgstr "Instellingen opslaan"
 
-#: lib/class.plugin.php:1746
+#: lib/class.plugin.php:1749
 msgid "Settings saved."
 msgstr "Instellingen opgeslagen."
 
-#: lib/class.plugin.php:1769
+#: lib/class.plugin.php:1772
 #, php-format
 msgid "Mail sent to %s"
 msgstr "Mail verzonden naar %s"
 
-#: lib/class.plugin.php:1771
+#: lib/class.plugin.php:1774
 #, php-format
 msgid "Mail NOT sent to %s"
 msgstr "Mail NIET verzonden naar %s"
 
-#: lib/class.plugin.php:1784
+#: lib/class.plugin.php:1787
 msgid "Sample email subject"
 msgstr "Voorbeeld e-mail onderwerp"
 
-#: lib/class.plugin.php:1826
+#: lib/class.plugin.php:1829
 msgid "Alternative Admins list saved."
 msgstr "Lijst van alternatieve adressen opgeslagen."
 
-#: lib/class.plugin.php:1839
+#: lib/class.plugin.php:1842
 msgid "Subject-RegExp list saved."
 msgstr "Onderwerp-RegExp lijst opgeslagen."
 
-#: lib/class.plugin.php:1874
+#: lib/class.plugin.php:1877
 msgid "Alternative Moderators list saved."
 msgstr "Lijst van alternatieve moderators opgeslagen."
 
-#: lib/class.plugin.php:1896 lib/class.plugin.php:1897
+#: lib/class.plugin.php:1899 lib/class.plugin.php:1900
 #: templates/admin-admins.php:20
 msgid "Alternative Admins"
 msgstr "Alternatieve Administrator-adressen"
 
-#: lib/class.plugin.php:1908 lib/class.plugin.php:1909
+#: lib/class.plugin.php:1911 lib/class.plugin.php:1912
 #: templates/admin-moderators.php:28
 msgid "Alternative Moderators"
 msgstr "Alternatieve moderators"
 
-#: lib/class.plugin.php:2000
+#: lib/class.plugin.php:2003
 msgid "Test-e-mail"
 msgstr "Test-e-mail"
 
-#: lib/class.plugin.php:2076
+#: lib/class.plugin.php:2079
 #, php-format
 msgid "%s is not yet configured. Please fill out the form below."
 msgstr "%s is nog niet geconfigureerd. Vul aub onderstaande instellingen in."
 
-#: lib/class.plugin.php:2081
+#: lib/class.plugin.php:2084
 #, php-format
 msgid "%1$s is not yet configured. Please go <a href=\"%2$s\">here</a>."
 msgstr ""
 "%1$s is nog niet geconfigureerd, ga a.u.b. naar <a href=\"%2$s\">deze "
 "pagina</a>."
 
-#: lib/class.plugin.php:2092
+#: lib/class.plugin.php:2095
 #, php-format
 msgid ""
 "The S/MIME certificate folder is inside the webspace. This is Extremely "
@@ -121,7 +121,7 @@ msgstr ""
 "Extreem onveilig. Kies a.u.b. een andere locatie welke niet binnen de "
 "website-basis %s ligt."
 
-#: lib/class.plugin.php:2099
+#: lib/class.plugin.php:2102
 msgid ""
 "The openssl package for PHP is not installed, incomplete or broken. Please "
 "contact your hosting provider. S/MIME signing is NOT available."
@@ -130,7 +130,7 @@ msgstr ""
 "Neem contact op met je hosting aanbieder. S/MIME ondertekening is NIET "
 "beschikbaar."
 
-#: lib/class.plugin.php:2105
+#: lib/class.plugin.php:2108
 msgid ""
 "Services like MandrillApp or SparkPostMail will break S/MIME signing. Please "
 "use a different SMTP-service if signing is required."
@@ -139,7 +139,7 @@ msgstr ""
 "ondertekening. Gebruik een andere SMTP-dienst indien digitale ondertekening "
 "vereist is."
 
-#: lib/class.plugin.php:2117
+#: lib/class.plugin.php:2120
 #, php-format
 msgid ""
 "There is no certificate for the default sender address <code>%s</code>. The "
@@ -150,7 +150,7 @@ msgstr ""
 "Het vereiste certificaat is meegeleverd met deze plugin, kopieer het a.u.b. "
 "naar de juiste map."
 
-#: lib/class.plugin.php:2121
+#: lib/class.plugin.php:2124
 #, php-format
 msgid ""
 "There is no certificate for the default sender address <code>%s</code>. "
@@ -162,7 +162,7 @@ msgstr ""
 "certificate.php\" target=\"_blank\">hier</a> met de aanvraag van een S/MIME "
 "certificaat."
 
-#: lib/class.plugin.php:2133
+#: lib/class.plugin.php:2136
 #, php-format
 msgid ""
 "The DKIM certificate folder is inside the webspace. This is Extremely "
@@ -173,76 +173,76 @@ msgstr ""
 "Extreem onveilig. Kies a.u.b. een andere locatie welke niet binnen de "
 "website-basis %s ligt."
 
-#: lib/class.plugin.php:2460
+#: lib/class.plugin.php:2463
 msgctxt "mail key"
 msgid "E-mail after automatic update (debug)"
 msgstr "E-mail na automatische update (debug)"
 
-#: lib/class.plugin.php:2461
+#: lib/class.plugin.php:2464
 msgctxt "mail key"
 msgid "E-mail after automatic update"
 msgstr "E-mail na automatische update"
 
-#: lib/class.plugin.php:2462
+#: lib/class.plugin.php:2465
 msgctxt "mail key"
 msgid "E-mail after website crash"
 msgstr "E-mail wanneer de website crasht"
 
-#: lib/class.plugin.php:2467
+#: lib/class.plugin.php:2470
 msgctxt "mail key"
 msgid "E-mail after new user registered"
 msgstr "E-mail wanneer een nieuwe gebruiker is geregistreerd"
 
-#: lib/class.plugin.php:2468
+#: lib/class.plugin.php:2471
 msgctxt "mail key"
 msgid "E-mail notification after user requests password reset"
 msgstr "E-mail notificatie nadat een gebruiker een wachtwoord reset vraagt"
 
-#: lib/class.plugin.php:2469
+#: lib/class.plugin.php:2472
 msgctxt "mail key"
 msgid "E-mail notification after user reset their password"
 msgstr "E-mail notificatie nadat een gebruiker hun wachtwoord heeft gereset"
 
-#: lib/class.plugin.php:2470
+#: lib/class.plugin.php:2473
 msgctxt "mail key"
 msgid "E-mail notification after user changed their password"
 msgstr "E-mail notificatie nadat een gebruiker hun wachtwoord veranderd heeft"
 
-#: lib/class.plugin.php:2471
+#: lib/class.plugin.php:2474
 msgctxt "mail key"
 msgid "E-Mail test from WP Email Essentials"
 msgstr "E-mail test vanuit WP Email Essentials"
 
-#: lib/class.plugin.php:2493
+#: lib/class.plugin.php:2496
 #, php-format
 msgctxt "translators: ignore this."
 msgid "[%s] New User Registration"
 msgstr "[%s] New User Registration"
 
-#: lib/class.plugin.php:2494
+#: lib/class.plugin.php:2497
 #, php-format
 msgctxt "translators: ignore this."
 msgid "[%s] Password Reset"
 msgstr "[%s] Password Reset"
 
-#: lib/class.plugin.php:2495
+#: lib/class.plugin.php:2498
 #, php-format
 msgctxt "translators: ignore this."
 msgid "[%s] Password Changed"
 msgstr "[%s] Password Changed"
 
-#: lib/class.plugin.php:2496
+#: lib/class.plugin.php:2499
 #, php-format
 msgctxt "translators: ignore this."
 msgid "[%s] Password Lost/Changed"
 msgstr "[%s] Password Lost/Changed"
 
-#: lib/class.plugin.php:2624
+#: lib/class.plugin.php:2627
 #, php-format
 msgid "You can configure alternative administrators <a href=\"%s\">here</a>."
 msgstr "Je kunt alternatieve ontvangers <a href=\"%s\">hier</a> instellen."
 
-#: lib/class.plugin.php:2636
+#: lib/class.plugin.php:2639
 #, php-format
 msgid ""
 "But <strong>please do not worry</strong>! <a href=\"%1$s\" target=\"_blank\">"
@@ -253,7 +253,7 @@ msgstr ""
 "\">%2$s</a> zal <em class=\"noreply\">noreply@%3$s</em> instellen als "
 "afzender en <em>het hier ingestelde adres</em> gebruiken als Reply-To adres."
 
-#: lib/class.plugin.php:2640
+#: lib/class.plugin.php:2643
 #, php-format
 msgid ""
 "But <strong>please do not worry</strong>! <a href=\"%1$s\" target=\"_blank\">"
@@ -264,7 +264,7 @@ msgstr ""
 "\">%2$s</a> zal <em class=\"default\">%3$s</em> instellen als afzender en "
 "<em>het hier ingestelde adres</em> gebruiken als Reply-To adres."
 
-#: lib/class.plugin.php:2644
+#: lib/class.plugin.php:2647
 #, php-format
 msgid ""
 "But <strong>please do not worry</strong>! <a href=\"%1$s\" target=\"_blank\">"
@@ -276,7 +276,7 @@ msgstr ""
 "instellen als afzender en <em>het hier ingestelde adres</em> gebruiken als "
 "Reply-To adres."
 
-#: lib/class.plugin.php:2648
+#: lib/class.plugin.php:2651
 #, php-format
 msgid ""
 "You can fix this here, or you can let <a href=\"%1$s\" target=\"_blank\">"
@@ -290,7 +290,7 @@ msgstr ""
 msgid "E-mail Throttling"
 msgstr "E-mail Wachtrij"
 
-#: lib/class.wpes-queue-list-table.php:71 templates/admin-emails.php:97
+#: lib/class.wpes-queue-list-table.php:71 templates/admin-emails.php:99
 msgid "Status"
 msgstr "Status"
 
@@ -298,11 +298,11 @@ msgstr "Status"
 msgid "E-mail Date"
 msgstr "E-mail datum"
 
-#: lib/class.wpes-queue-list-table.php:73 templates/admin-emails.php:94
+#: lib/class.wpes-queue-list-table.php:73 templates/admin-emails.php:96
 msgid "Recipient"
 msgstr "Ontvanger"
 
-#: lib/class.wpes-queue-list-table.php:74 templates/admin-emails.php:96
+#: lib/class.wpes-queue-list-table.php:74 templates/admin-emails.php:98
 msgid "Subject"
 msgstr "Onderwerp"
 
@@ -440,7 +440,7 @@ msgstr ""
 msgid "There are currently no e-mail subjects that have not been matched."
 msgstr "Er zijn momenteel geen e-mail onderwerpen die niet zijn gematched."
 
-#: templates/admin-emails.php:85
+#: templates/admin-emails.php:87
 msgid ""
 "A sender with an asterisk is rewritten to the site default sender and used "
 "as Reply-To address."
@@ -448,30 +448,30 @@ msgstr ""
 "E-mails met een afzender met een asterisk zijn verzonden met de ingestelde "
 "afzender en de getoonde afzender staat in het Reply-To veld."
 
-#: templates/admin-emails.php:93
+#: templates/admin-emails.php:95
 msgid "Date/Time"
 msgstr "Datum/Tijd"
 
-#: templates/admin-emails.php:95
+#: templates/admin-emails.php:97
 msgid "Sender"
 msgstr "Verzender"
 
-#: templates/admin-emails.php:106
+#: templates/admin-emails.php:108
 msgctxt "E-mail log: this e-mail is Sent"
 msgid "Sent ??"
 msgstr "Vezonden ??"
 
-#: templates/admin-emails.php:107
+#: templates/admin-emails.php:109
 msgctxt "E-mail log: this e-mail is Sent OK"
 msgid "Sent Ok"
 msgstr "Goed verzonden"
 
-#: templates/admin-emails.php:108
+#: templates/admin-emails.php:110
 msgctxt "E-mail log: this e-mail Failed sending"
 msgid "Failed"
 msgstr "Mislukt"
 
-#: templates/admin-emails.php:109
+#: templates/admin-emails.php:111
 msgctxt "E-mail log: this e-mail is Opened by the receiver"
 msgid "Opened"
 msgstr "Geopend"
@@ -633,8 +633,8 @@ msgid "Matches"
 msgstr "Is overeenkomstig met"
 
 #: templates/admin-interface.php:213
-msgid "Nothing ;("
-msgstr "Niets ;("
+msgid "Nothing ;( - This IP is not found in any part of the SPF."
+msgstr "Niets ;( - Dit IP staat in geen van de onderdelen van de SPF."
 
 #: templates/admin-interface.php:224
 msgid ""
@@ -1260,6 +1260,9 @@ msgstr ""
 "E-mails met een hoge prioriteit worden verzonden als voorheen. Voor zeer "
 "belangrijke e-mails kun je de prioriteit op hoog zetten met de volgende "
 "header;"
+
+#~ msgid "Nothing ;("
+#~ msgstr "Niets ;("
 
 #~ msgid "Outgoing emails"
 #~ msgstr "Uitgaande emails"
