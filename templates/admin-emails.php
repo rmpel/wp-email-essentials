@@ -26,6 +26,8 @@ $wpes_view_current_page    = isset( $_GET['_page'] ) && intval( $_GET['_page'] )
 $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page;
 // @phpcs:enable WordPress.Security.NonceVerification.Recommended
 
+$wpes_default_sender = Plugin::get_config()['from_email'];
+$wpes_wp_admin_email = get_option( 'admin_email' );
 ?>
 <div class="wrap wpes-wrap wpes-emails wpes-admin">
 	<?php
@@ -60,16 +62,16 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 		if ( false !== $wpes_view_prev_page ) {
 			?>
 			<a
-					class="button"
-					href="<?php print esc_attr( add_query_arg( '_page', $wpes_view_prev_page ) ); ?>">
+				class="button"
+				href="<?php print esc_attr( add_query_arg( '_page', $wpes_view_prev_page ) ); ?>">
 					&lt; Previous page</a> <?php } ?></span>
 		<span>
 		<?php
 		if ( false !== $wpes_view_next_page ) {
 			?>
 			<a
-					class="button"
-					href="<?php print esc_attr( add_query_arg( '_page', $wpes_view_next_page ) ); ?>">
+				class="button"
+				href="<?php print esc_attr( add_query_arg( '_page', $wpes_view_next_page ) ); ?>">
 					Next page &gt;</a> <?php } ?></span>
 	</div>
 
@@ -109,16 +111,49 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 							History::MAIL_OPENED => _x( 'Opened', 'E-mail log: this e-mail is Opened by the receiver', 'wpes' ),
 						];
 						foreach ( $wpes_view_emails_list as $wpes_view_email ) {
+							// Get the sender from the log. This might be replaced, if so, this is reply-to, indicated with * .
+							$sender   = $wpes_view_email->sender;
+							$reply_to = '';
+							// This is reply-to!
+							if ( substr( $sender, - 2, 2 ) === ' *' ) {
+								$reply_to = trim( $sender, ' *' );
+								// So who sent it?
+								// 1. Get from Debug data, Sender if available, From otherwise, and FromName if we have it.
+								$debug  = json_decode( $wpes_view_email->debug );
+								$sender = $debug->Sender ?: $debug->From;
+								if ( $sender ) {
+									if ( $debug->FromName ) {
+										$sender = Plugin::rfc_encode(
+											[
+												'name'  => $debug->FromName,
+												'email' => $debug->Sender ?: $debug->From,
+											]
+										);
+										$sender = esc_html( $sender );
+									}
+								} else {
+									// If not available, then assume it is the configured email address.
+									$sender = $wpes_default_sender;
+									if ( $sender ) {
+										$sender = '<strong style="color: darkgreen">' . esc_html( $sender ) . '</strong>';
+									} else {
+										// Unless that is not set-up yet, then we assume the WP default, which might not be accurate.
+										$sender = '<strong style="color: orange">' . esc_html( $wpes_wp_admin_email ) . '</strong>';
+									}
+								}
+								$reply_to = esc_html( $reply_to );
+							} else {
+								$sender = esc_html( $sender );
+							}
 							?>
 							<tr class="email-item" id="email-<?php print esc_attr( $wpes_view_email->ID ); ?>">
 								<td class="eml">
 									<?php
 									if ( $wpes_view_email->eml ) {
-										$wpes_attachment_count = substr_count( $wpes_view_email->eml, 'Content-Disposition: attachment;');
-										if ($wpes_attachment_count) {
+										$wpes_attachment_count = substr_count( $wpes_view_email->eml, 'Content-Disposition: attachment;' );
+										if ( $wpes_attachment_count ) {
 											$wpes_attachment_count = '<span class="dashicons dashicons-paperclip"></span>' . $wpes_attachment_count;
-										}
-										else {
+										} else {
 											$wpes_attachment_count = '';
 										}
 										print '<a href="' . esc_attr( add_query_arg( 'download_eml', $wpes_view_email->ID ) ) . '" class="dashicons dashicons-download"></a> ' . Plugin::nice_size( strlen( $wpes_view_email->eml ) ) . $wpes_attachment_count;
@@ -132,7 +167,7 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 									<?php print esc_html( $wpes_view_email->recipient ); ?>&nbsp;
 								</td>
 								<td class="sender">
-									<?php print esc_html( $wpes_view_email->sender ); ?>&nbsp;
+									<?php print wp_kses_post( $sender . ( $reply_to ? '<br />Reply-To: ' . $reply_to : '' ) ); ?>
 								</td>
 								<td class="subject">
 									<?php print esc_html( $wpes_view_email->subject ); ?>&nbsp;
@@ -183,8 +218,8 @@ $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page
 								<span class="alt_body"><pre><?php print wp_kses_post( $wpes_view_email->alt_body ); ?></pre></span>
 								<span class="body">
 					<iframe
-							class="autofit" width="100%" height="100%" border="0" frameborder="0"
-							src="data:text/html;headers=<?php print rawurlencode( 'Content-Security-Policy: script-src none;' ); ?>;base64,<?php print $wpes_email_data_base64; /* @phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>">
+						class="autofit" width="100%" height="100%" border="0" frameborder="0"
+						src="data:text/html;headers=<?php print rawurlencode( 'Content-Security-Policy: script-src none;' ); ?>;base64,<?php print $wpes_email_data_base64; /* @phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>">
 					</iframe>
 				</span>
 								<span class="debug"><pre><?php print esc_html( $wpes_view_email->debug ); ?></pre></span>

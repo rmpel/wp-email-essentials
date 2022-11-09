@@ -1711,7 +1711,7 @@ class Plugin {
 	 *
 	 * @return string
 	 */
-	private static function rfc_encode( $email_array ) {
+	public static function rfc_encode( $email_array ) {
 		if ( ! $email_array['name'] ) {
 			return $email_array['email'];
 		}
