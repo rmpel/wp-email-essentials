@@ -83,10 +83,6 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 				</h2>
 			</div>
 			<div class="inside">
-				<div class="wpes-notice--info">
-					*) <?php esc_html_e( 'A sender with an asterisk is rewritten to the site default sender and used as Reply-To address.', 'wpes' ); ?>
-				</div>
-
 				<div class="wpes-email-history">
 					<table class="wp-list-table widefat fixed striped table-view-list">
 						<thead>
