@@ -1315,8 +1315,21 @@ class Plugin {
 
 		// now check for HTML envelope.
 		if ( false === strpos( $should_be_html, '<html' ) ) {
-
 			$should_be_html = self::build_html( $mailer, $subject, $should_be_html, $charset );
+		}
+
+		// Verify charset is defined.
+		// <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		$find_charset = preg_match( '/http-equiv=.Content-Type.[^>]+charset=.?' . $charset . '/i', $should_be_html );
+		if ( ! $find_charset ) {
+			$find_wrong_charset = preg_match( '/http-equiv=.Content-Type.[^>]+charset=[^>]+>/i', $should_be_html, $m );
+			if ( $find_wrong_charset ) {
+				// change charset
+				$should_be_html = str_replace( $m[0], 'http-equiv="Content-Type" x="wrong charset detected" content="text/html; charset=' . $charset . '">', $should_be_html );
+			} else {
+				// add charset
+				$should_be_html = str_replace( '</head>', '<meta http-equiv="Content-Type" x="missing charset" content="text/html; charset=' . $charset . '"></head>', $should_be_html );
+			}
 		}
 
 		return $should_be_html;
