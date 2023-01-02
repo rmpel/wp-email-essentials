@@ -143,11 +143,11 @@ class Plugin {
 
 		// set default from email and from name.
 		if ( $config['from_email'] ) {
-			self::log( 'Config FromMail: ' . $config['from_email'] );
+//			self::log( 'Config FromMail: ' . $config['from_email'] );
 			add_filter( 'wp_mail_from', [ self::class, 'filter_wp_mail_from' ], 9999 );
 		}
 		if ( $config['from_name'] ) {
-			self::log( 'Config FromName: ' . $config['from_name'] );
+//			self::log( 'Config FromName: ' . $config['from_name'] );
 			add_filter( 'wp_mail_from_name', [ self::class, 'filter_wp_mail_from_name' ], 9999 );
 		}
 
