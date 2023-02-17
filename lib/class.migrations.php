@@ -31,7 +31,7 @@ class Migrations {
 			// plugin active, migrate.
 			$wpes_config = Plugin::get_config();
 
-			$smtp_connect = get_option( 'smtp-connect', array() );
+			$smtp_connect = get_option( 'smtp-connect', [] );
 			if ( $smtp_connect['enabled'] ?? false ) {
 				$wpes_config['smtp-enabled'] = true;
 				$wpes_config['host']         = $smtp_connect['Host'];
@@ -55,7 +55,7 @@ class Migrations {
 			// plugin active, migrate.
 			$wpes_config = Plugin::get_config();
 
-			$postman_settings = get_option( 'postman_options', array() );
+			$postman_settings = get_option( 'postman_options', [] );
 			if ( $postman_settings['hostname'] ?? false ) {
 				$wpes_config['smtp-enabled']   = true;
 				$wpes_config['secure']         = '' !== $postman_settings['enc_type'] ? 'tls-' : ''; // Assume unvalidated TLS; we don't know.

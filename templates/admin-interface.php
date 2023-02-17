@@ -19,12 +19,12 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 <div class="wrap wpes-wrap wpes-settings">
 	<?php
 	Plugin::template_header( __( 'E-mail Configuration', 'wpes' ) );
-	if ( Plugin::$message ) {
+	if ( Plugin::$message !== '' ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
 	}
 	?>
 	<?php
-	if ( Plugin::$error ) {
+	if ( Plugin::$error !== '' ) {
 		print '<div class="error"><p>' . wp_kses_post( Plugin::$error ) . '</p></div>';
 	}
 	?>
@@ -198,38 +198,48 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 							?>
 							<div class="wpes-notice--info">
 								<strong class="title">
-									<?php print wp_kses_post( __( 'Sending IP', 'wpes' ) ); ?>
+									<?php
+									print wp_kses_post( __( 'Sending IP', 'wpes' ) );
+									?>
 								</strong>
 								<p>
 									<code>
-										<?php print wp_kses_post( Plugin::get_sending_ip() ); ?>
+										<?php
+										print wp_kses_post( Plugin::get_sending_ip() );
+										?>
 									</code>
 								</p>
 								<strong class="title">
-									<?php print wp_kses_post( __( 'Matches', 'wpes' ) ); ?>
+									<?php
+									print wp_kses_post( __( 'Matches', 'wpes' ) );
+									?>
 								</strong>
 								<p>
 									<code>
-										<?php print $wpes_spf_result ? wp_kses_post( $wpes_spf_result ) : esc_html_e( 'Nothing ;( - This IP is not found in any part of the SPF.', 'wpes' ); ?>
+										<?php
+										print $wpes_spf_result ? wp_kses_post( $wpes_spf_result ) : esc_html_e( 'Nothing ;( - This IP is not found in any part of the SPF.', 'wpes' );
+										?>
 									</code>
 								</p>
 							</div>
 							<?php
-						} else {
+						} elseif ( ! Plugin::i_am_allowed_to_send_in_name_of( $wpes_config['from_email'] ) ) {
 							// domain match.
-							if ( ! Plugin::i_am_allowed_to_send_in_name_of( $wpes_config['from_email'] ) ) {
-								?>
-								<div class="wpes-notice--error">
-									<strong class="title">
-										<?php print wp_kses_post( __( 'You are NOT allowed to send mail with this domain; it should match the domainname of the website.', 'wpes' ) ); ?>
-									</strong>
+							?>
+							<div class="wpes-notice--error">
+								<strong class="title">
+									<?php
+									print wp_kses_post( __( 'You are NOT allowed to send mail with this domain; it should match the domainname of the website.', 'wpes' ) );
+									?>
+								</strong>
 
-									<p>
-										<?php print wp_kses_post( __( 'If you really need to use this sender e-mail address, you need to switch to SPF-record checking and make sure the SPF for this domain matches this server.', 'wpes' ) ); ?>
-									</p>
-								</div>
-								<?php
-							}
+								<p>
+									<?php
+									print wp_kses_post( __( 'If you really need to use this sender e-mail address, you need to switch to SPF-record checking and make sure the SPF for this domain matches this server.', 'wpes' ) );
+									?>
+								</p>
+							</div>
+							<?php
 						}
 						?>
 					</div>
@@ -355,7 +365,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 									$wpes_config['timeout'] = 300;
 								}
 								foreach ( $wpes_timeouts as $wpes_key => $wpes_val ) {
-									print '<option value="' . esc_attr( $wpes_key ) . '" ' . selected( intval( $wpes_config['timeout'] ), $wpes_key, false ) . '>' . esc_html( $wpes_val ) . '</option>';
+									print '<option value="' . esc_attr( $wpes_key ) . '" ' . selected( (int) $wpes_config['timeout'], $wpes_key, false ) . '>' . esc_html( $wpes_val ) . '</option>';
 								}
 								?>
 							</select>
@@ -936,19 +946,17 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 							</p>
 						</div>
 						<?php
-						if ( isset( $wpes_config['dkimfolder'] ) ) {
-							if ( $wpes_dkim_identities ) {
-								?>
-								<div class="wpes-notice--info on-enable-dkim">
-									<p>
-										<?php
-										// translators: %s: a list of domains.
-										print wp_kses_post( sprintf( __( 'Found DKIM certificates for the following sender-domains: %s', 'wpes' ), '<code>' . implode( '</code>, <code>', $wpes_dkim_identities ) . '</code>' ) );
-										?>
-									</p>
-								</div>
-								<?php
-							}
+						if ( isset( $wpes_config['dkimfolder'] ) && $wpes_dkim_identities ) {
+							?>
+							<div class="wpes-notice--info on-enable-dkim">
+								<p>
+									<?php
+									// translators: %s: a list of domains.
+									print wp_kses_post( sprintf( __( 'Found DKIM certificates for the following sender-domains: %s', 'wpes' ), '<code>' . implode( '</code>, <code>', $wpes_dkim_identities ) . '</code>' ) );
+									?>
+								</p>
+							</div>
+							<?php
 						}
 						?>
 					</div>

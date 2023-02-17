@@ -18,12 +18,12 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 <div class="wrap wpes-wrap wpes-admins">
 	<?php
 	Plugin::template_header( __( 'Alternative Admins', 'wpes' ) );
-	if ( Plugin::$message ) {
+	if ( Plugin::$message !== '' ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
 	}
 	?>
 	<?php
-	if ( Plugin::$error ) {
+	if ( Plugin::$error !== '' ) {
 		print '<div class="error"><p>' . wp_kses_post( Plugin::$error ) . '</p></div>';
 	}
 	?>

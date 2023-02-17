@@ -21,8 +21,8 @@ if ( ! in_array( $wpes_view_order_field, [ 'subject', 'sender', 'thedatetime', '
 }
 
 $wpes_view_order_direction = isset( $_GET['_order'] ) ? ( 'DESC' === $_GET['_order'] ? 'DESC' : 'ASC' ) : ( 'ID' === $wpes_view_order_field ? 'DESC' : 'ASC' );
-$wpes_view_items_per_page  = isset( $_GET['_limit'] ) && intval( $_GET['_limit'] ) > 0 ? intval( $_GET['_limit'] ) : 25;
-$wpes_view_current_page    = isset( $_GET['_page'] ) && intval( $_GET['_page'] ) > 0 ? intval( $_GET['_page'] ) : 0;
+$wpes_view_items_per_page  = isset( $_GET['_limit'] ) && (int) $_GET['_limit'] > 0 ? (int) $_GET['_limit'] : 25;
+$wpes_view_current_page    = isset( $_GET['_page'] ) && (int) $_GET['_page'] > 0 ? (int) $_GET['_page'] : 0;
 $wpes_view_first_item      = $wpes_view_current_page * $wpes_view_items_per_page;
 // @phpcs:enable WordPress.Security.NonceVerification.Recommended
 
@@ -32,12 +32,12 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 <div class="wrap wpes-wrap wpes-emails wpes-admin">
 	<?php
 	Plugin::template_header( __( 'E-mail History', 'wpes' ) );
-	if ( Plugin::$message ) {
+	if ( Plugin::$message !== '' ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
 	}
 	?>
 	<?php
-	if ( Plugin::$error ) {
+	if ( Plugin::$error !== '' ) {
 		print '<div class="error"><p>' . wp_kses_post( Plugin::$error ) . '</p></div>';
 	}
 	?>
@@ -58,20 +58,20 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 	?>
 	<div class="pager">
 		<span>
-		<?php
-		if ( false !== $wpes_view_prev_page ) {
-			?>
-			<a
-				class="button"
-				href="<?php print esc_attr( add_query_arg( '_page', $wpes_view_prev_page ) ); ?>">
+			<?php
+			if ( false !== $wpes_view_prev_page ) {
+				?>
+				<a
+					class="button"
+					href="<?php print esc_attr( add_query_arg( '_page', $wpes_view_prev_page ) ); ?>">
 					&lt; Previous page</a> <?php } ?></span>
 		<span>
-		<?php
-		if ( false !== $wpes_view_next_page ) {
-			?>
-			<a
-				class="button"
-				href="<?php print esc_attr( add_query_arg( '_page', $wpes_view_next_page ) ); ?>">
+			<?php
+			if ( false !== $wpes_view_next_page ) {
+				?>
+				<a
+					class="button"
+					href="<?php print esc_attr( add_query_arg( '_page', $wpes_view_next_page ) ); ?>">
 					Next page &gt;</a> <?php } ?></span>
 	</div>
 
@@ -123,8 +123,10 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 									if ( $wpes__debug->FromName ) {
 										$wpes__sender = Plugin::rfc_encode(
 											[
-												'name'  => $wpes__debug->FromName, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
-												'email' => $wpes__debug->Sender ?: $wpes__debug->From, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+												'name'  => $wpes__debug->FromName,
+												// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
+												'email' => $wpes__debug->Sender ?: $wpes__debug->From,
+												// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 											]
 										);
 										$wpes__sender = esc_html( $wpes__sender );
@@ -149,7 +151,7 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 									<?php
 									if ( $wpes_view_email->eml ) {
 										$wpes_attachment_count = substr_count( $wpes_view_email->eml, 'Content-Disposition: attachment;' );
-										if ( $wpes_attachment_count ) {
+										if ( $wpes_attachment_count !== 0 ) {
 											$wpes_attachment_count = '<span class="dashicons dashicons-paperclip"></span>' . $wpes_attachment_count;
 										} else {
 											$wpes_attachment_count = '';
@@ -212,15 +214,21 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 							);
 							?>
 							<div class="email-data" id="email-data-<?php print esc_attr( $wpes_view_email->ID ); ?>">
-								<span class="headers"><pre><?php print esc_html( $wpes_view_email->headers ); ?></pre></span>
-								<span class="alt_body"><pre><?php print wp_kses_post( $wpes_view_email->alt_body ); ?></pre></span>
+								<span class="headers">
+									<pre><?php print esc_html( $wpes_view_email->headers ); ?></pre>
+								</span>
+								<span class="alt_body">
+									<pre><?php print wp_kses_post( $wpes_view_email->alt_body ); ?></pre>
+								</span>
 								<span class="body">
-					<iframe
-						class="autofit" width="100%" height="100%" border="0" frameborder="0"
-						src="data:text/html;headers=<?php print rawurlencode( 'Content-Security-Policy: script-src none;' ); ?>;base64,<?php print $wpes_email_data_base64; /* @phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>">
-					</iframe>
-				</span>
-								<span class="debug"><pre><?php print esc_html( $wpes_view_email->debug ); ?></pre></span>
+									<iframe
+										class="autofit" width="100%" height="100%" border="0" frameborder="0"
+										src="data:text/html;headers=<?php print rawurlencode( 'Content-Security-Policy: script-src none;' ); ?>;base64,<?php print $wpes_email_data_base64; /* @phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>">
+									</iframe>
+								</span>
+								<span class="debug">
+									<pre><?php print esc_html( $wpes_view_email->debug ); ?></pre>
+								</span>
 							</div>
 							<?php
 						}

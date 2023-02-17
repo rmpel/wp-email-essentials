@@ -26,12 +26,12 @@ if ( ! get_option( 'moderation_notify' ) ) {
 <div class="wrap wpes-wrap wpes-moderators">
 	<?php
 	Plugin::template_header( __( 'Alternative Moderators', 'wpes' ) );
-	if ( Plugin::$message ) {
+	if ( Plugin::$message !== '' ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
 	}
 	?>
 	<?php
-	if ( Plugin::$error ) {
+	if ( Plugin::$error !== '' ) {
 		print '<div class="error"><p>' . wp_kses_post( Plugin::$error ) . '</p></div>';
 	}
 	?>
@@ -42,8 +42,8 @@ if ( ! get_option( 'moderation_notify' ) ) {
 		<div class="wpes-tools">
 			<div class="wpes-tools--box">
 				<input
-						type="submit" name="op" value="<?php print esc_attr__( 'Save settings', 'wpes' ); ?>"
-						class="button-primary action"/>
+					type="submit" name="op" value="<?php print esc_attr__( 'Save settings', 'wpes' ); ?>"
+					class="button-primary action"/>
 			</div>
 		</div>
 
@@ -100,7 +100,7 @@ if ( ! get_option( 'moderation_notify' ) ) {
 									<tr>
 										<td>
 											<label
-													for="key-<?php print esc_attr( $wpes_post_type ); ?>-<?php print esc_attr( $wpes_moderator_recipient ); ?>-<?php print esc_attr( $wpes_moderator_key ); ?>">
+												for="key-<?php print esc_attr( $wpes_post_type ); ?>-<?php print esc_attr( $wpes_moderator_recipient ); ?>-<?php print esc_attr( $wpes_moderator_key ); ?>">
 												<?php
 												// translators: %1$s: e-mail type like notification or request, %2$s: comment type like comment or pingback, %3$s: post_type .
 												print wp_kses_post( sprintf( __( '<em>%1$s</em> to author on <em>%2$s</em> on <em>%3$s</em>', 'wpes' ), $wpes_moderator_action, $wpes_moderator_key, $wpes_post_type ) ) . ':';
@@ -109,12 +109,12 @@ if ( ! get_option( 'moderation_notify' ) ) {
 										</td>
 										<td>
 											<input
-													class="widefat"
-													type="text"
-													name="settings[keys][<?php print esc_attr( $wpes_post_type ); ?>][<?php print esc_attr( $wpes_moderator_recipient ); ?>][<?php print esc_attr( $wpes_moderator_key ); ?>]"
-													placeholder="<?php print esc_attr( $wpes_placeholder ); ?>"
-													value="<?php print esc_attr( $wpes_config[ $wpes_post_type ][ $wpes_moderator_recipient ][ $wpes_moderator_key ] ); ?>"
-													id="key-<?php print esc_attr( $wpes_post_type ); ?>-<?php print esc_attr( $wpes_moderator_recipient ); ?>-<?php print esc_attr( $wpes_moderator_key ); ?>"/>
+												class="widefat"
+												type="text"
+												name="settings[keys][<?php print esc_attr( $wpes_post_type ); ?>][<?php print esc_attr( $wpes_moderator_recipient ); ?>][<?php print esc_attr( $wpes_moderator_key ); ?>]"
+												placeholder="<?php print esc_attr( $wpes_placeholder ); ?>"
+												value="<?php print esc_attr( $wpes_config[ $wpes_post_type ][ $wpes_moderator_recipient ][ $wpes_moderator_key ] ); ?>"
+												id="key-<?php print esc_attr( $wpes_post_type ); ?>-<?php print esc_attr( $wpes_moderator_recipient ); ?>-<?php print esc_attr( $wpes_moderator_key ); ?>"/>
 										</td>
 									</tr>
 									<?php

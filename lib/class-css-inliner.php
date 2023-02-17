@@ -43,13 +43,9 @@ class CSS_Inliner {
 	public function __construct( $html, $css = false ) {
 		$this->html                 = $html;
 		$this->css_to_inline_styles = new CssToInlineStyles();
-		if ( $css ) {
-			if ( is_file( $css ) ) {
-				// @phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
-				$this->css = file_get_contents( $css );
-			} else {
-				$this->css = $css;
-			}
+		if ( $css !== '' && $css !== '0' ) {
+			// @phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
+			$this->css = is_file( $css ) ? file_get_contents( $css ) : $css;
 		} else {
 			$this->css = $this->get_css_from_html( $this->html );
 		}
@@ -82,19 +78,19 @@ class CSS_Inliner {
 	public function get_css_from_html( $html ) {
 		$css   = [];
 		$start = 0;
-		$pos   = strpos( strtolower( $html ), '<style', $start );
+		$pos   = stripos( $html, '<style', $start );
 		// phpcs:ignore Squiz.PHP.DisallowSizeFunctionsInLoops.Found -- How about you mind your own business and let the professionals do their work...
 		while ( false !== $pos && $start < strlen( $html ) ) {
 			$part = substr( $html, $pos );
 			// skip to > .
 			$part = substr( $part, $skipped = strpos( $part, '>' ) + 1 );
 			// find  </style .
-			$end = strpos( strtolower( $part ), '</style' );
+			$end = stripos( $part, '</style' );
 			// trim .
 			$part  = substr( $part, 0, $end );
 			$css[] = $part;
 			$start = $pos + $skipped + $end + 8;
-			$pos   = strpos( strtolower( $html ), '<style', $start );
+			$pos   = stripos( $html, '<style', $start );
 		}
 
 		return implode( "\n", $css );

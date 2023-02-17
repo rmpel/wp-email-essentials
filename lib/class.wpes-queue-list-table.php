@@ -21,6 +21,16 @@ if ( ! class_exists( WP_List_Table::class ) ) {
 class WPES_Queue_List_Table extends WP_List_Table {
 
 	/**
+	 * @var array
+	 */
+	public $_column_headers;
+
+	/**
+	 * @var mixed[]
+	 */
+	public $items;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
@@ -67,14 +77,12 @@ class WPES_Queue_List_Table extends WP_List_Table {
 	 * @return array
 	 */
 	public function get_columns() {
-		$columns = [
+		return [
 			'status'  => __( 'Status', 'wpes' ),
 			'dt'      => __( 'E-mail Date', 'wpes' ),
 			'to'      => __( 'Recipient', 'wpes' ),
 			'subject' => __( 'Subject', 'wpes' ),
 		];
-
-		return $columns;
 	}
 
 	/**
@@ -106,9 +114,7 @@ class WPES_Queue_List_Table extends WP_List_Table {
 	private function table_data() {
 		global $wpdb;
 
-		$data = $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}wpes_queue ORDER BY id DESC", ARRAY_A );
-
-		return $data;
+		return $wpdb->get_results( "SELECT * FROM {$wpdb->prefix}wpes_queue ORDER BY id DESC", ARRAY_A );
 	}
 
 	/**
@@ -120,11 +126,12 @@ class WPES_Queue_List_Table extends WP_List_Table {
 	 * @return Mixed
 	 */
 	public function column_default( $item, $column_name ) {
+		$stati = [];
 		$value = $item[ $column_name ];
 
 		switch ( $column_name ) {
 			case 'status':
-				return $stati[ intval( $value ) ];
+				return $stati[ (int) $value ];
 			case 'id':
 				return $value;
 			case 'to':
@@ -165,7 +172,7 @@ class WPES_Queue_List_Table extends WP_List_Table {
 		return sprintf(
 			'<input type="checkbox" name="item[]" value="%d" />%s',
 			$item['id'],
-			$stati[ intval( $value ) ]
+			$stati[ (int) $value ]
 		);
 
 	}

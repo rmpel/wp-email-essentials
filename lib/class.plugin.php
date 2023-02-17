@@ -25,8 +25,8 @@ class Plugin {
 	 *
 	 * @const string
 	 */
-	const REGEXP_IP4 = '/^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/';
-	const REGEXP_IP6 = '(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]+|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|1?[0-9])?[0-9])\.){3}(25[0-5]|(2[0-4]|1?[0-9])?[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1?[0-9])?[0-9])\.){3}(25[0-5]|(2[0-4]|1?[0-9])?[0-9]))';
+	const REGEXP_IP4 = '/^(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/';
+	const REGEXP_IP6 = '(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]+|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|1?\d)?\d)\.){3}(25[0-5]|(2[0-4]|1?\d)?\d)|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1?\d)?\d)\.){3}(25[0-5]|(2[0-4]|1?\d)?\d))';
 
 	/**
 	 * Holds a message to show in the admin panel.
@@ -214,7 +214,7 @@ class Plugin {
 
 		if ( ! $root_path ) {
 			$wp_path_rel_to_home = self::get_wp_subdir();
-			if ( $wp_path_rel_to_home ) {
+			if ( $wp_path_rel_to_home !== '' && $wp_path_rel_to_home !== '0' ) {
 				$pos       = strripos( str_replace( '\\', '/', ABSPATH ), trailingslashit( $wp_path_rel_to_home ) );
 				$home_path = substr( ABSPATH, 0, $pos );
 				$home_path = trailingslashit( $home_path );
@@ -226,7 +226,7 @@ class Plugin {
 		}
 
 		// Support Deployer style paths.
-		if ( preg_match( '@/releases/([0-9]+)/@', $root_path, $matches ) ) {
+		if ( preg_match( '@/releases/(\d+)/@', $root_path, $matches ) ) {
 			$path_named_current = str_replace( '/releases/' . $matches[1] . '/', '/current/', $root_path );
 			if ( is_dir( $path_named_current ) && realpath( $path_named_current ) === realpath( $root_path ) ) {
 				$root_path = $path_named_current;
@@ -392,7 +392,7 @@ class Plugin {
 	 * @return array
 	 */
 	public static function action_wp_mail( $wp_mail ) {
-		if ( ! $wp_mail ) {
+		if ( $wp_mail === [] ) {
 			return $wp_mail;
 		}
 		if ( ! $wp_mail['to'] ) {
@@ -499,7 +499,7 @@ class Plugin {
 	public static function a_valid_from( $invalid_from, $method ) {
 		$url    = get_bloginfo( 'url' );
 		$host   = wp_parse_url( $url, PHP_URL_HOST );
-		$host   = preg_replace( '/^www[0-9]*\./', '', $host );
+		$host   = preg_replace( '/^www\d*\./', '', $host );
 		$config = self::get_config();
 
 		if ( ! self::i_am_allowed_to_send_in_name_of( $invalid_from ) ) {
@@ -536,6 +536,8 @@ class Plugin {
 	 * @return string
 	 */
 	public static function get_domain( $email ) {
+		$sending_domain = '';
+
 		if ( preg_match( '/@(.+)$/', $email, $sending_domain ) ) {
 			$sending_domain = $sending_domain[1];
 		}
@@ -572,14 +574,14 @@ class Plugin {
 		}
 
 		$sending_domain = self::get_domain( $email );
-		if ( ! $sending_domain ) {
+		if ( $sending_domain === '' ) {
 			return false; // invalid email.
 		}
 		$sending_server = self::get_sending_ip();
 		// we assume here that everything NOT IP4 is IP6. This will do for now, but ...
 		// @phpcs:ignore Generic.Commenting.Todo.TaskFound
 		// todo: actual ip6 check!.
-		$ip               = preg_match( '/^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$/', trim( $sending_server ) ) ? 'ip4' : 'ip6';
+		$ip               = preg_match( '/^\d+\.\d+\.\d+\.\d+$/', trim( $sending_server ) ) ? 'ip4' : 'ip6';
 		$sending_server_4 = false; // only set if ipv6 in use.
 		if ( 'ip6' === $ip ) {
 			$sending_server_4 = self::get_sending_ip( true );
@@ -608,10 +610,10 @@ class Plugin {
 
 			// insert.
 			$spf      = explode( ' ', str_replace( 'include:', 'include: ', $spf ) );
-			$position = false !== array_search( 'mx', $spf, true ) ? array_search( 'mx', $spf, true ) + 1 : false;
-			$position = false !== $position ? $position : ( false !== array_search( 'a', $spf, true ) ? array_search( 'a', $spf, true ) + 1 : false );
-			$position = false !== $position ? $position : ( false !== array_search( 'include:', $spf, true ) ? array_search( 'include:', $spf, true ) - 1 : false );
-			$position = false !== $position ? $position : ( false !== array_search( 'v=spf1', $spf, true ) ? array_search( 'v=spf1', $spf, true ) + 1 : false );
+			$position = in_array( 'mx', $spf, true ) ? array_search( 'mx', $spf, true ) + 1 : false;
+			$position = false !== $position ? $position : ( in_array( 'a', $spf, true ) ? array_search( 'a', $spf, true ) + 1 : false );
+			$position = false !== $position ? $position : ( in_array( 'include:', $spf, true ) ? array_search( 'include:', $spf, true ) - 1 : false );
+			$position = false !== $position ? $position : ( in_array( 'v=spf1', $spf, true ) ? array_search( 'v=spf1', $spf, true ) + 1 : false );
 
 			array_splice( $spf, $position, 0, $ip . ':' . $sending_server );
 			if ( $sending_server_4 ) {
@@ -621,18 +623,10 @@ class Plugin {
 		}
 
 		if ( $as_html ) {
-			if ( ! $spf ) {
-				$spf = '<span class="error">no spf-record available</span>';
-			} else {
-				$spf = $sending_domain . '. IN TXT ' . $spf;
-			}
+			$spf = $spf ? $sending_domain . '. IN TXT ' . $spf : '<span class="error">no spf-record available</span>';
 
-			if ( $fix ) {
-				$color = 'red';
-			} else {
-				$color = 'green';
-			}
-			$spf = str_replace( $ip . ':' . $sending_server, '<strong style="color:' . $color . ';">' . $ip . ':' . $sending_server . '</strong>', $spf );
+			$color = $fix ? 'red' : 'green';
+			$spf   = str_replace( $ip . ':' . $sending_server, '<strong style="color:' . $color . ';">' . $ip . ':' . $sending_server . '</strong>', $spf );
 			if ( $sending_server_4 ) {
 				$spf = str_replace( 'ip4:' . $sending_server_4, '<strong style="color:' . $color . ';">ip4:' . $sending_server_4 . '</strong>', $spf );
 			}
@@ -658,7 +652,7 @@ class Plugin {
 
 		// Domain.
 		$sending_domain = self::get_domain( $email );
-		if ( ! $sending_domain ) {
+		if ( $sending_domain === '' ) {
 			return false; // invalid email.
 		}
 
@@ -666,10 +660,10 @@ class Plugin {
 		$sending_server   = self::get_sending_ip();
 		$sending_server_4 = false;
 		switch ( true ) {
-			case ! ! preg_match( self::REGEXP_IP4, trim( $sending_server ) ):
+			case (bool) preg_match( self::REGEXP_IP4, trim( $sending_server ) ):
 				$ip = 'ip4';
 				break;
-			case ! ! preg_match( self::REGEXP_IP6, trim( $sending_server ) ):
+			case (bool) preg_match( self::REGEXP_IP6, trim( $sending_server ) ):
 				$ip = 'ip6';
 				// Also get IPv4.
 				$sending_server_4 = self::get_sending_ip( true );
@@ -801,7 +795,7 @@ class Plugin {
 
 		$sending_domain = [];
 		preg_match( '/@(.+)$/', $email, $sending_domain );
-		if ( ! $sending_domain ) {
+		if ( $sending_domain === [] ) {
 			return false; // invalid email.
 		}
 		$sending_server = self::get_sending_ip();
@@ -981,11 +975,11 @@ class Plugin {
 								}
 							}
 						}
-					} elseif ( preg_match( '/ip4:([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$/', $section, $m_ip ) ) {
+					} elseif ( preg_match( '/ip4:(\d+\.\d+\.\d+\.\d+)$/', $section, $m_ip ) ) {
 						if ( IP::a_4_is_4( $ip, $m_ip[1] ) ) {
 							return $section;
 						}
-					} elseif ( preg_match( '/ip4:([0-9.]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
+					} elseif ( preg_match( '/ip4:([0-9.]+\/\d+)$/', $section, $ip_cidr ) ) {
 						if ( IP::ip4_match_cidr( $ip, $ip_cidr[1] ) ) {
 							return $section;
 						}
@@ -993,7 +987,7 @@ class Plugin {
 						if ( IP::is_6( $m_ip[1] ) && IP::a_6_is_6( $ip, $m_ip[1] ) ) {
 							return $section;
 						}
-					} elseif ( preg_match( '/ip6:([0-9A-Fa-f:]+\/[0-9]+)$/', $section, $ip_cidr ) ) {
+					} elseif ( preg_match( '/ip6:([0-9A-Fa-f:]+\/\d+)$/', $section, $ip_cidr ) ) {
 						if ( IP::ip6_match_cidr( $ip, $ip_cidr[1] ) ) {
 							return $section;
 						}
@@ -1023,13 +1017,11 @@ class Plugin {
 		// pre-filter; these tlds can never have SPF or other special records.
 		$local_tlds = apply_filters( 'wpes_local_tlds', [ 'local', 'test' ] );
 		$local_tlds = array_filter( array_unique( $local_tlds ) );
-		if ( $local_tlds ) {
+		if ( $local_tlds !== [] ) {
 			$local_tlds = array_map( 'preg_quote', $local_tlds, [ '/' ] );
 			$local_tlds = implode( '|', $local_tlds );
-			if ( preg_match( '/\.(' . $local_tlds . ')$/', $lookup ) ) {
-				if ( DNS_A !== $filter || DNS_A6 !== $filter ) {
-					return [];
-				}
+			if ( preg_match( '/\.(' . $local_tlds . ')$/', $lookup ) && ( DNS_A !== $filter || DNS_A6 !== $filter ) ) {
+				return [];
 			}
 		}
 		// Proceed with normal lookup.
@@ -1065,7 +1057,7 @@ class Plugin {
 	public static function this_email_matches_website_domain( $email ) {
 		$url  = get_bloginfo( 'url' );
 		$host = wp_parse_url( $url, PHP_URL_HOST );
-		$host = preg_replace( '/^www[0-9]*\./', '', $host );
+		$host = preg_replace( '/^www\d*\./', '', $host );
 
 		return ( preg_match( '/@' . $host . '$/', $email ) );
 	}
@@ -1095,7 +1087,7 @@ class Plugin {
 			}
 
 			if ( isset( $config['smtp']['username'] ) ) {
-				if ( trim( $config['smtp']['username'] ) ) {
+				if ( trim( $config['smtp']['username'] ) !== '' ) {
 					$mailer->SMTPAuth = true;
 					$mailer->Username = $config['smtp']['username'];
 					$mailer->Password = $config['smtp']['password'];
@@ -1300,13 +1292,8 @@ class Plugin {
 	 * @return mixed|string
 	 */
 	public static function maybe_convert_to_html( $might_be_text, $subject, $mailer, $charset = 'utf-8' ) {
-		$html_preg = '<(br|a|p|body|table|div|span|body|html)';
-		if ( preg_match( "/$html_preg/", $might_be_text ) ) {
-			// probably html.
-			$should_be_html = $might_be_text;
-		} else {
-			$should_be_html = nl2br( trim( $might_be_text ) );
-		}
+		$html_preg      = '<(br|a|p|body|table|div|span|body|html)';
+		$should_be_html = preg_match( "/$html_preg/", $might_be_text ) ? $might_be_text : nl2br( trim( $might_be_text ) );
 
 		// should have some basic HTML now, otherwise, add a P.
 		if ( ! preg_match( "/$html_preg/", $should_be_html ) ) {
@@ -1390,12 +1377,10 @@ class Plugin {
 
 		}
 
-		$should_be_html = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+		return '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <meta http-equiv="Content-Type" content="text/html; charset=' . $charset . '" />
 <head>' . $head . '</head><body>' . $should_be_html . '</body></html>';
-
-		return $should_be_html;
 	}
 
 
@@ -1573,15 +1558,15 @@ class Plugin {
 		$settings['from_name']          = array_key_exists( 'from_name', $values ) && $values['from_name'] ? trim( $values['from_name'] ) : $settings['from_name'];
 		$settings['from_email']         = array_key_exists( 'from_email', $values ) && $values['from_email'] ? trim( $values['from_email'] ) : $settings['from_email'];
 		$settings['timeout']            = array_key_exists( 'timeout', $values ) && $values['timeout'] ? $values['timeout'] : 5;
-		$settings['is_html']            = array_key_exists( 'is_html', $values ) && $values['is_html'] ? true : false;
-		$settings['css_inliner']        = array_key_exists( 'css_inliner', $values ) && $values['css_inliner'] ? true : false;
+		$settings['is_html']            = array_key_exists( 'is_html', $values ) && $values['is_html'];
+		$settings['css_inliner']        = array_key_exists( 'css_inliner', $values ) && $values['css_inliner'];
 		$settings['content_precode']    = array_key_exists( 'content_precode', $values ) && $values['content_precode'] ? $values['content_precode'] : false;
-		$settings['alt_body']           = array_key_exists( 'alt_body', $values ) && $values['alt_body'] ? true : false;
-		$settings['do_shortcodes']      = array_key_exists( 'do_shortcodes', $values ) && $values['do_shortcodes'] ? true : false;
-		$settings['SingleTo']           = array_key_exists( 'SingleTo', $values ) && $values['SingleTo'] ? true : false;
-		$settings['spf_lookup_enabled'] = array_key_exists( 'spf_lookup_enabled', $values ) && $values['spf_lookup_enabled'] ? true : false;
-		$settings['enable_history']     = array_key_exists( 'enable_history', $values ) && $values['enable_history'] ? true : false;
-		$settings['enable_queue']       = array_key_exists( 'enable_queue', $values ) && $values['enable_queue'] ? true : false;
+		$settings['alt_body']           = array_key_exists( 'alt_body', $values ) && $values['alt_body'];
+		$settings['do_shortcodes']      = array_key_exists( 'do_shortcodes', $values ) && $values['do_shortcodes'];
+		$settings['SingleTo']           = array_key_exists( 'SingleTo', $values ) && $values['SingleTo'];
+		$settings['spf_lookup_enabled'] = array_key_exists( 'spf_lookup_enabled', $values ) && $values['spf_lookup_enabled'];
+		$settings['enable_history']     = array_key_exists( 'enable_history', $values ) && $values['enable_history'];
+		$settings['enable_queue']       = array_key_exists( 'enable_queue', $values ) && $values['enable_queue'];
 
 		$settings['enable_smime']         = array_key_exists( 'enable_smime', $values ) && $values['enable_smime'] ? '1' : '0';
 		$settings['certfolder']           = array_key_exists( 'certfolder', $values ) && $values['certfolder'] ? $values['certfolder'] : '';
@@ -1712,9 +1697,8 @@ class Plugin {
 		if ( ! is_array( $e ) ) {
 			$e = self::rfc_decode( $e );
 		}
-		$e = self::rfc_encode( $e );
 
-		return $e;
+		return self::rfc_encode( $e );
 	}
 
 	/**
@@ -1745,6 +1729,7 @@ class Plugin {
 	 * Process settings when POSTed.
 	 */
 	public static function save_admin_settings() {
+		$html = null;
 		/**
 		 * Save options for "Settings" pane..
 		 */
@@ -1753,7 +1738,7 @@ class Plugin {
 				case __( 'Save settings', 'wpes' ):
 					$config  = self::get_config();
 					$host    = wp_parse_url( get_bloginfo( 'url' ), PHP_URL_HOST );
-					$host    = preg_replace( '/^www[0-9]*\./', '', $host );
+					$host    = preg_replace( '/^www\d*\./', '', $host );
 					$defmail = self::wp_mail_from( $_POST['settings']['from_email'] );
 					if ( 'default' === $_POST['settings']['make_from_valid'] && ! self::i_am_allowed_to_send_in_name_of( $defmail ) ) {
 						$_POST['settings']['make_from_valid'] = 'noreply';
@@ -1801,7 +1786,7 @@ class Plugin {
 			$mailer->Subject = $subject; // @phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- PHPMailer, sorry.
 			$body            = self::dummy_content();
 			switch ( true ) {
-				case ! ! $config['is_html']:
+				case (bool) $config['is_html']:
 					header( 'Content-Type: text/html; charset=utf-8' );
 					$html = self::build_html( $mailer, $subject, $body, 'utf-8' );
 					$html = self::cid_to_image( $html, $mailer );
@@ -1820,16 +1805,52 @@ class Plugin {
 		/**
 		 * Save options for "alternative admins" panel
 		 */
-		if ( wp_verify_nonce( $_POST['wpes-nonce'] ?? false, 'wp-email-essentials--admins' ) && isset( $_GET['page'] ) && 'wpes-admins' === $_GET['page'] && $_POST && isset( $_POST['form_id'] ) && 'wpes-admins' === $_POST['form_id'] ) {
-			switch ( $_POST['op'] ) {
-				case __( 'Save settings', 'wpes' ):
-					$keys = $_POST['settings']['keys'];
-					$keys = array_filter(
+		if ( wp_verify_nonce( $_POST['wpes-nonce'] ?? false, 'wp-email-essentials--admins' ) && isset( $_GET['page'] ) && 'wpes-admins' === $_GET['page'] && $_POST && isset( $_POST['form_id'] ) && 'wpes-admins' === $_POST['form_id'] && $_POST['op'] === __( 'Save settings', 'wpes' ) ) {
+			$keys = $_POST['settings']['keys'];
+			$keys = array_filter(
+				$keys,
+				function ( $el ) {
+					$els = explode( ',', $el );
+					$els = array_map(
+						function ( $el ) {
+							return filter_var( $el, FILTER_VALIDATE_EMAIL );
+						},
+						$els
+					);
+
+					return implode( ',', $els );
+				}
+			);
+			update_option( 'mail_key_admins', $keys );
+			self::$message = __( 'Alternative Admins list saved.', 'wpes' );
+			$regexps       = $_POST['settings']['regexp'];
+			$list          = [];
+			$__regex       = '/^\/[\s\S]+\/$/';
+			foreach ( $regexps as $entry ) {
+				if ( preg_match( $__regex, $entry['regexp'] ) ) {
+					$list[ $entry['regexp'] ] = $entry['key'];
+				}
+			}
+			update_option( 'mail_key_list', $list );
+			self::$message .= ' ' . __( 'Subject-RegExp list saved.', 'wpes' );
+		}
+
+		/**
+		 * Save options for "Moderators" panel.
+		 */
+		if ( wp_verify_nonce( $_POST['wpes-nonce'] ?? false, 'wp-email-essentials--moderators' ) && isset( $_GET['page'] ) && 'wpes-moderators' === $_GET['page'] && $_POST && isset( $_POST['form_id'] ) && 'wpes-moderators' === $_POST['form_id'] && $_POST['op'] === __( 'Save settings', 'wpes' ) ) {
+			foreach ( $_POST['settings']['keys'] as $recipient => $_keys ) {
+				foreach ( $_keys as $post_type => $keys ) {
+					$_POST['settings']['keys'][ $recipient ][ $post_type ] = array_filter(
 						$keys,
 						function ( $el ) {
 							$els = explode( ',', $el );
 							$els = array_map(
 								function ( $el ) {
+									if ( ':blackhole:' === $el ) {
+										return $el;
+									}
+
 									return filter_var( $el, FILTER_VALIDATE_EMAIL );
 								},
 								$els
@@ -1838,59 +1859,10 @@ class Plugin {
 							return implode( ',', $els );
 						}
 					);
-					update_option( 'mail_key_admins', $keys );
-					self::$message = __( 'Alternative Admins list saved.', 'wpes' );
-
-					$regexps = $_POST['settings']['regexp'];
-					$list    = [];
-
-					$__regex = '/^\/[\s\S]+\/$/';
-					foreach ( $regexps as $entry ) {
-						if ( preg_match( $__regex, $entry['regexp'] ) ) {
-							$list[ $entry['regexp'] ] = $entry['key'];
-						}
-					}
-
-					update_option( 'mail_key_list', $list );
-					self::$message .= ' ' . __( 'Subject-RegExp list saved.', 'wpes' );
-
-					break;
+				}
 			}
-		}
-
-		/**
-		 * Save options for "Moderators" panel.
-		 */
-		if ( wp_verify_nonce( $_POST['wpes-nonce'] ?? false, 'wp-email-essentials--moderators' ) && isset( $_GET['page'] ) && 'wpes-moderators' === $_GET['page'] && $_POST && isset( $_POST['form_id'] ) && 'wpes-moderators' === $_POST['form_id'] ) {
-			switch ( $_POST['op'] ) {
-				case __( 'Save settings', 'wpes' ):
-					foreach ( $_POST['settings']['keys'] as $recipient => $_keys ) {
-						foreach ( $_keys as $post_type => $keys ) {
-							$_POST['settings']['keys'][ $recipient ][ $post_type ] = array_filter(
-								$keys,
-								function ( $el ) {
-									$els = explode( ',', $el );
-									$els = array_map(
-										function ( $el ) {
-											if ( ':blackhole:' === $el ) {
-												return $el;
-											}
-
-											return filter_var( $el, FILTER_VALIDATE_EMAIL );
-										},
-										$els
-									);
-
-									return implode( ',', $els );
-								}
-							);
-						}
-					}
-					update_option( 'mail_key_moderators', $_POST['settings']['keys'] );
-					self::$message = __( 'Alternative Moderators list saved.', 'wpes' );
-
-					break;
-			}
+			update_option( 'mail_key_moderators', $_POST['settings']['keys'] );
+			self::$message = __( 'Alternative Moderators list saved.', 'wpes' );
 		}
 	}
 
@@ -2024,7 +1996,7 @@ class Plugin {
 	public static function dummy_content() {
 		$config = self::get_config();
 		switch ( true ) {
-			case ! ! $config['is_html']:
+			case (bool) $config['is_html']:
 				return '<h1>Sample Email Body - HTML</h1>
 <p>Some <a href="https://google.com/?s=random">råndôm</a> text Lorem Ipsum is <b>bold simply dummy</b> text of the <strong>strong printing and typesetting</strong> industry. Lorem Ipsum has been the industry\'s standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.</p>
 <h2>A header-2</h2>
@@ -2102,12 +2074,10 @@ Item 2
 		}
 
 		// For devs; certfolder = setting, certificate_folder = real path;.
-		if ( $config['enable_smime'] && isset( $config['certfolder'] ) && $config['certfolder'] ) {
-			if ( false !== strpos( realpath( $config['certificate_folder'] ), realpath( self::root_path() ) ) ) {
-				$class   = 'error';
-				$message = sprintf( __( 'The S/MIME certificate folder is inside the webspace. This is Extremely insecure. Please reconfigure, make sure the folder is outside the website-root %s.', 'wpes' ), self::root_path() );
-				echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
-			}
+		if ( $config['enable_smime'] && isset( $config['certfolder'] ) && $config['certfolder'] && false !== strpos( realpath( $config['certificate_folder'] ), realpath( self::root_path() ) ) ) {
+			$class   = 'error';
+			$message = sprintf( __( 'The S/MIME certificate folder is inside the webspace. This is Extremely insecure. Please reconfigure, make sure the folder is outside the website-root %s.', 'wpes' ), self::root_path() );
+			echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 		}
 
 		if ( $config['enable_smime'] && $onpage && ! function_exists( 'openssl_pkcs7_sign' ) ) {
@@ -2143,12 +2113,10 @@ Item 2
 		}
 
 		// For devs; dkimfolder = setting, dkim_certificate_folder = real path;.
-		if ( ! empty( $config['enable_dkim'] ) && $config['enable_dkim'] && isset( $config['dkimfolder'] ) && $config['dkimfolder'] ) {
-			if ( false !== strpos( realpath( $config['dkim_certificate_folder'] ), realpath( self::root_path() ) ) ) {
-				$class   = 'error';
-				$message = sprintf( __( 'The DKIM certificate folder is inside the webspace. This is Extremely insecure. Please reconfigure, make sure the folder is outside the website-root %s.', 'wpes' ), self::root_path() );
-				echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
-			}
+		if ( ! empty( $config['enable_dkim'] ) && $config['enable_dkim'] && isset( $config['dkimfolder'] ) && $config['dkimfolder'] && false !== strpos( realpath( $config['dkim_certificate_folder'] ), realpath( self::root_path() ) ) ) {
+			$class   = 'error';
+			$message = sprintf( __( 'The DKIM certificate folder is inside the webspace. This is Extremely insecure. Please reconfigure, make sure the folder is outside the website-root %s.', 'wpes' ), self::root_path() );
+			echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 		}
 
 		// default mail identity existence.
@@ -2285,7 +2253,7 @@ Item 2
 		// this message is sent to the system admin.
 		// we might want to send this to a different admin.
 		$key = self::get_mail_key( $email['subject'] );
-		if ( $key ) {
+		if ( $key !== '' && $key !== '0' ) {
 			// we were able to determine a mailkey.
 			$admins = get_option( 'mail_key_admins', [] );
 			if ( isset( $admins[ $key ] ) && $admins[ $key ] ) {
@@ -2421,11 +2389,7 @@ Item 2
 		}
 
 		$type = $comment->comment_type;
-		if ( 'pingback' === $type || 'trackback' === $type ) {
-			$type = 'pingback';
-		} else {
-			$type = 'comment';
-		}
+		$type = 'pingback' === $type || 'trackback' === $type ? 'pingback' : 'comment';
 
 		if ( isset( $c[ $post_type ][ $action ][ $type ] ) && $c[ $post_type ][ $action ][ $type ] ) {
 			// overrule ALL recipients
@@ -2516,7 +2480,7 @@ Item 2
 
 		$key = $keys[ $lookup ] ?? '';
 
-		if ( $key ) {
+		if ( $key !== '' && $key !== '0' ) {
 			return $key;
 		}
 
@@ -2549,7 +2513,7 @@ Item 2
 	 * actions and filters are equal to WordPress, but handled with or without return values.
 	 */
 	public static function mail_key_registrations() {
-		foreach ( self::mail_key_database() as $filter_name => $filter_description ) {
+		foreach ( array_keys( self::mail_key_database() ) as $filter_name ) {
 			add_filter( $filter_name, [ self::class, 'now_sending___' ] );
 		}
 	}
@@ -2752,6 +2716,8 @@ Item 2
 
 	/**
 	 * Get the IP using Ajax.
+	 *
+	 * @return void
 	 */
 	public static function ajax_get_ip() {
 		print esc_attr( self::server_remote_addr() );
@@ -2839,7 +2805,7 @@ Item 2
 		<h2 class="dashicons-before dashicons-email-alt">
 			<?php print wp_kses_post( self::plugin_data()['LongName'] ); ?>
 			<em><?php print wp_kses_post( self::plugin_data()['Version'] ); ?></em>
-			<?php if ( $title_subtitle ) { ?>
+			<?php if ( $title_subtitle !== '' ) { ?>
 				- <?php print esc_html( $title_subtitle ); ?>
 			<?php } ?>
 		</h2>

@@ -62,7 +62,6 @@ class History {
 		$enabled = $enabled['enable_history'];
 
 		if ( $enabled ) {
-
 			$schema = "CREATE TABLE `{$wpdb->prefix}wpes_hist` (
 			  `ID` int(11) unsigned NOT NULL AUTO_INCREMENT,
 			  `sender` varchar(256) NOT NULL DEFAULT '',
@@ -91,21 +90,15 @@ class History {
 
 				update_option( 'wpes_hist_rev', $hash );
 			}
-
 			add_action( 'phpmailer_init', [ self::class, 'phpmailer_init' ], 10000000000 );
 			add_filter( 'wp_mail', [ self::class, 'wp_mail' ], 10000000000 );
 			add_action( 'wp_mail_failed', [ self::class, 'wp_mail_failed' ], 10000000000 );
-
 			add_action( 'pre_handle_404', [ self::class, 'handle_tracker' ], ~PHP_INT_MAX );
-
 			add_action( 'shutdown', [ self::class, 'shutdown' ] );
-
 			add_action( 'admin_menu', [ self::class, 'admin_menu' ] );
-		} else {
-			if ( get_option( 'wpes_hist_rev', 0 ) ) {
-				$wpdb->query( "DROP TABLE `{$wpdb->prefix}wpes_hist`;" );
-				delete_option( 'wpes_hist_rev' );
-			}
+		} elseif ( get_option( 'wpes_hist_rev', 0 ) ) {
+			$wpdb->query( "DROP TABLE `{$wpdb->prefix}wpes_hist`;" );
+			delete_option( 'wpes_hist_rev' );
 		}
 
 		add_action(
@@ -121,7 +114,7 @@ class History {
 						$uniq = sprintf(
 							'%1$s-%2$d-%3$s-%4$s',
 							sanitize_title( $data['thedatetime'] ),
-							intval( $data['ID'] ),
+							(int) $data['ID'],
 							sanitize_title(
 								strtr(
 									$data['recipient'],
@@ -207,9 +200,8 @@ class History {
 		$object = str_replace( $class . ' Object', 'Array', $object );
 		$object = str_replace( ':protected]', ']', $object );
 		$object = self::print_r_reverse( $object );
-		$object = json_decode( wp_json_encode( $object ) );
 
-		return $object;
+		return json_decode( wp_json_encode( $object ) );
 	}
 
 	/**
@@ -380,7 +372,7 @@ class History {
 	 */
 	public static function handle_tracker() {
 		global $wpdb;
-		if ( preg_match( '/\/email-image-([0-9]+).png/', $_SERVER['REQUEST_URI'], $match ) ) {
+		if ( preg_match( '/\/email-image-(\d+).png/', $_SERVER['REQUEST_URI'], $match ) ) {
 			$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = %s WHERE ID = %d;", self::MAIL_OPENED, $match[1] ) );
 
 			header( 'Content-Type: image/png' );

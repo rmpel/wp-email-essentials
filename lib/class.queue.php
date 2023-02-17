@@ -95,7 +95,7 @@ class Queue {
 		 *
 		 * @var array $mail_data Has elements 'to', 'subject', 'message', 'headers', 'attachments'.
 		 */
-		if ( ! $mail_data ) {
+		if ( $mail_data === [] ) {
 			return $mail_data;
 		}
 		if ( ! $mail_data['to'] ) {
@@ -119,7 +119,7 @@ class Queue {
 		if ( defined( 'WP_EMAIL_ESSENTIALS_QUEUE_BYPASS' ) && true === WP_EMAIL_ESSENTIALS_QUEUE_BYPASS ) {
 			$skip_queue = true;
 		}
-		if ( 1 === intval( $priority ) ) {
+		if ( 1 === (int) $priority ) {
 			$skip_queue = true;
 		}
 		$throttle = false;
@@ -256,8 +256,8 @@ class Queue {
 						'low'    => 5,
 					]
 				);
-				$prio  = intval( $prio );
-				if ( $prio ) {
+				$prio  = (int) $prio;
+				if ( $prio !== 0 ) {
 					return $prio;
 				}
 			}
@@ -283,7 +283,7 @@ class Queue {
 		foreach ( $headers as $_key => $value ) {
 			if ( is_numeric( $_key ) ) {
 				[ $key, $value ] = explode( ':', $value, 2 );
-				if ( ! $value ) {
+				if ( $value === '' || $value === '0' ) {
 					$headers_assoc[] = $key;
 				} else {
 					$headers_assoc[ $key ] = $value;
@@ -292,9 +292,8 @@ class Queue {
 				$headers_assoc[ $_key ] = $value;
 			}
 		}
-		$headers_assoc = array_combine( array_map( 'strtolower', array_keys( $headers_assoc ) ), array_values( $headers_assoc ) );
 
-		return $headers_assoc;
+		return array_combine( array_map( 'strtolower', array_keys( $headers_assoc ) ), array_values( $headers_assoc ) );
 	}
 
 	/**
