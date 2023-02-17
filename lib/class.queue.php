@@ -95,7 +95,7 @@ class Queue {
 		 *
 		 * @var array $mail_data Has elements 'to', 'subject', 'message', 'headers', 'attachments'.
 		 */
-		if ( $mail_data === [] ) {
+		if ( [] === $mail_data ) {
 			return $mail_data;
 		}
 		if ( ! $mail_data['to'] ) {
@@ -257,7 +257,7 @@ class Queue {
 					]
 				);
 				$prio  = (int) $prio;
-				if ( $prio !== 0 ) {
+				if ( 0 !== $prio ) {
 					return $prio;
 				}
 			}
@@ -283,7 +283,7 @@ class Queue {
 		foreach ( $headers as $_key => $value ) {
 			if ( is_numeric( $_key ) ) {
 				[ $key, $value ] = explode( ':', $value, 2 );
-				if ( $value === '' || $value === '0' ) {
+				if ( '' === $value ) {
 					$headers_assoc[] = $key;
 				} else {
 					$headers_assoc[ $key ] = $value;

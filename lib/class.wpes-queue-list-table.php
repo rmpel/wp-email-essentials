@@ -21,11 +21,15 @@ if ( ! class_exists( WP_List_Table::class ) ) {
 class WPES_Queue_List_Table extends WP_List_Table {
 
 	/**
+	 * Holds Column Header data.
+	 *
 	 * @var array
 	 */
-	public $_column_headers;
+	public $_column_headers; // phpcs:ignore PSR2.Classes.PropertyDeclaration.Underscore -- WordPress ...
 
 	/**
+	 * Holds table items.
+	 *
 	 * @var mixed[]
 	 */
 	public $items;

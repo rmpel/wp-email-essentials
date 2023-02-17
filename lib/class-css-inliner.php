@@ -43,7 +43,7 @@ class CSS_Inliner {
 	public function __construct( $html, $css = false ) {
 		$this->html                 = $html;
 		$this->css_to_inline_styles = new CssToInlineStyles();
-		if ( $css !== '' && $css !== '0' ) {
+		if ( '' !== $css ) {
 			// @phpcs:ignore WordPress.WP.AlternativeFunctions.file_get_contents_file_get_contents
 			$this->css = is_file( $css ) ? file_get_contents( $css ) : $css;
 		} else {

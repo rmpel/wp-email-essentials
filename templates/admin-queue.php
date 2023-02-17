@@ -15,12 +15,10 @@ if ( ! current_user_can( 'manage_options' ) ) {
 <div class="wrap wpes-wrap wpes-queue">
 	<?php
 	Plugin::template_header( __( 'E-mail Queue', 'wpes' ) );
-	if ( Plugin::$message !== '' ) {
+	if ( '' !== Plugin::$message ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
 	}
-	?>
-	<?php
-	if ( Plugin::$error !== '' ) {
+	if ( '' !== Plugin::$error ) {
 		print '<div class="error"><p>' . wp_kses_post( Plugin::$error ) . '</p></div>';
 	}
 

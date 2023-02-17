@@ -19,12 +19,10 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 <div class="wrap wpes-wrap wpes-settings">
 	<?php
 	Plugin::template_header( __( 'E-mail Configuration', 'wpes' ) );
-	if ( Plugin::$message !== '' ) {
+	if ( '' !== Plugin::$message ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
 	}
-	?>
-	<?php
-	if ( Plugin::$error !== '' ) {
+	if ( '' !== Plugin::$error ) {
 		print '<div class="error"><p>' . wp_kses_post( Plugin::$error ) . '</p></div>';
 	}
 	?>

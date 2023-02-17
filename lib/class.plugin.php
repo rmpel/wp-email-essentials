@@ -143,11 +143,9 @@ class Plugin {
 
 		// set default from email and from name.
 		if ( $config['from_email'] ) {
-//			self::log( 'Config FromMail: ' . $config['from_email'] );
 			add_filter( 'wp_mail_from', [ self::class, 'filter_wp_mail_from' ], 9999 );
 		}
 		if ( $config['from_name'] ) {
-//			self::log( 'Config FromName: ' . $config['from_name'] );
 			add_filter( 'wp_mail_from_name', [ self::class, 'filter_wp_mail_from_name' ], 9999 );
 		}
 
@@ -214,7 +212,7 @@ class Plugin {
 
 		if ( ! $root_path ) {
 			$wp_path_rel_to_home = self::get_wp_subdir();
-			if ( $wp_path_rel_to_home !== '' && $wp_path_rel_to_home !== '0' ) {
+			if ( '' !== $wp_path_rel_to_home ) {
 				$pos       = strripos( str_replace( '\\', '/', ABSPATH ), trailingslashit( $wp_path_rel_to_home ) );
 				$home_path = substr( ABSPATH, 0, $pos );
 				$home_path = trailingslashit( $home_path );
@@ -392,7 +390,7 @@ class Plugin {
 	 * @return array
 	 */
 	public static function action_wp_mail( $wp_mail ) {
-		if ( $wp_mail === [] ) {
+		if ( [] === $wp_mail ) {
 			return $wp_mail;
 		}
 		if ( ! $wp_mail['to'] ) {
@@ -574,7 +572,7 @@ class Plugin {
 		}
 
 		$sending_domain = self::get_domain( $email );
-		if ( $sending_domain === '' ) {
+		if ( '' === $sending_domain ) {
 			return false; // invalid email.
 		}
 		$sending_server = self::get_sending_ip();
@@ -652,7 +650,7 @@ class Plugin {
 
 		// Domain.
 		$sending_domain = self::get_domain( $email );
-		if ( $sending_domain === '' ) {
+		if ( '' === $sending_domain ) {
 			return false; // invalid email.
 		}
 
@@ -795,7 +793,7 @@ class Plugin {
 
 		$sending_domain = [];
 		preg_match( '/@(.+)$/', $email, $sending_domain );
-		if ( $sending_domain === [] ) {
+		if ( [] === $sending_domain ) {
 			return false; // invalid email.
 		}
 		$sending_server = self::get_sending_ip();
@@ -1017,7 +1015,7 @@ class Plugin {
 		// pre-filter; these tlds can never have SPF or other special records.
 		$local_tlds = apply_filters( 'wpes_local_tlds', [ 'local', 'test' ] );
 		$local_tlds = array_filter( array_unique( $local_tlds ) );
-		if ( $local_tlds !== [] ) {
+		if ( [] !== $local_tlds ) {
 			$local_tlds = array_map( 'preg_quote', $local_tlds, [ '/' ] );
 			$local_tlds = implode( '|', $local_tlds );
 			if ( preg_match( '/\.(' . $local_tlds . ')$/', $lookup ) && ( DNS_A !== $filter || DNS_A6 !== $filter ) ) {
@@ -1306,15 +1304,15 @@ class Plugin {
 		}
 
 		// Verify charset is defined.
-		// <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		// <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"> .
 		$find_charset = preg_match( '/http-equiv=.Content-Type.[^>]+charset=.?' . $charset . '/i', $should_be_html );
 		if ( ! $find_charset ) {
 			$find_wrong_charset = preg_match( '/http-equiv=.Content-Type.[^>]+charset=[^>]+>/i', $should_be_html, $m );
 			if ( $find_wrong_charset ) {
-				// change charset
+				// change charset.
 				$should_be_html = str_replace( $m[0], 'http-equiv="Content-Type" x="wrong charset detected" content="text/html; charset=' . $charset . '">', $should_be_html );
 			} else {
-				// add charset
+				// add charset.
 				$should_be_html = str_replace( '</head>', '<meta http-equiv="Content-Type" x="missing charset" content="text/html; charset=' . $charset . '"></head>', $should_be_html );
 			}
 		}
@@ -1805,7 +1803,7 @@ class Plugin {
 		/**
 		 * Save options for "alternative admins" panel
 		 */
-		if ( wp_verify_nonce( $_POST['wpes-nonce'] ?? false, 'wp-email-essentials--admins' ) && isset( $_GET['page'] ) && 'wpes-admins' === $_GET['page'] && $_POST && isset( $_POST['form_id'] ) && 'wpes-admins' === $_POST['form_id'] && $_POST['op'] === __( 'Save settings', 'wpes' ) ) {
+		if ( wp_verify_nonce( $_POST['wpes-nonce'] ?? false, 'wp-email-essentials--admins' ) && isset( $_GET['page'] ) && 'wpes-admins' === $_GET['page'] && $_POST && isset( $_POST['form_id'] ) && 'wpes-admins' === $_POST['form_id'] && __( 'Save settings', 'wpes' ) === $_POST['op'] ) {
 			$keys = $_POST['settings']['keys'];
 			$keys = array_filter(
 				$keys,
@@ -1838,7 +1836,7 @@ class Plugin {
 		/**
 		 * Save options for "Moderators" panel.
 		 */
-		if ( wp_verify_nonce( $_POST['wpes-nonce'] ?? false, 'wp-email-essentials--moderators' ) && isset( $_GET['page'] ) && 'wpes-moderators' === $_GET['page'] && $_POST && isset( $_POST['form_id'] ) && 'wpes-moderators' === $_POST['form_id'] && $_POST['op'] === __( 'Save settings', 'wpes' ) ) {
+		if ( wp_verify_nonce( $_POST['wpes-nonce'] ?? false, 'wp-email-essentials--moderators' ) && isset( $_GET['page'] ) && 'wpes-moderators' === $_GET['page'] && $_POST && isset( $_POST['form_id'] ) && 'wpes-moderators' === $_POST['form_id'] && __( 'Save settings', 'wpes' ) === $_POST['op'] ) {
 			foreach ( $_POST['settings']['keys'] as $recipient => $_keys ) {
 				foreach ( $_keys as $post_type => $keys ) {
 					$_POST['settings']['keys'][ $recipient ][ $post_type ] = array_filter(
@@ -2253,7 +2251,7 @@ Item 2
 		// this message is sent to the system admin.
 		// we might want to send this to a different admin.
 		$key = self::get_mail_key( $email['subject'] );
-		if ( $key !== '' && $key !== '0' ) {
+		if ( '' !== $key ) {
 			// we were able to determine a mailkey.
 			$admins = get_option( 'mail_key_admins', [] );
 			if ( isset( $admins[ $key ] ) && $admins[ $key ] ) {
@@ -2480,7 +2478,7 @@ Item 2
 
 		$key = $keys[ $lookup ] ?? '';
 
-		if ( $key !== '' && $key !== '0' ) {
+		if ( '' !== $key ) {
 			return $key;
 		}
 
@@ -2805,7 +2803,7 @@ Item 2
 		<h2 class="dashicons-before dashicons-email-alt">
 			<?php print wp_kses_post( self::plugin_data()['LongName'] ); ?>
 			<em><?php print wp_kses_post( self::plugin_data()['Version'] ); ?></em>
-			<?php if ( $title_subtitle !== '' ) { ?>
+			<?php if ( '' !== $title_subtitle ) { ?>
 				- <?php print esc_html( $title_subtitle ); ?>
 			<?php } ?>
 		</h2>

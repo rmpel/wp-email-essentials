@@ -26,14 +26,13 @@ if ( ! get_option( 'moderation_notify' ) ) {
 <div class="wrap wpes-wrap wpes-moderators">
 	<?php
 	Plugin::template_header( __( 'Alternative Moderators', 'wpes' ) );
-	if ( Plugin::$message !== '' ) {
+	if ( '' !== Plugin::$message ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
 	}
-	?>
-	<?php
-	if ( Plugin::$error !== '' ) {
+	if ( '' !== Plugin::$error ) {
 		print '<div class="error"><p>' . wp_kses_post( Plugin::$error ) . '</p></div>';
 	}
+
 	?>
 	<form id="outpost" class="wpes-admin" method='POST' action="">
 		<input type="hidden" name="form_id" value="wpes-moderators"/>

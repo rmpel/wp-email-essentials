@@ -32,12 +32,10 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 <div class="wrap wpes-wrap wpes-emails wpes-admin">
 	<?php
 	Plugin::template_header( __( 'E-mail History', 'wpes' ) );
-	if ( Plugin::$message !== '' ) {
+	if ( '' !== Plugin::$message ) {
 		print '<div class="updated"><p>' . wp_kses_post( Plugin::$message ) . '</p></div>';
 	}
-	?>
-	<?php
-	if ( Plugin::$error !== '' ) {
+	if ( '' !== Plugin::$error ) {
 		print '<div class="error"><p>' . wp_kses_post( Plugin::$error ) . '</p></div>';
 	}
 	?>
@@ -123,10 +121,10 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 									if ( $wpes__debug->FromName ) {
 										$wpes__sender = Plugin::rfc_encode(
 											[
+												// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 												'name'  => $wpes__debug->FromName,
 												// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 												'email' => $wpes__debug->Sender ?: $wpes__debug->From,
-												// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 											]
 										);
 										$wpes__sender = esc_html( $wpes__sender );
@@ -151,7 +149,7 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 									<?php
 									if ( $wpes_view_email->eml ) {
 										$wpes_attachment_count = substr_count( $wpes_view_email->eml, 'Content-Disposition: attachment;' );
-										if ( $wpes_attachment_count !== 0 ) {
+										if ( 0 !== $wpes_attachment_count ) {
 											$wpes_attachment_count = '<span class="dashicons dashicons-paperclip"></span>' . $wpes_attachment_count;
 										} else {
 											$wpes_attachment_count = '';
