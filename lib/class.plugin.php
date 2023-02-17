@@ -33,14 +33,14 @@ class Plugin {
 	 *
 	 * @var string
 	 */
-	public static $message;
+	public static $message = '';
 
 	/**
 	 * Holds an error-message to show in the admin panel.
 	 *
 	 * @var string
 	 */
-	public static $error;
+	public static $error = '';
 
 	/**
 	 * Holds debug information.
@@ -58,7 +58,7 @@ class Plugin {
 	 * Constructor.
 	 */
 	public function __construct() {
-		self::$message = get_transient( 'wpes_message' );
+		self::$message = get_transient( 'wpes_message' ) ?: '';
 		add_action( 'admin_notices', [ $this, 'admin_notices' ] );
 
 		self::init();
