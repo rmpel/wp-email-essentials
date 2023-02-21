@@ -139,6 +139,14 @@ class Plugin {
 				],
 				~PHP_INT_MAX
 			);
+
+			// Disable GravityForms HTML wrapper, because we want our own.
+			add_filter(
+				'gform_html_message_template_pre_send_email',
+				function () {
+					return '{message}';
+				}
+			);
 		}
 
 		// set default from email and from name.

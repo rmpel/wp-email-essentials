@@ -1,14 +1,14 @@
 # WordPress Mail Essentials
 A plugin to make WordPress outgoing emails better.
 
-# BREAKING CHANGES
+# BREAKING CHANGES:
 
 From version 4.1.0 on, the plugin is fully WP Coding standards compliant and fully Namespaced.
 The side effect is that While versions 4.0.0 - 4.0.2 are backwards compatible; version 4.1.0 is NOT -- IF -- you access the WP_Email_Essentials methods directly.
 
 Please TEST your website with the latest version of WPES locally or on a test-server _BEFORE_ you update your live website.
 
-# Introduction
+# Introduction:
 
 The main purpose is to vastly reduce the chances of your emails being marked as spam or being rejected.
 
@@ -34,7 +34,7 @@ This tool is created for people that know what to do and why they do it. If you 
 
 *1) Under GDPR, storing and tracking emails is prohibited, the history feature is meant for investigative purposes only!
 
-# WordPress Filters
+# WordPress Filters:
 
 `wpes_settings`
 
@@ -97,3 +97,7 @@ Parameters:
 
 Expected return:
 - (string) The (altered) Subject.
+
+# Changelog:
+
+5.2.3: Added filter to disable the HTML envelope set by GravityForms, so we can use our own.
