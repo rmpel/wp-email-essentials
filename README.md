@@ -100,4 +100,6 @@ Expected return:
 
 # Changelog:
 
+5.2.4: Code improvements for PHP 8.0 compatibility
+
 5.2.3: Added filter to disable the HTML envelope set by GravityForms, so we can use our own.
