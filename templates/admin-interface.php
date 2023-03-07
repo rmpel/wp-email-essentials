@@ -10,10 +10,17 @@ namespace WP_Email_Essentials;
 if ( ! current_user_can( 'manage_options' ) ) {
 	wp_die( wp_kses_post( __( 'Uh uh uh! You didn\'t say the magic word!', 'wpes' ) ) );
 }
-global $current_user;
-$wpes_config = Plugin::get_config();
 
-$wpes_host = Plugin::get_hostname_by_blogurl();
+$wpes_config = Plugin::get_config();
+if ( empty( $wpes_config['dkimfolder'] ) ) {
+	$wpes_config['dkimfolder'] = '';
+}
+if ( empty( $wpes_config['certfolder'] ) ) {
+	$wpes_config['certfolder'] = '';
+}
+$wpes_host             = Plugin::get_hostname_by_blogurl();
+$wpes_smime_identities = [];
+$wpes_dkim_identities  = [];
 
 ?>
 <div class="wrap wpes-wrap wpes-settings">
@@ -485,33 +492,31 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 						</label>
 					</div>
 
-					<tr>
-						<td></td>
-						<td colspan="3">
-							<select class="widefat" name="settings[make_from_valid]" id="make_from_valid">
+					<div>
+						<label for="make_from_valid"></label>
+						<select class="widefat" name="settings[make_from_valid]" id="make_from_valid">
+							<option
+								value=""><?php print wp_kses_post( __( 'Keep the possibly-invalid sender as is. (might cause your mails to be marked as spam!)', 'wpes' ) ); ?></option>
+							<option disabled>────────────────────────────────────────────────────────────</option>
+							<option value="-at-" <?php selected( '-at-', $wpes_config['make_from_valid'] ); ?>>
+								<?php print esc_html( sprintf( __( 'Rewrite e-mail@addre.ss to e-mail-at-addre-dot-ss@%s', 'wpes' ), $wpes_host ) ); ?>
+							</option>
+							<option
+								value="noreply" <?php selected( 'noreply', $wpes_config['make_from_valid'] ); ?>>
+								<?php print esc_html( sprintf( __( 'Rewrite e-mail@addre.ss to noreply@%s', 'wpes' ), $wpes_host ) ); ?>
+								<?php print esc_html( __( '(Not GDPR Compliant)', 'wpes' ) ); ?>
+							</option>
+							<?php
+							$wpes_default_sender_mail = Plugin::wp_mail_from( $wpes_config['from_email'] );
+							if ( Plugin::i_am_allowed_to_send_in_name_of( $wpes_default_sender_mail ) ) {
+								?>
 								<option
-									value=""><?php print wp_kses_post( __( 'Keep the possibly-invalid sender as is. (might cause your mails to be marked as spam!)', 'wpes' ) ); ?></option>
-								<option disabled>────────────────────────────────────────────────────────────</option>
-								<option value="-at-" <?php selected( '-at-', $wpes_config['make_from_valid'] ); ?>>
-									<?php print esc_html( sprintf( __( 'Rewrite e-mail@addre.ss to e-mail-at-addre-dot-ss@%s', 'wpes' ), $wpes_host ) ); ?>
+									value="default" <?php selected( 'default', $wpes_config['make_from_valid'] ); ?>>
+									<?php print esc_html( sprintf( __( 'Rewrite e-mail@addre.ss to %s', 'wpes' ), $wpes_default_sender_mail ) ); ?>
 								</option>
-								<option
-									value="noreply" <?php selected( 'noreply', $wpes_config['make_from_valid'] ); ?>>
-									<?php print esc_html( sprintf( __( 'Rewrite e-mail@addre.ss to noreply@%s', 'wpes' ), $wpes_host ) ); ?>
-									<?php print esc_html( __( '(Not GDPR Compliant)', 'wpes' ) ); ?>
-								</option>
-								<?php
-								$wpes_default_sender_mail = Plugin::wp_mail_from( $wpes_config['from_email'] );
-								if ( Plugin::i_am_allowed_to_send_in_name_of( $wpes_default_sender_mail ) ) {
-									?>
-									<option
-										value="default" <?php selected( 'default', $wpes_config['make_from_valid'] ); ?>>
-										<?php print esc_html( sprintf( __( 'Rewrite e-mail@addre.ss to %s', 'wpes' ), $wpes_default_sender_mail ) ); ?>
-									</option>
-								<?php } ?>
-							</select>
-						</td>
-					</tr>
+							<?php } ?>
+						</select>
+					</div>
 				</div>
 			</div>
 
@@ -630,7 +635,8 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 						<?php print wp_kses_post( __( 'Some servers have f*cked-up content-encoding settings, resulting in wrongly encoded diacritics. If you expect a character like &eacute; and all you get is something like &euro;&tilde;&Itilde;, experiment with this setting.', 'wpes' ) ); ?>
 					</div>
 
-					<select id="content-precoding" name="settings[content_precode]">
+					<label for="content-precoding"></label><select
+						id="content-precoding" name="settings[content_precode]">
 						<?php
 						$wpes_encoding_table         = explode( ',', '0,auto,' . Plugin::ENCODINGS );
 						$wpes_encoding_table         = array_combine( $wpes_encoding_table, $wpes_encoding_table );
@@ -734,10 +740,8 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 
 							<?php
 							if ( isset( $wpes_config['certfolder'] ) ) {
-								$wpes_smime_identities         = [];
 								$wpes_smime_certificate_folder = $wpes_config['certificate_folder'];
 								if ( is_dir( $wpes_smime_certificate_folder ) ) {
-									$wpes_smime_files      = glob( $wpes_smime_certificate_folder . '/*.crt' );
 									$wpes_smime_identities = Plugin::list_smime_identities();
 									$wpes_smime_identities = array_keys( $wpes_smime_identities );
 									?>
@@ -848,7 +852,6 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 
 						<?php
 						if ( isset( $wpes_config['dkimfolder'] ) ) {
-							$wpes_dkim_identities         = [];
 							$wpes_dkim_certificate_folder = $wpes_config['dkim_certificate_folder'];
 							if ( is_dir( $wpes_dkim_certificate_folder ) ) {
 								$wpes_dkim_identities = Plugin::list_dkim_identities();
@@ -865,7 +868,6 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 										print ' ' . wp_kses_post( sprintf( __( 'Evaluated path: <code>%s</code>', 'wpes' ), realpath( $wpes_dkim_certificate_folder ) ) );
 										?>
 									</strong>
-									</tr>
 								</div>
 								<?php
 							}
@@ -922,7 +924,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 							print wp_kses_post( '<code>openssl rsa -in domain.tld.key -pubout > domain.tld.crt</code>' );
 							print wp_kses_post( '<code>echo "' . _x( 'YOUR-PASSWORD', 'A sample password', 'wpes' ) . '" > domain.tld.pass</code>' );
 							print wp_kses_post( '<code>echo "' . _x( 'DKIM-SELECTOR-FOR-THIS-KEY', 'A sample DKIM selector', 'wpes' ) . '" > domain.tld.selector</code>' );
-							print wp_kses_post( 'Upload these files to the specified path on the server and again; this should not be publicly queriable!!!', 'wpes' );
+							print wp_kses_post( __( 'Upload these files to the specified path on the server and again; this should not be publicly queriable!!!', 'wpes' ) );
 							?>
 
 							<strong class="title">
@@ -938,7 +940,7 @@ $wpes_host = Plugin::get_hostname_by_blogurl();
 
 							<p>
 								<?php
-								// translators: %s: an URL: to a testing site.
+								// translators: %s: a URL: to a testing site.
 								print wp_kses_post( sprintf( __( 'Test your settings with <a href="%s" target="_blank">DMARC Analyser</a> (unaffiliated)', 'wpes' ), esc_attr( 'https://www.dmarcanalyzer.com/dkim/dkim-check/' ) ) );
 								?>
 							</p>
