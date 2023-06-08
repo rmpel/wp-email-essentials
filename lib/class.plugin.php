@@ -20,12 +20,22 @@ class Plugin {
 	 */
 	const SLUG = 'wp-email-essentials/wp-email-essentials.php';
 
+	const IP_SERVICE  = 'https://ip.acato.nl';
+	const IP4_SERVICE = 'https://ip4.acato.nl';
+	const IP6_SERVICE = 'https://ip6.acato.nl';
+
 	/**
 	 * RegExp to validate IPv4
 	 *
 	 * @const string
 	 */
 	const REGEXP_IP4 = '/^(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.(?:25[0-5]|2[0-4]\d|[01]?\d\d?)\.(?:25[0-5]|2[0-4]\d|[01]?\d\d?)$/';
+
+	/**
+	 * RegExp to validate IPv6
+	 *
+	 * @const string
+	 */
 	const REGEXP_IP6 = '(([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]+|::(ffff(:0{1,4})?:)?((25[0-5]|(2[0-4]|1?\d)?\d)\.){3}(25[0-5]|(2[0-4]|1?\d)?\d)|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1?\d)?\d)\.){3}(25[0-5]|(2[0-4]|1?\d)?\d))';
 
 	/**
@@ -542,10 +552,11 @@ class Plugin {
 	 * @return string
 	 */
 	public static function get_domain( $email ) {
-		$sending_domain = '';
-
 		if ( preg_match( '/@(.+)$/', $email, $sending_domain ) ) {
 			$sending_domain = $sending_domain[1];
+		}
+		else {
+			$sending_domain = '';
 		}
 
 		return $sending_domain;
@@ -835,8 +846,8 @@ class Plugin {
 		 *
 		 * Service hostname: ip4.me             ; single-stack ip report, will always report ipv4.
 		 * Service hostname: ip6.me             ; dual-stack ip report, will report ipv6 if possible, ipv4 otherwise.
-		 * Service hostname: ip4.remonpel.nl    ; single-stack ip report, will always report ipv4.
-		 * Service hostname: ip.remonpel.nl     ; dual-stack ip report, will report ipv6 if possible, ipv4 otherwise.
+		 * Service hostname: self::IP_SERVICE   ; dual-stack ip report, will report ipv6 if possible, ipv4 otherwise. (see above).
+		 * Service hostname: self::IP4_SERVICE  ; single-stack ip report, will always report ipv4. (see above).
 		 * Service hostname: watismijnip.nl     ; dual-stack ip report, will report ipv6 if possible, ipv4 otherwise.
 		 */
 		if ( ! $ip && $force_ip4 ) {
@@ -846,7 +857,7 @@ class Plugin {
 					[
 						'httpversion' => '1.1',
 						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo( 'url' ),
-						'user-agent'  => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
+						'user-agent'  => $_SERVER['HTTP_USER_AGENT'] ?? sprintf( 'WordPress/%s/WP-Email-Essentials/%s', get_bloginfo( 'version' ), self::get_wpes_version() ),
 					]
 				)
 			);
@@ -856,11 +867,11 @@ class Plugin {
 		if ( ! $ip && $force_ip4 ) {
 			$ip = wp_remote_retrieve_body(
 				wp_remote_get(
-					'https://ip4.remonpel.nl',
+					self::IP4_SERVICE,
 					[
 						'httpversion' => '1.1',
 						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo( 'url' ),
-						'user-agent'  => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
+						'user-agent'  => sprintf( 'WordPress/%s/WP-Email-Essentials/%s', get_bloginfo( 'version' ), self::get_wpes_version() ),
 					]
 				)
 			);
@@ -874,7 +885,16 @@ class Plugin {
 			}
 		}
 		if ( ! $ip ) {
-			$ip = wp_remote_retrieve_body( wp_remote_get( 'https://ip.remonpel.nl' ) );
+			$ip = wp_remote_retrieve_body(
+				wp_remote_get(
+					self::IP_SERVICE,
+					[
+						'httpversion' => '1.1',
+						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo( 'url' ),
+						'user-agent'  => sprintf( 'WordPress/%s/WP-Email-Essentials/%s', get_bloginfo( 'version' ), self::get_wpes_version() ),
+					]
+				)
+			);
 			if ( '0.0.0.0' === $ip ) {
 				$ip = false;
 			}
@@ -900,7 +920,7 @@ class Plugin {
 					[
 						'httpversion' => '1.1',
 						'referer'     => $_SERVER['HTTP_REFERER'] ?? get_bloginfo( 'url' ),
-						'user-agent'  => $_SERVER['HTTP_USER_AGENT'] ?? 'CLI',
+						'user-agent'  => $_SERVER['HTTP_USER_AGENT'] ?? sprintf( 'WordPress/%s/WP-Email-Essentials/%s', get_bloginfo( 'version' ), self::get_wpes_version() ),
 					]
 				)
 			);
@@ -2841,5 +2861,20 @@ Item 2
 		$digits = $filesize >= 100 ? 0 : 1;
 
 		return sprintf( "%0.{$digits}f%s", $filesize, $size );
+	}
+
+	/**
+	 * Returns the plugin version.
+	 *
+	 * @return string
+	 */
+	public static function get_wpes_version() {
+		if ( ! function_exists( 'get_plugin_data' ) ) {
+			require_once trailingslashit( WP_PLUGIN_DIR ) . 'wp-admin/includes/plugin.php';
+		}
+		$plugin_path = dirname( __DIR__ ) . '/wp-email-essentials.php';
+		$plugin_data = get_plugin_data( $plugin_path );
+
+		return $plugin_data['Version'];
 	}
 }
