@@ -105,6 +105,8 @@ class Plugin {
 	 */
 	public static function init() {
 
+		add_filter( 'wp_mail', [ self::class, 'jit_overload_phpmailer' ], ~PHP_INT_MAX );
+
 		add_filter( 'wp_mail', [ self::class, 'alternative_to' ] );
 
 		add_action( 'wp_ajax_nopriv_wpes_get_ip', [ self::class, 'ajax_get_ip' ] );
@@ -200,6 +202,37 @@ class Plugin {
 		Queue::instance();
 
 		add_filter( 'plugin_action_links', [ self::class, 'plugin_actions' ], 10, 2 );
+	}
+
+	/**
+	 * Just-in-time overloading of the phpMailer object. Chances are, the object has not been created yet, but in any case,
+	 * we create iw with our own class (but only on WordPress 5.5 or higher) so we can overload the Send method.
+	 *
+	 * @param mixed $passthru The wp_mail filter result. We don't care about this, but it is a filter, so we have no choice but to passthru.
+	 *
+	 * @return mixed
+	 */
+	public static function jit_overload_phpmailer( $passthru ) {
+		global $phpmailer, $wp_version;
+		if ( version_compare( $wp_version, '5.4.99', '<' ) ) {
+			return $passthru;
+		}
+
+		// TAKEN FROM wp-includes/pluggable.php.
+		// Changed class name, so we can overload the Send method.
+		if ( ! ( $phpmailer instanceof WPES_PHPMailer ) ) {
+			require_once ABSPATH . WPINC . '/PHPMailer/PHPMailer.php';
+			require_once ABSPATH . WPINC . '/PHPMailer/SMTP.php';
+			require_once ABSPATH . WPINC . '/PHPMailer/Exception.php';
+			// @phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Give me a different way to do this, and I will gladly refactor.
+			$phpmailer = new WPES_PHPMailer( true );
+
+			$phpmailer::$validator = static function ( $email ) {
+				return (bool) is_email( $email );
+			};
+		}
+
+		return $passthru;
 	}
 
 	/**
@@ -554,8 +587,7 @@ class Plugin {
 	public static function get_domain( $email ) {
 		if ( preg_match( '/@(.+)$/', $email, $sending_domain ) ) {
 			$sending_domain = $sending_domain[1];
-		}
-		else {
+		} else {
 			$sending_domain = '';
 		}
 
