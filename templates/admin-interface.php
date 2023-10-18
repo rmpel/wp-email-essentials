@@ -61,9 +61,11 @@ $wpes_dkim_identities  = [];
 						'subject' => Plugin::dummy_subject(),
 					];
 					$wpes_sample_email = Plugin::alternative_to( $wpes_sample_email );
-					$wpes_admin        = reset( $wpes_sample_email['to'] );
+					$wpes_sample_email        = reset( $wpes_sample_email['to'] );
+					$wpes_sample_email_name = $wpes_sample_email == $wpes_admin ? __( 'Site Administrator', 'wpes' ) : __( 'Configured recipient', 'wpes' );
+					$wpes_sample_email_link = $wpes_sample_email == $wpes_admin ? admin_url( 'options-general.php' ) : add_query_arg( [ 'page' => 'wpes-admins' ], admin_url( 'admin.php' ) );
 					// translators: %1$s: a link to the options panel, %2$s: an e-mail address.
-					print wp_kses_post( sprintf( __( 'Sample mail will be sent to the <a href="%1$s">Site Administrator</a>; <b>%2$s</b>', 'wpes' ), admin_url( 'options-general.php' ), $wpes_admin ) );
+					print wp_kses_post( sprintf( __( 'Sample mail will be sent to the <a href="%1$s">%3$s</a>; <b>%2$s</b>', 'wpes' ), $wpes_sample_email_link, $wpes_sample_email, $wpes_sample_email_name ) );
 					?>
 				</em>
 			</div>
