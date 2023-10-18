@@ -1783,10 +1783,11 @@ class Plugin {
 						'subject' => self::dummy_subject(),
 					];
 					$wpes_sample_email = self::alternative_to( $wpes_sample_email );
-					$wpes_admin        = reset( $wpes_sample_email['to'] );
+					// For display purposes.
+					$wpes_admin        = implode(', ', $wpes_sample_email['to']);
 
 					$result      = wp_mail(
-						$wpes_admin,
+						$wpes_sample_email['to'],
 						self::dummy_subject(),
 						self::dummy_content(),
 						[ 'X-Priority: 5' ]
