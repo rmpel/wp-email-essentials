@@ -2871,7 +2871,7 @@ Item 2
 	 */
 	public static function get_wpes_version() {
 		if ( ! function_exists( 'get_plugin_data' ) ) {
-			require_once trailingslashit( WP_PLUGIN_DIR ) . 'wp-admin/includes/plugin.php';
+			require_once trailingslashit( ABSPATH ) . 'wp-admin/includes/plugin.php';
 		}
 		$plugin_path = dirname( __DIR__ ) . '/wp-email-essentials.php';
 		$plugin_data = get_plugin_data( $plugin_path );
