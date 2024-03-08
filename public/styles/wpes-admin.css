@@ -71,6 +71,14 @@
 .wpes-admin .inside > * {
   margin: 0;
 }
+.wpes-admin .inside.cols {
+  display: flex;
+  flex-direction: row;
+}
+.wpes-admin .inside.col {
+  max-width: 50%;
+  flex: 1;
+}
 .wpes-admin select {
   max-width: 100%;
 }

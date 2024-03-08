@@ -1155,7 +1155,7 @@ class Plugin {
 				} else {
 					$mailer->SMTPAutoTLS = false;
 				}
-				if ( ( defined( 'WPES_ALLOW_SSL_SELF_SIGNED' ) && true === WPES_ALLOW_SSL_SELF_SIGNED ) || '-' === substr( $config['smtp']['secure'] ?? '', - 1, 1 ) ) {
+				if ( ( defined( 'WPES_ALLOW_SSL_SELF_SIGNED' ) && true === WPES_ALLOW_SSL_SELF_SIGNED ) || '-' === substr( $config['smtp']['secure'] ?? '', -1, 1 ) ) {
 					$mailer->SMTPOptions = [
 						'ssl' => [
 							'verify_peer'       => false,
@@ -1675,7 +1675,7 @@ class Plugin {
 	 *
 	 * @return array|false
 	 */
-	private static function rfc_decode( $rfc ) {
+	public static function rfc_decode( $rfc ) {
 		$rfc = trim( $rfc );
 
 		// $rfc might just be an e-mail address
@@ -1733,7 +1733,7 @@ class Plugin {
 		// therefore, to fetch all elements, we need a dummy element at the end that will be ignored.
 		$string .= ', dummy';
 		while ( trim( $string ) && preg_match( '/(,)(([^"]|"[^"]*")*$)/', $string, $match ) ) {
-			$i ++;
+			$i++;
 
 			$matched_rest    = $match[0];
 			$unmatched_first = str_replace( $matched_rest, '', $string );
@@ -1805,30 +1805,39 @@ class Plugin {
 					set_transient( 'wpes_message', __( 'Settings saved.', 'wpes' ), 5 );
 					wp_safe_redirect( remove_query_arg( 'wpes-nonce' ) );
 					exit;
-				case __( 'Print debug output of sample mail', 'wpes' ):
 				case __( 'Send sample mail', 'wpes' ):
 					ob_start();
-					self::$debug       = true;
-					$wpes_admin        = get_option( 'admin_email', false );
-					$wpes_sample_email = [
-						'to'      => $wpes_admin,
-						'subject' => self::dummy_subject(),
-					];
-					$wpes_sample_email = self::alternative_to( $wpes_sample_email );
-					// For display purposes.
-					$wpes_admin        = implode(', ', $wpes_sample_email['to']);
+					self::$debug     = true;
+					$send_email_to   = $_POST['send-test-email-to'] ?? false;
+					$send_email_from = $_POST['send-test-email-from'] ?? false;
+					if ( ! $send_email_to || ! is_email( $send_email_to ) ) {
+						$send_email_to = get_option( 'admin_email', false );
+					}
+					if ( ! $send_email_to ) {
+						self::$error = __( 'No email address to send to.', 'wpes' );
+						break;
+					}
+					if ( ! $send_email_from || ! is_email( $send_email_from ) ) {
+						$send_email_from = get_option( 'admin_email', false );
+					}
+					if ( ! $send_email_from ) {
+						self::$error = __( 'No email address to send from.', 'wpes' );
+						break;
+					}
+					update_option( 'wpes_last_test_sent_from', $send_email_from );
+					update_option( 'wpes_last_test_sent_to', $send_email_to );
 
 					$result      = wp_mail(
-						$wpes_sample_email['to'],
+						$send_email_to,
 						self::dummy_subject(),
 						self::dummy_content(),
-						[ 'X-Priority: 5' ]
+						[ 'X-Priority: 5', 'From: ' . $send_email_from ]
 					);
 					self::$debug = ob_get_clean();
 					if ( $result ) {
-						self::$message = sprintf( __( 'Mail sent to %s', 'wpes' ), $wpes_admin );
+						self::$message = sprintf( __( 'Mail sent to %s', 'wpes' ), $send_email_to );
 					} else {
-						self::$error = sprintf( __( 'Mail NOT sent to %s', 'wpes' ), $wpes_admin );
+						self::$error = sprintf( __( 'Mail NOT sent to %s', 'wpes' ), $send_email_to );
 					}
 					break;
 			}
@@ -2283,7 +2292,10 @@ Item 2
 	 * @return array
 	 */
 	public static function alternative_to( $email ) {
-		$admin_email = get_option( 'admin_email' );
+		$admin_emails = [ get_option( 'admin_email' ) ];
+		if ( is_multisite() ) {
+			$admin_emails[] = get_site_option( 'admin_email' );
+		}
 
 		// make sure we have a list of emails, not a single email.
 		if ( ! is_array( $email['to'] ) ) {
@@ -2291,16 +2303,16 @@ Item 2
 		}
 
 		// find the admin address.
-		$found_mail_item_number = - 1;
+		$found_mail_item_number = -1;
 		foreach ( $email['to'] as $i => $email_address ) {
 			$email['to'][ $i ] = self::rfc_recode( $email['to'][ $i ] );
 
 			$decoded = self::rfc_decode( $email_address );
-			if ( $decoded['email'] === $admin_email ) {
+			if ( in_array( $decoded['email'], $admin_emails, true ) ) {
 				$found_mail_item_number = $i;
 			}
 		}
-		if ( - 1 === $found_mail_item_number ) {
+		if ( -1 === $found_mail_item_number ) {
 			// not going to an admin.
 			return $email;
 		}
@@ -2801,7 +2813,7 @@ Item 2
 		// backup values within single or double quotes.
 		preg_match_all( '/(\'[^\']*?\'|"[^"]*?")/ims', $css, $hit, PREG_PATTERN_ORDER );
 		$j = count( $hit[1] );
-		for ( $i = 0; $i < $j; $i ++ ) {
+		for ( $i = 0; $i < $j; $i++ ) {
 			$css = str_replace( $hit[1][ $i ], '##########' . $i . '##########', $css );
 		}
 		// remove traling semicolon of selector's last property.
@@ -2824,7 +2836,7 @@ Item 2
 		$css = str_replace( [ "\r\n", "\r", "\n" ], '', $css );
 		// Restore backupped values within single or double quotes.
 		$j = count( $hit[1] );
-		for ( $i = 0; $i < $j; $i ++ ) {
+		for ( $i = 0; $i < $j; $i++ ) {
 			$css = str_replace( '##########' . $i . '##########', $hit[1][ $i ], $css );
 		}
 
