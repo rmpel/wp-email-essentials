@@ -1719,25 +1719,25 @@ class Plugin {
 	/**
 	 * Split a comma separated list of RFC encoded email addresses into an array.
 	 *
-	 * @param string $string Comma separated list of email addresses.
+	 * @param string $email_list Comma separated list of email addresses.
 	 *
 	 * @return array
 	 */
-	private static function rfc_explode( $string ) {
+	private static function rfc_explode( $email_list ) {
 		// safequard escaped quotes.
-		$string = str_replace( '\\"', 'ESCAPEDQUOTE', $string );
+		$email_list = str_replace( '\\"', 'ESCAPEDQUOTE', $email_list );
 		// get chunks.
 		$exploded = [];
 		$i        = 0;
 		// this regexp will match any comma + a string behind it.
 		// therefore, to fetch all elements, we need a dummy element at the end that will be ignored.
-		$string .= ', dummy';
-		while ( trim( $string ) && preg_match( '/(,)(([^"]|"[^"]*")*$)/', $string, $match ) ) {
-			$i++;
+		$email_list .= ', dummy';
+		while ( trim( $email_list ) && preg_match( '/(,)(([^"]|"[^"]*")*$)/', $email_list, $match ) ) {
+			++$i;
 
 			$matched_rest    = $match[0];
-			$unmatched_first = str_replace( $matched_rest, '', $string );
-			$string          = trim( $matched_rest, ', ' );
+			$unmatched_first = str_replace( $matched_rest, '', $email_list );
+			$email_list      = trim( $matched_rest, ', ' );
 			$exploded[]      = str_replace( 'ESCAPEDQUOTE', '\\"', $unmatched_first );
 		}
 
@@ -2194,7 +2194,6 @@ Item 2
 			$rawset['dkimfolder'] = $set;
 			self::set_config( $rawset, true );
 		}
-
 	}
 
 	/**
@@ -2650,6 +2649,9 @@ Item 2
 		static $fp;
 		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_read_fopen
 		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_read_fwrite
+		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
+		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
 		if ( file_exists( __DIR__ . '/../log' ) && is_writable( __DIR__ . '/../log' ) ) {
 			if ( ! $fp ) {
 				$fp = fopen( __DIR__ . '/../log', 'a' );
@@ -2661,6 +2663,9 @@ Item 2
 		}
 		// phpcs:enable WordPress.WP.AlternativeFunctions.file_system_read_fopen
 		// phpcs:enable WordPress.WP.AlternativeFunctions.file_system_read_fwrite
+		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
+		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fopen
+		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
 	}
 
 	/**

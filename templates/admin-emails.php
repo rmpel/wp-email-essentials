@@ -109,7 +109,7 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 							$wpes__sender   = $wpes_view_email->sender;
 							$wpes__reply_to = '';
 							// This is reply-to!
-							if ( substr( $wpes__sender, - 2, 2 ) === ' *' ) {
+							if ( substr( $wpes__sender, -2, 2 ) === ' *' ) {
 								$wpes__reply_to = trim( $wpes__sender, ' *' );
 								// So who sent it?
 								// 1. Get from Debug data, Sender if available, From otherwise, and FromName if we have it.

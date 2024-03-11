@@ -25,7 +25,7 @@ class IP {
 		$generator = function () use ( $cidr_base, $prefix ) {
 			$start    = ip2long( $cidr_base );
 			$ip_count = 1 << ( 32 - $prefix );
-			for ( $i = 0; $i < $ip_count; $i ++ ) {
+			for ( $i = 0; $i < $ip_count; $i++ ) {
 				yield long2ip( $start + $i );
 			}
 		};
@@ -134,7 +134,7 @@ class IP {
 		// padding.
 		$parts = array_map(
 			function ( $part ) {
-				return substr( '0000' . strtolower( $part ), - 4, 4 );
+				return substr( '0000' . strtolower( $part ), -4, 4 );
 			},
 			$parts
 		);

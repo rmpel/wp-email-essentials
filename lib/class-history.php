@@ -187,21 +187,21 @@ class History {
 	/**
 	 * Use print_r to dump the object and extract the data we need.
 	 *
-	 * @param mixed $object Object to inspect.
+	 * @param mixed $the_object Object to inspect.
 	 *
 	 * @return mixed
 	 */
-	private static function object_data( $object ) {
+	private static function object_data( $the_object ) {
 		ob_start();
-		$class = get_class( $object );
+		$class = get_class( $the_object );
 		// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_print_r -- How else are we supposed to get the info we need?.
-		print_r( $object );
-		$object = ob_get_clean();
-		$object = str_replace( $class . ' Object', 'Array', $object );
-		$object = str_replace( ':protected]', ']', $object );
-		$object = self::print_r_reverse( $object );
+		print_r( $the_object );
+		$the_object = ob_get_clean();
+		$the_object = str_replace( $class . ' Object', 'Array', $the_object );
+		$the_object = str_replace( ':protected]', ']', $the_object );
+		$the_object = self::print_r_reverse( $the_object );
 
-		return json_decode( wp_json_encode( $object ) );
+		return json_decode( wp_json_encode( $the_object ) );
 	}
 
 	/**
@@ -224,7 +224,7 @@ class History {
 				$spaces        = $match[1];
 				$spaces_length = strlen( $spaces );
 				$lines_total   = count( $lines );
-				for ( $i = 0; $i < $lines_total; $i ++ ) {
+				for ( $i = 0; $i < $lines_total; $i++ ) {
 					if ( substr( $lines[ $i ], 0, $spaces_length ) === $spaces ) {
 						$lines[ $i ] = substr( $lines[ $i ], $spaces_length );
 					}

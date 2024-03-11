@@ -2,12 +2,12 @@
 /**
  * CSS to Inline Styles class
  *
- * @author         Tijs Verkoyen <php-css-to-inline-styles@verkoyen.eu>
+ * @package        WP_Email_Essentials
  * @version        1.2.1
  * @copyright      Copyright (c), Tijs Verkoyen. All rights reserved.
  * @license        BSD License
  *
- * @package        WP_Email_Essentials
+ * @author         Tijs Verkoyen <php-css-to-inline-styles@verkoyen.eu>
  */
 
 namespace WP_Email_Essentials;
@@ -186,7 +186,7 @@ class CssToInlineStyles {
 				$specifity += 10;
 			} else {
 				// anything else isn't that important.
-				$specifity ++;
+				++$specifity;
 			}
 		}
 
@@ -595,7 +595,7 @@ class CssToInlineStyles {
 			}
 
 			// increment.
-			$i ++;
+			++$i;
 		}
 
 		// sort based on specifity.
@@ -753,7 +753,7 @@ class CssToInlineStyles {
 
 		// lower.
 		if ( $e1['specifity'] < $e2['specifity'] ) {
-			return - 1;
+			return -1;
 		}
 
 		// higher.

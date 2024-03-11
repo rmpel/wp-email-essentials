@@ -264,7 +264,6 @@ class Queue {
 		}
 
 		return 3;
-
 	}
 
 	/**
@@ -350,6 +349,10 @@ class Queue {
 	 * @param array $mail_data A wp_mail data array.
 	 */
 	public function restore_attachment_data( $mail_data ) {
+		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
+		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
+		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_chmod
+		// phpcs:disable WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 		$tmp = wp_upload_dir();
 		$tmp = $tmp['basedir'];
 		$tmp = "$tmp/mail_queue_atts";
@@ -377,7 +380,10 @@ class Queue {
 			$mail_data['attachments'][ $filename ] = $data;
 		}
 		$mail_data['attachments'] = array_values( $mail_data['attachments'] );
-
+		// phpcs:enable WordPress.WP.AlternativeFunctions.file_system_operations_mkdir
+		// phpcs:enable WordPress.WP.AlternativeFunctions.file_system_operations_is_writable
+		// phpcs:enable WordPress.WP.AlternativeFunctions.file_system_operations_chmod
+		// phpcs:enable WordPress.WP.AlternativeFunctions.file_system_operations_file_put_contents
 		return $mail_data['attachments'];
 	}
 

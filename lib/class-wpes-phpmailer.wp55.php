@@ -1,4 +1,4 @@
-<?php
+<?php // phpcs:ignore WordPress.Files.FileName.NotHyphenatedLowercase -- This is a normalised class for PHPMailer.
 /**
  * A normalised class for PHPMailer.
  *
@@ -33,6 +33,8 @@ class WPES_PHPMailer extends PHPMailer {
 		$single_to = false;
 		// phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- not our code.
 		if ( ! empty( $this->SingleTo ) ) {
+			// Developer note: yes, SingleTo is deprecated. That is why this bit of code exists.
+			// This code here will migrate the SingleTo functionality to the new intended use of the PHPMailer class.
 			$single_to = $this->SingleTo;
 			unset( $this->SingleTo );
 		}

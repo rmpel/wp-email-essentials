@@ -1,5 +1,4 @@
-<?php // @phpcs:ignore Squiz.Commenting.FileComment.Missing
-
+<?php // phpcs:ignore WordPress.Files.FileName.NotHyphenatedLowercase -- This is a normalised class for PHPMailer.
 /**
  * A normalised class for PHPMailer.
  *

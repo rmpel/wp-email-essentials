@@ -134,10 +134,10 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 								</td>
 							</tr>
 							<?php
-							$wpes_loop_iterator_0 ++;
+							++$wpes_loop_iterator_0;
 						}
 						?>
-						<?php for ( $wpes_loop_iterator_1 = 0; $wpes_loop_iterator_1 < 5; $wpes_loop_iterator_1 ++ ) { ?>
+						<?php for ( $wpes_loop_iterator_1 = 0; $wpes_loop_iterator_1 < 5; $wpes_loop_iterator_1++ ) { ?>
 							<tr>
 								<td>
 									<input
