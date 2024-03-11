@@ -10,5 +10,12 @@
   "require-dev": {
     "acato/wp-pre-commit-hook": "*",
     "composer/installers": "~1.0"
+  },
+  "config": {
+    "allow-plugins": {
+      "composer/installers": true,
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "acato/wp-pre-commit-hook": true
+    }
   }
 }

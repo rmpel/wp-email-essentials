@@ -100,6 +100,8 @@ Expected return:
 
 # Changelog:
 
+5.3.0: Move E-mail testing to the bottom and add more features, In Multisite, also check the Site Admin for candidate for replacement (Alternative Admins).
+
 5.2.5: More improvements for PHP 8 compatibility, code optimisation and generic bugfixing
 
 5.2.4: Code improvements for PHP 8.0 compatibility
