@@ -1137,10 +1137,7 @@ class Plugin {
 			$mailer->IsSMTP();
 
 			$mailer->Host = $config['smtp']['host'];
-			if ( $config['smtp']['port'] > 0 ) {
-				$mailer->Port = $config['smtp']['port'];
-			}
-			if ( ! empty( $config['smtp']['port'] ) ) {
+			if ( ! empty( $config['smtp']['port'] ) && (int) $config['smtp']['port'] > 0 ) {
 				$mailer->Port = $config['smtp']['port'];
 			}
 
