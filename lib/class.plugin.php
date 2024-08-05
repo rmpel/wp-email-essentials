@@ -1137,10 +1137,7 @@ class Plugin {
 			$mailer->IsSMTP();
 
 			$mailer->Host = $config['smtp']['host'];
-			if ( $config['smtp']['port'] > 0 ) {
-				$mailer->Port = $config['smtp']['port'];
-			}
-			if ( ! empty( $config['smtp']['port'] ) ) {
+			if ( ! empty( $config['smtp']['port'] ) && (int) $config['smtp']['port'] > 0 ) {
 				$mailer->Port = $config['smtp']['port'];
 			}
 
@@ -2324,7 +2321,7 @@ Item 2
 		// this message is sent to the system admin.
 		// we might want to send this to a different admin.
 		$key = self::get_mail_key( $email['subject'] );
-		if ( '' !== $key ) {
+		if ( ! empty( $key ) ) {
 			// we were able to determine a mailkey.
 			$admins = get_option( 'mail_key_admins', [] );
 			if ( isset( $admins[ $key ] ) && $admins[ $key ] ) {

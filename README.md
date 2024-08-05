@@ -100,6 +100,8 @@ Expected return:
 
 # Changelog:
 
+5.4.0: Critical bugfix warranted the new minor release, gathering subjects for the alternative admins was broken since version 4.0.0.
+
 5.3.0: Move E-mail testing to the bottom and add more features, In Multisite, also check the Site Admin for candidate for replacement (Alternative Admins).
 
 5.2.5: More improvements for PHP 8 compatibility, code optimisation and generic bugfixing
