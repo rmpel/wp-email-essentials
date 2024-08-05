@@ -2321,7 +2321,7 @@ Item 2
 		// this message is sent to the system admin.
 		// we might want to send this to a different admin.
 		$key = self::get_mail_key( $email['subject'] );
-		if ( '' !== $key ) {
+		if ( ! empty( $key ) ) {
 			// we were able to determine a mailkey.
 			$admins = get_option( 'mail_key_admins', [] );
 			if ( isset( $admins[ $key ] ) && $admins[ $key ] ) {
