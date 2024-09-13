@@ -319,7 +319,7 @@ msgstr "Bezig met verzenden"
 #: lib/class.wpes-queue-list-table.php:158
 msgctxt "E-mail queue: this e-mail Failed sending"
 msgid "Sent"
-msgstr "Vezonden"
+msgstr "Verzonden"
 
 #: lib/class.wpes-queue-list-table.php:159
 msgctxt "E-mail queue: this e-mail is Opened by the receiver"
@@ -459,7 +459,7 @@ msgstr "Verzender"
 #: templates/admin-emails.php:108
 msgctxt "E-mail log: this e-mail is Sent"
 msgid "Sent ??"
-msgstr "Vezonden ??"
+msgstr "Verzonden ??"
 
 #: templates/admin-emails.php:109
 msgctxt "E-mail log: this e-mail is Sent OK"
