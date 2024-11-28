@@ -1546,6 +1546,9 @@ class Plugin {
 		$settings = get_option( 'wp-email-essentials', $defaults );
 		if ( ! $raw ) {
 			$settings = apply_filters( 'wpes_settings', $settings );
+			if ( ! is_array( $settings ) ) {
+				$settings = $defaults;
+			}
 
 			$settings['certificate_folder'] = $settings['certfolder'] ?? '';
 			if ( '/' !== substr( $settings['certificate_folder'], 0, 1 ) ) {
