@@ -109,10 +109,11 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 							$wpes__sender   = $wpes_view_email->sender;
 							$wpes__reply_to = '';
 							// This is reply-to!
-							if ( substr( $wpes__sender, - 2, 2 ) === ' *' ) {
+							if ( substr( $wpes__sender, -2, 2 ) === ' *' ) {
 								$wpes__reply_to = trim( $wpes__sender, ' *' );
 								// So who sent it?
 								// 1. Get from Debug data, Sender if available, From otherwise, and FromName if we have it.
+								list( $wpes_view_email->debug, $wpes_view_email->log ) = explode( '----', $wpes_view_email->debug );
 								$wpes__debug = json_decode( $wpes_view_email->debug );
 								// phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase
 								$wpes__sender = $wpes__debug->Sender ?: $wpes__debug->From;
@@ -187,12 +188,15 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 
 						foreach ( $wpes_view_emails_list as $wpes_view_email ) {
 							// @phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- phpMailer thing. cannot help it.
-							$wpes_mailer->Subject   = $wpes_view_email->subject;
-							$wpes_view_email->debug = json_decode( $wpes_view_email->debug );
+							$wpes_mailer->Subject = $wpes_view_email->subject;
+							list( $wpes_view_email->debug, $wpes_view_email->log ) = explode( '----', $wpes_view_email->debug );
+							$wpes_view_email->debug = json_decode( trim( $wpes_view_email->debug ) );
+							$wpes_view_email->log   = trim( $wpes_view_email->log );
 							if ( ! $wpes_view_email->debug ) {
 								$wpes_view_email->debug = new \stdClass();
 							}
 							$wpes_view_email->debug = wp_json_encode( $wpes_view_email->debug, JSON_PRETTY_PRINT );
+							$wpes_view_email->debug = ( $wpes_view_email->log ? $wpes_view_email->log . "\n" : '' ) . $wpes_view_email->debug;
 
 							// phpcs:ignore WordPress.PHP.DiscouragedPHPFunctions.obfuscation_base64_encode -- how else am I supposed to base64_encode?.
 							$wpes_email_data_base64 = base64_encode(
