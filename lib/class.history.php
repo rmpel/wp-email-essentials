@@ -93,6 +93,7 @@ class History {
 			add_action( 'phpmailer_init', [ self::class, 'phpmailer_init' ], 10000000000 );
 			add_filter( 'wp_mail', [ self::class, 'wp_mail' ], 10000000000 );
 			add_action( 'wp_mail_failed', [ self::class, 'wp_mail_failed' ], 10000000000 );
+			add_action( 'wp_mail_succeeded', [ self::class, 'wp_mail_succeeded' ], 10000000000 );
 			add_action( 'pre_handle_404', [ self::class, 'handle_tracker' ], ~PHP_INT_MAX );
 			add_action( 'shutdown', [ self::class, 'shutdown' ] );
 			add_action( 'admin_menu', [ self::class, 'admin_menu' ] );
@@ -289,7 +290,7 @@ class History {
 
 		$phpmailer->PreSend();
 		$eml = $phpmailer->GetSentMIMEMessage();
-
+		Plugin::log_message( "UPDATE sender to $sender" );
 		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = %d, sender = %s, alt_body = %s, debug = %s, eml = %s WHERE ID = %d AND subject = %s LIMIT 1", self::MAIL_SENT, $sender, $phpmailer->AltBody, $data, $eml, self::last_insert(), $phpmailer->Subject ) );
 		// @phpcs:enable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- PHPMailer, folks...
 	}
@@ -332,6 +333,7 @@ class History {
 		$_headers = trim( implode( "\n", $headers ) );
 
 		$ip = Queue::server_remote_addr();
+		Plugin::log_message( "INSERT with sender $from" );
 		$wpdb->query( $wpdb->prepare( "INSERT INTO `{$wpdb->prefix}wpes_hist` (status, sender, recipient, subject, headers, body, thedatetime, ip) VALUES (%d, %s, %s, %s, %s, %s, %s, %s);", self::MAIL_NEW, $from, is_array( $to ) ? implode( ',', $to ) : $to, $subject, $_headers, $message, gmdate( 'Y-m-d H:i:s', time() ), $ip ) );
 		self::last_insert( $wpdb->insert_id );
 
@@ -351,6 +353,26 @@ class History {
 			$errormsg = 'Unknown error';
 		}
 		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET status = %d, errinfo = CONCAT(%s, errinfo) WHERE ID = %d LIMIT 1", self::MAIL_FAILED, $errormsg . "\n", self::last_insert() ) );
+
+		self::store_log( $GLOBALS['wpes_log'] ?? [] );
+	}
+
+	/**
+	 * Callback on action wp_mail_succeeded: store the log.
+	 */
+	public static function wp_mail_succeeded(  ) {
+		self::store_log( $GLOBALS['wpes_log'] ?? [] );
+	}
+
+	/**
+	 * Store the log.
+	 *
+	 * @param array $log The log.
+	 */
+	private static function store_log( $log ) {
+		global $wpdb;
+		$log = implode( "\n", $log );
+		$wpdb->query( $wpdb->prepare( "UPDATE `{$wpdb->prefix}wpes_hist` SET debug = CONCAT(debug, '\n----\n', %s) WHERE ID = %d LIMIT 1", $log, self::last_insert() ) );
 	}
 
 	/**

@@ -107,6 +107,10 @@ class Plugin {
 
 		add_filter( 'wp_mail', [ self::class, 'jit_overload_phpmailer' ], ~PHP_INT_MAX );
 
+		add_filter( 'wp_mail', [ self::class, 'start_log' ], -100000000 );
+		add_action( 'wp_mail_succeeded', [ self::class, 'end_log' ], 10000000001 ); // prio of HIST + 1.
+		add_action( 'wp_mail_failed', [ self::class, 'end_log' ], 10000000001 ); // prio of HIST + 1.
+
 		add_filter( 'wp_mail', [ self::class, 'alternative_to' ] );
 
 		add_action( 'wp_ajax_nopriv_wpes_get_ip', [ self::class, 'ajax_get_ip' ] );
@@ -527,8 +531,10 @@ class Plugin {
 
 		if ( $config['make_from_valid'] ) {
 			self::log( __LINE__ . ' Validifying FROM:' );
-			self::wp_mail_from( self::a_valid_from( self::wp_mail_from(), $config['make_from_valid'] ) );
-			$wp_mail['headers'][ $header_index['from'] ] = 'From: "' . self::wp_mail_from_name() . '" <' . self::a_valid_from( self::wp_mail_from(), $config['make_from_valid'] ) . '>';
+			$new_from = self::a_valid_from( self::wp_mail_from(), $config['make_from_valid'] );
+			self::log_message( "Validified FROM: $new_from" );
+			self::wp_mail_from( $new_from );
+			$wp_mail['headers'][ $header_index['from'] ] = 'From: "' . self::wp_mail_from_name() . '" <' . $new_from . '>';
 		}
 
 		self::log( __LINE__ . ' headers now:' );
@@ -552,6 +558,7 @@ class Plugin {
 		$config = self::get_config();
 
 		if ( ! self::i_am_allowed_to_send_in_name_of( $invalid_from ) ) {
+			self::log_message( "I am not allowed to send in name of $invalid_from" );
 			switch ( $method ) {
 				case '-at-':
 					$translation = [
@@ -561,18 +568,31 @@ class Plugin {
 
 					$return = strtr( $invalid_from, $translation );
 
-					return $return . '@' . $host;
+					$new_from = $return . '@' . $host;
+					self::log_message( "(-at- method) Transformed $invalid_from to $new_from" );
+
+					return $new_from;
 				case 'default':
 					$defmail = self::wp_mail_from( $config['from_email'] );
 					if ( self::i_am_allowed_to_send_in_name_of( $defmail ) ) {
-						return $defmail;
+						$new_from = $defmail;
+						self::log_message( "(default method) Transformed $invalid_from to $new_from" );
+
+						return $new_from;
 					} // if test fails, bleed through to noreply, so leave this order in tact!
 				case 'noreply':
-					return 'noreply@' . $host;
+					$new_from = 'noreply@' . $host;
+					self::log_message( "(noreply method) Transformed $invalid_from to $new_from" );
+
+					return $new_from;
 				default:
+					self::log_message( "Email kept in tact, $invalid_from" );
+
 					return $invalid_from;
 			}
 		}
+
+		self::log_message( "I am allowed to send with this address, kept in tact, $invalid_from" );
 
 		return $invalid_from;
 	}
@@ -830,13 +850,19 @@ class Plugin {
 	public static function i_am_allowed_to_send_in_name_of( $email ) {
 		$config = self::get_config();
 
+		self::log_message( 'Checking if I am allowed to send in name of ' . $email );
+
 		if ( 'when_sender_not_as_set' === $config['make_from_valid_when'] ) {
+			self::log_message( "Setting is 'when_sender_not_as_set', so I am allowed if $email is identical to $config[from_email]." );
+
 			return $config['from_email'] === $email;
 		}
 
 		if ( ! $config['spf_lookup_enabled'] ) {
 			// we tried and failed less than a day ago.
 			// do not try again.
+			self::log_message( "SPF Check is disabled, test based on domain-name." );
+
 			return self::this_email_matches_website_domain( $email );
 		}
 
@@ -849,7 +875,10 @@ class Plugin {
 		}
 		$sending_server = self::get_sending_ip();
 
-		return self::validate_ip_listed_in_spf( $sending_domain[1], $sending_server );
+		$result = self::validate_ip_listed_in_spf( $sending_domain[1], $sending_server );
+		self::log_message( "SPF Check result: " . ( $result ? 'spf allows' : 'spf does not allow' ) );
+
+		return $result;
 	}
 
 	/**
@@ -1117,7 +1146,10 @@ class Plugin {
 		$host = wp_parse_url( $url, PHP_URL_HOST );
 		$host = preg_replace( '/^www\d*\./', '', $host );
 
-		return ( preg_match( '/@' . $host . '$/', $email ) );
+		$result = ( preg_match( '/@' . $host . '$/', $email ) );
+		self::log_message( "Email $email matches website domain $host ?: " . ( $result ? 'yes' : 'no' ) );
+
+		return $result;
 	}
 
 	/**
@@ -2296,10 +2328,12 @@ Item 2
 		if ( is_multisite() ) {
 			$admin_emails[] = get_site_option( 'admin_email' );
 		}
+		self::log_message( "Detected admin-emails; " . implode( ', ', $admin_emails ) );
 
 		// make sure we have a list of emails, not a single email.
 		if ( ! is_array( $email['to'] ) ) {
 			$email['to'] = self::rfc_explode( $email['to'] );
+			self::log_message( 'Email to is not an array, but a string. RFC Exploding to ' . json_encode( $email['to'], 64 ) );
 		}
 
 		// find the admin address.
@@ -2308,11 +2342,15 @@ Item 2
 			$email['to'][ $i ] = self::rfc_recode( $email['to'][ $i ] );
 
 			$decoded = self::rfc_decode( $email_address );
+			self::log_message( "Found a recipient ($i): " . json_encode( $decoded, 64 ) );
 			if ( in_array( $decoded['email'], $admin_emails, true ) ) {
+				self::log_message( "Found email is an admin email." );
 				$found_mail_item_number = $i;
 			}
 		}
 		if ( -1 === $found_mail_item_number ) {
+			self::log_message( "No admin email found, no changes made. Continuing sending the email." );
+
 			// not going to an admin.
 			return $email;
 		}
@@ -2337,9 +2375,11 @@ Item 2
 							$the_admin['name'] = $to['name'];
 						}
 						$to = self::rfc_encode( $the_admin );
+						self::log_message( "Changed the recipient to " . $to );
 					} else {
 						// extra.
 						$email['to'][] = self::rfc_encode( $the_admin );
+						self::log_message( "Added an extra recipient " . self::rfc_encode( $the_admin ) );
 					}
 				}
 
@@ -2350,6 +2390,7 @@ Item 2
 			// we revert to the DEFAULT admin_email, and prevent matching against subjects.
 			if ( is_array( $to ) && array_key_exists( 'email', $to ) ) {
 				$to = self::rfc_encode( $to );
+				self::log_message( "No alternative admin email found for key $key, reverting to default admin email; " . $to );
 			}
 
 			return $email;
@@ -2358,6 +2399,7 @@ Item 2
 		// perhaps we have a regexp?.
 		$admin = self::mail_subject_match( $email['subject'] );
 		if ( $admin ) {
+			self::log_message( "Found a regexp match for the subject; {$email['subject']} -> $admin" );
 			$the_admins = explode( ',', $admin );
 			foreach ( $the_admins as $i => $the_admin ) {
 				$the_admin = self::rfc_decode( $the_admin );
@@ -2367,9 +2409,11 @@ Item 2
 						$the_admin['name'] = $to['name'];
 					}
 					$to = self::rfc_encode( $the_admin );
+					self::log_message( "Changed the recipient to " . $to );
 				} else {
 					// extra.
 					$email['to'][] = self::rfc_encode( $the_admin );
+					self::log_message( "Added an extra recipient " . self::rfc_encode( $the_admin ) );
 				}
 			}
 
@@ -2921,5 +2965,39 @@ Item 2
 		$plugin_data = get_plugin_data( $plugin_path );
 
 		return $plugin_data['Version'];
+	}
+
+	/**
+	 * start logging.
+	 *
+	 * @param mixed $pass_thru The value to pass through.
+	 */
+	public static function start_log( $pass_thru ) {
+		$GLOBALS['wpes_log'] = [];
+
+		return $pass_thru;
+	}
+
+	/**
+	 * log a message.
+	 *
+	 * @param string $message The message to log.
+	 */
+	public static function log_message( $message ) {
+		$GLOBALS['wpes_log'][] = $message;
+	}
+
+	/**
+	 * get the log.
+	 */
+	public static function get_log() {
+		return $GLOBALS['wpes_log'];
+	}
+
+	/**
+	 * End the log
+	 */
+	public static function end_log() {
+		unset( $GLOBALS['wpes_log'] );
 	}
 }
