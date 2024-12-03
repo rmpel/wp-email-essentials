@@ -100,6 +100,8 @@ Expected return:
 
 # Changelog:
 
+5.4.1: Added more logging during sending/processing the email, you can find the extra log in the debug field, in the history viewable with an alt-click. Also added a note about false-positive SPF match when using an Admin Email that is on a domain on the same server.
+
 5.4.0: Critical bugfix warranted the new minor release, gathering subjects for the alternative admins was broken since version 4.0.0.
 
 5.3.0: Move E-mail testing to the bottom and add more features, In Multisite, also check the Site Admin for candidate for replacement (Alternative Admins).
