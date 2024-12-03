@@ -406,7 +406,9 @@ $wpes_dkim_identities  = [];
 						<label for="spf_lookup_enabled_1">
 							<?php print wp_kses_post( '<b>' . __( 'SPF records', 'wpes' ) . '</b>:<br />' . __( 'Use SPF records to validate the sender. If the SPF record of the domain of the e-mail address used as sender matches the IP-address this website is hosted on, the e-mail address is considered valid.', 'wpes' ) ); ?>
 						</label>
+
 					</div>
+					<div class="wpes-notice--warning"><?php echo esc_html__('Please note that using SPF can fail if the sender (admin email) is on the same server and thus allowed as sender by SPF. You might want to use the SPF-method just to verify the server set-up, then switch back to domain verification.', 'wpes'); ?></div>
 				</div>
 			</div>
 
