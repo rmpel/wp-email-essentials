@@ -458,13 +458,16 @@ class Queue {
 	}
 
 	/**
-	 * Set the status of a queue item.
+	 * Get the status of a queue item.
 	 *
 	 * @param int $mail_id The queued item ID.
+	 *
+	 * @return int
 	 */
 	public static function get_status( $mail_id ) {
 		global $wpdb;
-		$wpdb->update( "{$wpdb->prefix}wpes_queue", [ 'status' => $status ], [ 'id' => $mail_id ] );
+
+		return $wpdb->get_var( $wpdb->prepare( "SELECT status FROM {$wpdb->prefix}wpes_queue WHERE id = %d", $mail_id ) );
 	}
 
 	/**
@@ -502,10 +505,18 @@ class Queue {
 	 * Callback for admin_menu action.
 	 */
 	public static function admin_menu() {
+		// Set an indicator in the menu for the amount of e-mails in the queue.
+		$count = self::get_queue_count();
+		if ( $count > 0 ) {
+			$count = sprintf( '<span title="" class="update-plugins count-%1$d"><span class="update-count">%1$d</span></span>', $count );
+		} else {
+			$count = '';
+		}
+
 		add_submenu_page(
 			'wp-email-essentials',
 			Plugin::plugin_data()['Name'] . ' - ' . __( 'E-mail Throttling', 'wpes' ),
-			__( 'E-mail Throttling', 'wpes' ),
+			__( 'E-mail Throttling', 'wpes' ) . $count,
 			'manage_options',
 			'wpes-queue',
 			[ self::class, 'admin_interface' ]
@@ -517,5 +528,14 @@ class Queue {
 	 */
 	public static function admin_interface() {
 		Plugin::view( 'admin-queue' );
+	}
+
+	/**
+	 * Get mail queue count.
+	 */
+	public static function get_queue_count() {
+		global $wpdb;
+
+		return $wpdb->get_var( $wpdb->prepare( "SELECT count(id) FROM {$wpdb->prefix}wpes_queue WHERE status = %d", Queue::FRESH ) );
 	}
 }

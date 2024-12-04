@@ -27,9 +27,6 @@ if ( ! current_user_can( 'manage_options' ) ) {
 
 	?>
 	<div class="wpes-notice--warning">
-		<strong class="warning">
-			<?php print wp_kses_post( __( 'This feature is new and therefore needs to be considered experimental. If you have feedback, please send to <code>remon+wpes@acato.nl</code>. Thank you.', 'wpes' ) ); ?>
-		</strong>
 		<?php print wp_kses_post( __( 'Enabling the throttling feature will prevent sending large amounts of e-mails in quick succession, for example a spam-run.', 'wpes' ) ); ?>
 		<br/>
 		<?php print wp_kses_post( sprintf( __( 'Once activated, when more than %1$d e-mails are sent within %2$d seconds from the same IP-address, all other e-mails will be held until released.', 'wpes' ), Queue::get_max_count_per_time_window(), Queue::get_time_window() ) ); ?>

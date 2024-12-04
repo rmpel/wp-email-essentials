@@ -558,10 +558,6 @@ $wpes_dkim_identities  = [];
 						<?php print wp_kses_post( sprintf( __( 'Once activated, when more than %1$d e-mails are sent within %2$d seconds from the same IP-address, all other e-mails will be held until released.', 'wpes' ), Queue::get_max_count_per_time_window(), Queue::get_time_window() ) ); ?>
 						<br/>
 						<?php print wp_kses_post( sprintf( __( 'E-mails will be sent in batches of %d per minute, the trigger is a hit on the website, the admin panel or the cron (wp-cron.php).', 'wpes' ), Queue::get_batch_size() ) ); ?>
-						<br/>
-						<strong class="warning">
-							<?php print wp_kses_post( __( 'This feature is new and therefore needs to be considered experimental. If you have feedback, please send to <code>remon+wpes@acato.nl</code>. Thank you.', 'wpes' ) ); ?>
-						</strong>
 					</div>
 				</div>
 			</div>
