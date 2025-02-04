@@ -1115,7 +1115,7 @@ class Plugin {
 		$transient_name = "dns_{$lookup}__TYPE{$filter}__cache";
 		$transient      = get_site_transient( $transient_name );
 		if ( ! $transient ) {
-			$transient = dns_get_record( $lookup, $filter );
+			$transient = self::_dns_get_record( $lookup, $filter );
 			$ttl       = count( $transient ) > 0 && is_array( $transient[0] && isset( $transient[0]['ttl'] ) ) ? $transient[0]['ttl'] : 3600;
 			set_site_transient( $transient_name, $transient, $ttl );
 		}
@@ -1132,6 +1132,127 @@ class Plugin {
 		}
 
 		return $transient;
+	}
+
+	/**
+	 * Wrapper for dns_get_record, with Cloudflare DoH as first option, php dns_get_record as fallback, if available.
+	 *
+	 * @param string $hostname The hostname to lookup.
+	 * @param int    $type     The type of record to lookup.
+	 *
+	 * @return array
+	 * @see \dns_get_record()
+	 *
+	 */
+	private static function _dns_get_record( $hostname, $type = DNS_ALL ) {
+		$return = [];
+
+		if ( DNS_ANY === $type ) {
+			$returnA = self::_dns_get_record_cfdoh( $hostname, DNS_A );
+			try {
+				$returnAAAA = self::_dns_get_record_cfdoh( $hostname, DNS_AAAA );
+			} catch ( \Exception $e ) {
+				error_log( json_encode( $e ) );
+			}
+			$return = array_merge( (array) $returnA, (array) ( $returnAAAA ?? [] ) );
+		} else {
+			$return = self::_dns_get_record_cfdoh( $hostname, $type );
+		}
+
+		// Slow dns lookup, will crash on LocalWP, so we check if not disabled in php.ini, and if not disabled, we check if disabled in options.
+		if ( ! $return && function_exists( 'dns_get_record' ) && ! get_option( 'disable_dns_get_record', false ) ) {
+			// Slow dns lookup.
+			if ( DNS_ANY === $type ) {
+				$returnA = dns_get_record( $hostname, DNS_A );
+				try {
+					$returnAAAA = dns_get_record( $hostname, DNS_AAAA );
+				} catch ( \Exception $e ) {
+					error_log( json_encode( $e ) );
+				}
+				$return = array_merge( (array) $returnA, (array) ( $returnAAAA ?? [] ) );
+			} else {
+				$return = dns_get_record( $hostname, $type );
+			}
+		}
+
+		return $return;
+	}
+
+	/**
+	 * Get DNS record using Cloudflare DoH.
+	 *
+	 * @param string $hostname The hostname to lookup.
+	 * @param int    $type     The type of record to lookup. Uses DNS_* constants, @see \dns_get_record()
+	 *
+	 * @return array
+	 */
+	private static function _dns_get_record_cfdoh( $hostname, $type = DNS_ANY ) {
+		$php_to_cf_type   = [
+			DNS_A     => 'A',
+			DNS_AAAA  => 'AAAA',
+			DNS_CNAME => 'CNAME',
+			DNS_MX    => 'MX',
+			DNS_NS    => 'NS',
+			DNS_PTR   => 'PTR',
+			DNS_SOA   => 'SOA',
+			DNS_TXT   => 'TXT',
+		];
+		$cf_numeric_types = [
+			1  => 'A',
+			2  => 'NS',
+			5  => 'CNAME',
+			6  => 'SOA',
+			12 => 'PTR',
+			15 => 'MX',
+			16 => 'TXT',
+			28 => 'AAAA',
+		];
+		$cf_type          = $php_to_cf_type[ $type ] ?? 'ANY';
+		$result           = wp_remote_get(
+			'https://cloudflare-dns.com/dns-query?name=' . $hostname . '&type=' . $cf_type,
+			[
+				'timeout' => 5,
+				'headers' => [
+					'accept'  => 'application/dns-json',
+					'referer' => 'https://cloudflare-dns.com/dns-query', // no leaking please.
+				],
+			]
+		);
+		if ( is_wp_error( $result ) ) {
+			return [];
+		}
+		$result = wp_remote_retrieve_body( $result );
+		if ( ! $result ) {
+			return [];
+		}
+		$result = json_decode( $result, true );
+		if ( ! $result ) {
+			return [];
+		}
+		$answer = $result['Answer'] ?? [];
+		if ( ! $answer ) {
+			return [];
+		}
+		$return = array();
+		foreach ( $answer as $entry ) {
+			$entry          = array_change_key_case( $entry, CASE_LOWER );
+			$return_type    = $entry['type'] ?? 0;
+			$request_type   = $php_to_cf_type[ $type ] ?? 'UNKNOWN';
+			$return_type    = $cf_numeric_types[ $return_type ] ?? $request_type;
+			$entry['type']  = $return_type;
+			$entry['ttl']   = $entry['TTL'] ?? 0;
+			$entry['class'] = $entry['class'] ?? 'IN';
+			$entry['host']  = $entry['name'] ?? $hostname;
+			$ip             = $entry['data'] ?? '';
+			if ( IP::is_6( $ip ) ) {
+				$entry['ipv6'] = $ip;
+			} else {
+				$entry['ip'] = $ip;
+			}
+			$return[] = $entry;
+		}
+
+		return $return;
 	}
 
 	/**

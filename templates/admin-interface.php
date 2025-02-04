@@ -408,7 +408,8 @@ $wpes_dkim_identities  = [];
 						</label>
 
 					</div>
-					<div class="wpes-notice--warning"><?php echo esc_html__('Please note that using SPF can fail if the sender (admin email) is on the same server and thus allowed as sender by SPF. You might want to use the SPF-method just to verify the server set-up, then switch back to domain verification.', 'wpes'); ?></div>
+					<div
+						class="wpes-notice--warning"><?php echo esc_html__( 'Please note that using SPF can fail if the sender (admin email) is on the same server and thus allowed as sender by SPF. You might want to use the SPF-method just to verify the server set-up, then switch back to domain verification.', 'wpes' ); ?></div>
 				</div>
 			</div>
 

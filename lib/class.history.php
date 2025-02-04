@@ -225,7 +225,7 @@ class History {
 				$spaces        = $match[1];
 				$spaces_length = strlen( $spaces );
 				$lines_total   = count( $lines );
-				for ( $i = 0; $i < $lines_total; $i ++ ) {
+				for ( $i = 0; $i < $lines_total; $i++ ) {
 					if ( substr( $lines[ $i ], 0, $spaces_length ) === $spaces ) {
 						$lines[ $i ] = substr( $lines[ $i ], $spaces_length );
 					}
@@ -360,7 +360,7 @@ class History {
 	/**
 	 * Callback on action wp_mail_succeeded: store the log.
 	 */
-	public static function wp_mail_succeeded(  ) {
+	public static function wp_mail_succeeded() {
 		self::store_log( $GLOBALS['wpes_log'] ?? [] );
 	}
 

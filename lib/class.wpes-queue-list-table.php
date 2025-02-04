@@ -296,6 +296,6 @@ class WPES_Queue_List_Table extends WP_List_Table {
 			return $result;
 		}
 
-		return - $result;
+		return -$result;
 	}
 }
