@@ -82,6 +82,11 @@ class IP {
 	 * @return bool
 	 */
 	public static function is_6( $ip ) {
+		$sanitized = preg_replace( '/[^0-9a-f:]+/', '', $ip );
+		$trimmed   = trim($ip);
+		if ( $sanitized && $trimmed && strtolower( $trimmed ) !== strtolower( $sanitized ) ) {
+			return false;
+		}
 		$ip_parts = self::explode_ip6( $ip );
 		$ip       = implode( ':', $ip_parts );
 
