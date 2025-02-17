@@ -131,7 +131,7 @@ class IP {
 		$parts = explode( ':', str_replace( '::', ':ZZZZ:', $ip ) );
 		if ( in_array( 'ZZZZ', $parts, true ) ) {
 			$padding  = 9 - count( $parts ); // why 9 ? well 8 parts total - 2 parts we have, which includes 1 ZZZZ part, so + 1. -> 7. 9 - 2 = 7.
-			$padding  = array_fill( 0, $padding, '0' );
+			$padding  = $padding > 0 ? array_fill( 0, $padding, '0' ) : [];
 			$position = array_search( 'ZZZZ', $parts, true );
 			array_splice( $parts, $position, 1, $padding );
 		}
