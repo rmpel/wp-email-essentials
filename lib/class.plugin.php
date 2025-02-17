@@ -1040,7 +1040,7 @@ class Plugin {
 					} elseif ( 'mx' === $section ) {
 						$mx = self::dns_get_record( $domain, DNS_MX );
 						foreach ( $mx as $mx_record ) {
-							$target = $mx_record['target'];
+							$target = $mx_record['target'] ?? '';
 							if ( IP::is_4( $ip ) ) {
 								try {
 									$new_target = self::dns_get_record( $domain, DNS_A, true );
@@ -1235,15 +1235,17 @@ class Plugin {
 		}
 		$return = array();
 		foreach ( $answer as $entry ) {
-			$entry          = array_change_key_case( $entry, CASE_LOWER );
-			$return_type    = $entry['type'] ?? 0;
-			$request_type   = $php_to_cf_type[ $type ] ?? 'UNKNOWN';
-			$return_type    = $cf_numeric_types[ $return_type ] ?? $request_type;
-			$entry['type']  = $return_type;
-			$entry['ttl']   = $entry['TTL'] ?? 0;
-			$entry['class'] = $entry['class'] ?? 'IN';
-			$entry['host']  = $entry['name'] ?? $hostname;
-			$ip             = $entry['data'] ?? '';
+			$entry                 = array_change_key_case( $entry, CASE_LOWER );
+			$return_type           = $entry['type'] ?? 0;
+			$request_type          = $php_to_cf_type[ $type ] ?? 'UNKNOWN';
+			$return_type           = $cf_numeric_types[ $return_type ] ?? $request_type;
+			$entry['type']         = $return_type;
+			$entry['ttl']          = $entry['TTL'] ?? 0;
+			$entry['class']        = $entry['class'] ?? 'IN';
+			$entry['host']         = $entry['name'] ?? $hostname;
+			$ip                    = $entry['data'] ?? '';
+			$return_type           = strtolower( $return_type );
+			$entry[ $return_type ] = trim( $entry['data'] ?? '', '" ' );
 			if ( IP::is_6( $ip ) ) {
 				$entry['ipv6'] = $ip;
 			} else {
