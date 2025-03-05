@@ -59,7 +59,6 @@ jQuery(document).ready(function ($) {
         return true;
       }
 
-      var alt = e.altKey || false;
       $(this).addClass('active').siblings().removeClass('active').removeClass(function (index, className) {
         return (className.match(/(^|\s)show-\S+/g) || []).join(' ');
       });
@@ -71,14 +70,12 @@ jQuery(document).ready(function ($) {
 
       var this_and_that = $(this).add(that);
 
-      if (alt) {
-        this_and_that.removeClass('show-body').removeClass('show-alt-body').removeClass('show-headers').addClass('show-debug');
-      } else if ($(this).is('.show-body')) {
+      if ($(this).is('.show-body')) {
         this_and_that.removeClass('show-body').addClass('show-headers');
       } else if ($(this).is('.show-headers')) {
         this_and_that.removeClass('show-headers').addClass('show-alt-body');
       } else if ($(this).is('.show-alt-body')) {
-        this_and_that.removeClass('show-alt-body').addClass('show-body');
+        this_and_that.removeClass('show-alt-body').addClass('show-debug');
       } else {
         this_and_that.addClass('show-body');
       }

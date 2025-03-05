@@ -43,7 +43,10 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 			<div class="postbox">
 				<div class="postbox-header">
 					<h2>
-						<?php print wp_kses_post( sprintf( __( 'Outgoing emails to the site-administrator ( %s )', 'wpes' ), $wpes_wordpress_admin ) ); ?>
+						<?php
+						// translators: %s: the admin email address.
+						print wp_kses_post( sprintf( __( 'Outgoing emails to the site-administrator ( %s )', 'wpes' ), $wpes_wordpress_admin ) );
+						?>
 					</h2>
 				</div>
 				<div class="inside">
@@ -100,7 +103,10 @@ $wpes_wordpress_admin = get_option( 'admin_email' );
 							print wp_kses_post( sprintf( __( 'You must include the boundaries, so start with %1$s and end with %1$s.', 'wpes' ), '<code>/</code>' ) );
 							?>
 							<br/>
-							<?php print wp_kses_post( sprintf( __( 'You can add the %1$s flag to create a case-insensitive match (like so: %2$s).', 'wpes' ), '<code>i</code>', '<code>/some[expression]/i</code>' ) ); ?>
+							<?php
+							// translators: %1$s: the flag for case-insensitive matching, %2$s: the example of a regular expression.
+							print wp_kses_post( sprintf( __( 'You can add the %1$s flag to create a case-insensitive match (like so: %2$s).', 'wpes' ), '<code>i</code>', '<code>/some[expression]/i</code>' ) );
+							?>
 							<br/>
 							<?php print wp_kses_post( __( 'If you are unfamiliar with regular expressions, you can ignore this section, ask for help or learn the magic and power of regular expressions yourself.', 'wpes' ) ); ?>
 						</p>

@@ -216,19 +216,19 @@ $wpes_wp_admin_email = get_option( 'admin_email' );
 							);
 							?>
 							<div class="email-data" id="email-data-<?php print esc_attr( $wpes_view_email->ID ); ?>">
-								<span class="headers">
+								<span class="headers" data-legend="<?php echo esc_html_x( 'E-mail Headers', 'Email History Legend', 'wpes' ); ?>">
 									<pre><?php print esc_html( $wpes_view_email->headers ); ?></pre>
 								</span>
-								<span class="alt_body">
+								<span class="alt_body" data-legend="<?php echo esc_html_x( 'Plain Text Alternative', 'Email History Legend', 'wpes' ); ?>">
 									<pre><?php print wp_kses_post( $wpes_view_email->alt_body ); ?></pre>
 								</span>
-								<span class="body">
+								<span class="body" data-legend="<?php echo esc_html_x( 'HTML E-mail Body', 'Email History Legend', 'wpes' ); ?>">
 									<iframe
 										class="autofit" width="100%" height="100%" border="0" frameborder="0"
 										src="data:text/html;headers=<?php print rawurlencode( 'Content-Security-Policy: script-src none;' ); ?>;base64,<?php print $wpes_email_data_base64; /* @phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped */ ?>">
 									</iframe>
 								</span>
-								<span class="debug">
+								<span class="debug" data-legend="<?php echo esc_html_x( 'Debug information', 'Email History Legend', 'wpes' ); ?>">
 									<pre><?php print esc_html( $wpes_view_email->debug ); ?></pre>
 								</span>
 							</div>

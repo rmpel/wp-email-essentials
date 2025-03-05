@@ -1990,8 +1990,10 @@ class Plugin {
 					);
 					self::$debug = ob_get_clean();
 					if ( $result ) {
+						// translators: %s is the email address.
 						self::$message = sprintf( __( 'Mail sent to %s', 'wpes' ), $send_email_to );
 					} else {
+						// translators: %s is the email address.
 						self::$error = sprintf( __( 'Mail NOT sent to %s', 'wpes' ), $send_email_to );
 					}
 					break;
@@ -2298,7 +2300,8 @@ Item 2
 
 		// For devs; certfolder = setting, certificate_folder = real path;.
 		if ( $config['enable_smime'] && isset( $config['certfolder'] ) && $config['certfolder'] && false !== strpos( realpath( $config['certificate_folder'] ), realpath( self::root_path() ) ) ) {
-			$class   = 'error';
+			$class = 'error';
+			// translators: %s: a file path.
 			$message = sprintf( __( 'The S/MIME certificate folder is inside the webspace. This is Extremely insecure. Please reconfigure, make sure the folder is outside the website-root %s.', 'wpes' ), self::root_path() );
 			echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 		}
@@ -2322,11 +2325,13 @@ Item 2
 			$rawset['certfolder'] = __DIR__ . '/.smime';
 			self::set_config( $rawset );
 			if ( self::get_smime_identity( $from ) ) {
-				$class   = 'error';
+				$class = 'error';
+				// translators: %s: email address.
 				$message = sprintf( __( 'There is no certificate for the default sender address <code>%s</code>. The required certificate is supplied with this plugin. Please copy it to the correct folder.', 'wpes' ), $from );
 				echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 			} else {
-				$class   = 'error';
+				$class = 'error';
+				// translators: %s: email address.
 				$message = sprintf( __( 'There is no certificate for the default sender address <code>%s</code>. Start: <a href="https://www.comodo.com/home/email-security/free-email-certificate.php" target="_blank">here</a>.', 'wpes' ), $from );
 				echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 			}
@@ -2338,6 +2343,7 @@ Item 2
 		// For devs; dkimfolder = setting, dkim_certificate_folder = real path;.
 		if ( ! empty( $config['enable_dkim'] ) && $config['enable_dkim'] && isset( $config['dkimfolder'] ) && $config['dkimfolder'] && false !== strpos( realpath( $config['dkim_certificate_folder'] ), realpath( self::root_path() ) ) ) {
 			$class   = 'error';
+			// translators: %s: a file path.
 			$message = sprintf( __( 'The DKIM certificate folder is inside the webspace. This is Extremely insecure. Please reconfigure, make sure the folder is outside the website-root %s.', 'wpes' ), self::root_path() );
 			echo wp_kses_post( "<div class='$class'><p>$message</p></div>" );
 		}
@@ -2839,7 +2845,10 @@ Item 2
 		if ( 'options-general.php' === basename( $_SERVER['PHP_SELF'] ) && ! ( $_GET['page'] ?? '' ) ) {
 			?>
 			<script>
-				jQuery("#admin_email,#new_admin_email").after('<p class="description"><?php print wp_kses_post( sprintf( __( 'You can configure alternative administrators <a href="%s">here</a>.', 'wpes' ), add_query_arg( [ 'page' => 'wpes-admins' ], admin_url( 'admin.php' ) ) ) ); ?></p>');
+				jQuery("#admin_email,#new_admin_email").after('<p class="description"><?php
+					// translators: %s: a URL.
+					print wp_kses_post( sprintf( __( 'You can configure alternative administrators <a href="%s">here</a>.', 'wpes' ), add_query_arg( [ 'page' => 'wpes-admins' ], admin_url( 'admin.php' ) ) ) );
+					?></p>');
 			</script>
 			<?php
 		}

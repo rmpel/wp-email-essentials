@@ -93,7 +93,10 @@ $wpes_dkim_identities  = [];
 					<div class="wpes-form">
 						<div class="wpes-form-item">
 							<div class="wpes-notice--info">
-								<?php print wp_kses_post( sprintf( __( 'Out of the box, WordPress will use name "WordPress" and e-mail "wordpress@%s" as default sender. This is far from optimal. Your first step is therefore to set an appropriate name and e-mail address.', 'wpes' ), $wpes_host ) ); ?>
+								<?php
+								// translators: %s: hostname.
+								print wp_kses_post( sprintf( __( 'Out of the box, WordPress will use name "WordPress" and e-mail "wordpress@%s" as default sender. This is far from optimal. Your first step is therefore to set an appropriate name and e-mail address.', 'wpes' ), $wpes_host ) );
+								?>
 							</div>
 							<label
 								for="from-name"><?php print wp_kses_post( __( 'Default from name', 'wpes' ) ); ?></label>
@@ -482,12 +485,18 @@ $wpes_dkim_identities  = [];
 								value=""><?php print wp_kses_post( __( 'Keep the possibly-invalid sender as is. (might cause your mails to be marked as spam!)', 'wpes' ) ); ?></option>
 							<option disabled>────────────────────────────────────────────────────────────</option>
 							<option value="-at-" <?php selected( '-at-', $wpes_config['make_from_valid'] ); ?>>
-								<?php print esc_html( sprintf( __( 'Rewrite e-mail@addre.ss to e-mail-at-addre-dot-ss@%s', 'wpes' ), $wpes_host ) ); ?>
+								<?php
+								// translators: %s: the hostname of the website.
+								print esc_html( sprintf( __( 'Rewrite e-mail@addre.ss to e-mail-at-addre-dot-ss@%s', 'wpes' ), $wpes_host ) );
+								?>
 							</option>
 							<option
 								value="noreply" <?php selected( 'noreply', $wpes_config['make_from_valid'] ); ?>>
-								<?php print esc_html( sprintf( __( 'Rewrite e-mail@addre.ss to noreply@%s', 'wpes' ), $wpes_host ) ); ?>
-								<?php print esc_html( __( '(Not GDPR Compliant)', 'wpes' ) ); ?>
+								<?php
+								// translators: %s: the hostname of the website.
+								print esc_html( sprintf( __( 'Rewrite e-mail@addre.ss to noreply@%s', 'wpes' ), $wpes_host ) );
+								print esc_html( __( '(Not GDPR Compliant)', 'wpes' ) );
+								?>
 							</option>
 							<?php
 							$wpes_default_sender_mail = Plugin::wp_mail_from( $wpes_config['from_email'] );
@@ -495,7 +504,10 @@ $wpes_dkim_identities  = [];
 								?>
 								<option
 									value="default" <?php selected( 'default', $wpes_config['make_from_valid'] ); ?>>
-									<?php print esc_html( sprintf( __( 'Rewrite e-mail@addre.ss to %s', 'wpes' ), $wpes_default_sender_mail ) ); ?>
+									<?php
+									// translators: %s: the default sender e-mail address.
+									print esc_html( sprintf( __( 'Rewrite e-mail@addre.ss to %s', 'wpes' ), $wpes_default_sender_mail ) );
+									?>
 								</option>
 							<?php } ?>
 						</select>
@@ -554,11 +566,19 @@ $wpes_dkim_identities  = [];
 					</div>
 
 					<div class="wpes-notice--warning on-enable_queue">
-						<?php print wp_kses_post( __( 'Enabling the throttling feature will prevent sending large amounts of e-mails in quick succession, for example a spam-run.', 'wpes' ) ); ?>
+						<?php
+						print wp_kses_post( __( 'Enabling the throttling feature will prevent sending large amounts of e-mails in quick succession, for example a spam-run.', 'wpes' ) );
+						?>
 						<br/>
-						<?php print wp_kses_post( sprintf( __( 'Once activated, when more than %1$d e-mails are sent within %2$d seconds from the same IP-address, all other e-mails will be held until released.', 'wpes' ), Queue::get_max_count_per_time_window(), Queue::get_time_window() ) ); ?>
+						<?php
+						// translators: %1$d: the maximum number of e-mails per time window, %2$d: the time window in seconds.
+						print wp_kses_post( sprintf( __( 'Once activated, when more than %1$d e-mails are sent within %2$d seconds from the same IP-address, all other e-mails will be held until released.', 'wpes' ), Queue::get_max_count_per_time_window(), Queue::get_time_window() ) );
+						?>
 						<br/>
-						<?php print wp_kses_post( sprintf( __( 'E-mails will be sent in batches of %d per minute, the trigger is a hit on the website, the admin panel or the cron (wp-cron.php).', 'wpes' ), Queue::get_batch_size() ) ); ?>
+						<?php
+						// translators: %d: the number of e-mails per minute.
+						print wp_kses_post( sprintf( __( 'E-mails will be sent in batches of %d per minute, the trigger is a hit on the website, the admin panel or the cron (wp-cron.php).', 'wpes' ), Queue::get_batch_size() ) );
+						?>
 					</div>
 				</div>
 			</div>
@@ -710,7 +730,10 @@ $wpes_dkim_identities  = [];
 								?>
 								<div class="wpes-notice--error on-enable-smime">
 									<strong class="title">
-										<?php print wp_kses_post( sprintf( __( 'It is highly advised to pick a folder path <u>outside</u> your website, for example: <code>%s</code> to prevent stealing your identity.', 'wpes' ), Plugin::suggested_safe_path_for( '.smime' ) ) ); ?>
+										<?php
+										// translators: %s: a path.
+										print wp_kses_post( sprintf( __( 'It is highly advised to pick a folder path <u>outside</u> your website, for example: <code>%s</code> to prevent stealing your identity.', 'wpes' ), Plugin::suggested_safe_path_for( '.smime' ) ) );
+										?>
 									</strong>
 								</div>
 								<?php
@@ -728,10 +751,13 @@ $wpes_dkim_identities  = [];
 									<div class="wpes-notice--error on-enable-smime">
 										<strong class="title">
 											<?php
+											// translators: %s: a path.
 											print wp_kses_post( sprintf( __( 'Set folder <code>%s</code> not found.', 'wpes' ), $wpes_config['certfolder'] ) );
 											if ( $wpes_smime_certificate_folder !== $wpes_config['certfolder'] ) {
+												// translators: %s: a path.
 												print ' ' . wp_kses_post( sprintf( __( 'Expanded path: <code>%s</code>', 'wpes' ), $wpes_smime_certificate_folder ) );
 											}
+											// translators: %s: a path.
 											print ' ' . wp_kses_post( sprintf( __( 'Evaluated path: <code>%s</code>', 'wpes' ), realpath( $wpes_smime_certificate_folder ) ) );
 											?>
 										</strong>
@@ -808,7 +834,10 @@ $wpes_dkim_identities  = [];
 									<?php if ( $wpes_smime_identities ) { ?>
 										<div class="wpes-notice--info on-enable-smime">
 											<p>
-												<?php print wp_kses_post( sprintf( __( 'Found S/MIME identities for the following senders: <code>%s</code>', 'wpes' ), implode( '</code>, <code>', $wpes_smime_identities ) ) ); ?>
+												<?php
+												// translators: %s: a list of S/MIME identities.
+												print wp_kses_post( sprintf( __( 'Found S/MIME identities for the following senders: <code>%s</code>', 'wpes' ), implode( '</code>, <code>', $wpes_smime_identities ) ) );
+												?>
 											</p>
 										</div>
 									<?php } ?>

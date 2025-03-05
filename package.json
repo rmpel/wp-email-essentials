@@ -19,7 +19,8 @@
     "hot": "cross-env NODE_ENV=development run-s build mix:hot",
     "mix": "webpack --progress --hide-modules --config=node_modules/laravel-mix/setup/webpack.config.js",
     "mix:hot": "webpack-dev-server --inline --hot --config=node_modules/laravel-mix/setup/webpack.config.js",
-    "clean": "run-p clean:*"
+    "clean": "run-p clean:*",
+    "i18n": "wp i18n make-pot ./ lang/wpes.pot --domain=wpes --skip-js ; wp i18n update-po lang/wpes.pot lang/ ; wp i18n make-mo lang ; wp i18n make-php lang"
   },
   "dependencies": {
     "@wordpress/i18n": "^4.11.0",

@@ -414,8 +414,21 @@ $tools-width: 200px;
 		overflow: auto;
 
 		.email-data.show-debug, .show-body, .show-alt-body, .show-headers {
+			padding-top: 20px;
 			height: 100%;
 			width: 100%;
+		}
+
+		>div>span:after {
+			content: attr(data-legend);
+			position: absolute;
+			top: 0;
+			left: 0;
+			background: rgba(0, 0, 0, .5);
+			z-index: 1;
+			color: white;
+			border-bottom-right-radius: 5px;
+			padding: 3px 10px;
 		}
 	}
 }
