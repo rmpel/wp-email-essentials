@@ -303,7 +303,7 @@ $wpes_dkim_identities  = [];
 								<?php print wp_kses_post( __( 'Use encrypted connection?', 'wpes' ) ); ?>
 							</label>
 							<select name="settings[secure]" id="smtp-secure">
-								<option value="">
+								<option value="" data-smtp-port="25">
 									<?php print wp_kses_post( __( 'No', 'wpes' ) ); ?>
 								</option>
 								<option disabled>
@@ -314,10 +314,12 @@ $wpes_dkim_identities  = [];
 									- <?php print wp_kses_post( __( 'strict SSL verify', 'wpes' ) ); ?>
 								</option>
 								<option
+									data-smtp-port="465"
 									value="ssl" <?php selected( $wpes_config['smtp'] && 'ssl' === $wpes_config['smtp']['secure'] ); ?>>
 									<?php print wp_kses_post( __( 'SSL', 'wpes' ) ); ?>
 								</option>
 								<option
+									data-smtp-port="587"
 									value="tls" <?php selected( $wpes_config['smtp'] && 'tls' === $wpes_config['smtp']['secure'] ); ?>>
 									<?php print wp_kses_post( __( 'StartTLS', 'wpes' ) ); ?>
 								</option>
@@ -329,15 +331,27 @@ $wpes_dkim_identities  = [];
 									- <?php print wp_kses_post( __( 'allow self-signed SSL', 'wpes' ) ); ?>
 								</option>
 								<option
+									data-smtp-port="465"
 									value="ssl-" <?php selected( $wpes_config['smtp'] && 'ssl-' === $wpes_config['smtp']['secure'] ); ?>>
 									<?php print wp_kses_post( __( 'SSL', 'wpes' ) ); ?>
 								</option>
 								<option
+									data-smtp-port="587"
 									value="tls-" <?php selected( $wpes_config['smtp'] && 'tls-' === $wpes_config['smtp']['secure'] ); ?>>
 									<?php print wp_kses_post( __( 'StartTLS', 'wpes' ) ); ?>
 								</option>
 							</select>
 						</div>
+						<script>
+							jQuery(document).ready(function ($) {
+								const smtpPort = document.getElementById('smtp-port');
+								const smtpSecure = document.getElementById('smtp-secure');
+								smtpSecure.addEventListener('change', function () {
+									smtpPort.placeholder = this.options[this.selectedIndex].dataset.smtpPort;
+								});
+								smtpSecure.dispatchEvent(new Event('change'));
+							});
+						</script>
 						<div class="wpes-form-item">
 							<label for="timeout">
 								<?php print wp_kses_post( __( 'phpMailer Timeout', 'wpes' ) ); ?>

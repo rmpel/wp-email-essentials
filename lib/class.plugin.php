@@ -1295,6 +1295,18 @@ class Plugin {
 			if ( ! empty( $config['smtp']['port'] ) && (int) $config['smtp']['port'] > 0 ) {
 				$mailer->Port = $config['smtp']['port'];
 			}
+			elseif ( isset( $config['smtp']['secure'] ) && $config['smtp']['secure'] ) {
+				switch(trim( $config['smtp']['secure'], '-' )) {
+					case 'ssl':
+						$mailer->Port = 465;
+						break;
+					case 'tls':
+						$mailer->Port = 587;
+						break;
+					default:
+						$mailer->Port = 25;
+				}
+			}
 
 			if ( isset( $config['smtp']['username'] ) ) {
 				if ( trim( $config['smtp']['username'] ) !== '' ) {
