@@ -100,6 +100,8 @@ Expected return:
 
 # Changelog:
 
+5.4.2: Default SMTP port is now 465 or 587 for SSL or TLS, instead of relying on the server to switch automatically on port 25.
+
 5.4.1: Added more logging during sending/processing the email, you can find the extra log in the debug field, in the history viewable with an alt-click. Also added a note about false-positive SPF match when using an Admin Email that is on a domain on the same server.
 
 5.4.0: Critical bugfix warranted the new minor release, gathering subjects for the alternative admins was broken since version 4.0.0.
