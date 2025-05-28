@@ -14,7 +14,7 @@ namespace WP_Email_Essentials;
  * Mirror URI: https://github.com/rmpel/wp-email-essentials
  * Author: Remon Pel <remon@acato.nl>
  * Author URI: https://acato.nl
- * Version: 5.4.2
+ * Version: 5.4.3
  * Requires PHP: 7.4
  * Requires at least: 4.8.3
  * Tested up to: 6.7.1
